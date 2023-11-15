@@ -119,19 +119,35 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
             this.patternInputs = pInputs.toArray(new IAEItemStack[0]);
             this.patternOutputs = pOutputs.toArray(new IAEItemStack[0]);
             this.patternRecursionInputs = pRecInputs.toArray(new IAEItemStack[0]);
-            IAEItemStack foundMatchingOutput = Arrays.stream(patternOutputs).filter(this::isOutputSameAs).findFirst()
-                    .orElse(null);
-            if (foundMatchingOutput == null) {
+
+            IAEItemStack matchingOutput = null;
+            for (IAEItemStack patternOutput : patternOutputs) {
+                if (isOutputSameAs(patternOutput)) {
+                    matchingOutput = patternOutput;
+                    break;
+                }
+            }
+            if (matchingOutput == null) {
                 state = State.FAILURE;
                 throw new IllegalStateException("Invalid pattern crafting step for " + request);
             }
-            this.matchingOutput = foundMatchingOutput;
+
+            this.matchingOutput = matchingOutput;
         }
 
         private static void calculatePatternIO(ICraftingPatternDetails pattern, HashBasedItemList pInputs,
                 HashBasedItemList pOutputs, HashBasedItemList pRecInputs) {
-            Arrays.stream(pattern.getInputs()).filter(Objects::nonNull).forEach(pInputs::add);
-            Arrays.stream(pattern.getOutputs()).filter(Objects::nonNull).forEach(pOutputs::add);
+            for (IAEItemStack stack : pattern.getInputs()) {
+                if (stack != null) {
+                    pInputs.add(stack);
+                }
+            }
+            for (IAEItemStack stack : pattern.getOutputs()) {
+                if (stack != null) {
+                    pOutputs.add(stack);
+                }
+            }
+
             for (IAEItemStack output : pOutputs) {
                 IAEItemStack input = pInputs.findPrecise(output);
                 if (input != null) {
