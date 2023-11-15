@@ -364,7 +364,7 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
                 return new StepOutput(Collections.emptyList());
             } else {
                 request.patternParents.add(this.pattern);
-                ArrayList<CraftingRequest<IAEItemStack>> newChildren = new ArrayList<>(patternInputs.length);
+                ArrayList<CraftingRequest<IAEItemStack>> newChildren = new ArrayList<>(patternRecursionInputs.length + patternInputs.length);
                 if (isComplex) {
                     if (toCraft > 1) {
                         throw new IllegalStateException();
@@ -590,7 +590,7 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
     @Override
     public List<CraftingTask> provideCraftingRequestResolvers(@Nonnull CraftingRequest<IAEItemStack> request,
             @Nonnull CraftingContext context) {
-        final ImmutableList.Builder<CraftingTask> tasks = new ImmutableList.Builder<>();
+        final ArrayList<CraftingTask> tasks = new ArrayList<>();
         final Set<ICraftingPatternDetails> denyList = request.patternParents;
         final List<ICraftingPatternDetails> patterns = new ArrayList<>(context.getPrecisePatternsFor(request.stack));
         patterns.removeAll(denyList);
@@ -604,6 +604,8 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
             patterns.addAll(fuzzyPatterns);
         }
         int priority = CraftingTask.PRIORITY_CRAFT_OFFSET + patterns.size() - 1;
+
+        tasks.ensureCapacity(patterns.size() + 1);
         for (ICraftingPatternDetails pattern : patterns) {
             if (context.isPatternComplex(pattern)) {
                 logComplexPattrn(pattern, request.remainingToProcess);
@@ -627,6 +629,7 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
                         new CraftFromPatternTask(request, pattern, CraftingTask.PRIORITY_SIMULATE_CRAFT, true, false));
             }
         }
-        return tasks.build();
+
+        return Collections.unmodifiableList(tasks);
     }
 }
