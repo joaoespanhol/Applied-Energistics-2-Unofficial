@@ -7,10 +7,6 @@ import java.util.function.ToLongBiFunction;
 
 import org.apache.logging.log4j.Level;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimaps;
-
 import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
@@ -32,8 +28,9 @@ public class CraftingCalculations {
     private static final ArrayBasedMultiMap<Class<? extends IAEStack<?>>, CraftingRequestResolver<?>> providers = new ArrayBasedMultiMap<>(
             Class.class,
             CraftingRequestResolver.class);
-    private static final ListMultimap<Class<? extends IAEStack<?>>, ToLongBiFunction<CraftingRequest<?>, Long>> byteAmountAdjusters = ArrayListMultimap
-            .create(2, 8);
+    private static final ArrayBasedMultiMap<Class<? extends IAEStack<?>>, ToLongBiFunction<CraftingRequest<?>, Long>> byteAmountAdjusters = new ArrayBasedMultiMap<>(
+            Class.class,
+            ToLongBiFunction.class);
 
     /**
      * @param provider       A custom resolver that can provide potential solutions ({@link CraftingTask}) to crafting
@@ -100,11 +97,28 @@ public class CraftingCalculations {
 
     public static <StackType extends IAEStack<StackType>> long adjustByteCost(CraftingRequest<StackType> request,
             long byteCost) {
-        for (final ToLongBiFunction<CraftingRequest<?>, Long> unsafeAdjuster : Multimaps
-                .filterKeys(byteAmountAdjusters, key -> key.isAssignableFrom(request.stackTypeClass)).values()) {
-            final ToLongBiFunction<CraftingRequest<StackType>, Long> adjuster = (ToLongBiFunction<CraftingRequest<StackType>, Long>) (Object) unsafeAdjuster;
-            byteCost = adjuster.applyAsLong(request, byteCost);
+        Class<? extends IAEStack<?>>[] keyArray = byteAmountAdjusters.keyArray();
+        int size = keyArray.length;
+        for (int i = 0; i < size; i++) {
+            Class<? extends IAEStack<?>> aClass = keyArray[i];
+            if (aClass == null) {
+                break;
+            }
+
+            if (!aClass.isAssignableFrom(request.stackTypeClass)) {
+                continue;
+            }
+
+            for (ToLongBiFunction<CraftingRequest<?>, Long> value : byteAmountAdjusters.valuesArrayAt(i)) {
+                if (value == null) {
+                    break;
+                }
+
+                final ToLongBiFunction<CraftingRequest<StackType>, Long> adjuster = (ToLongBiFunction<CraftingRequest<StackType>, Long>) (Object) value;
+                byteCost = adjuster.applyAsLong(request, byteCost);
+            }
         }
+
         return byteCost;
     }
 
