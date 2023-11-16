@@ -18,8 +18,6 @@ import net.minecraft.world.World;
 
 import org.apache.logging.log4j.Level;
 
-import com.google.common.collect.ImmutableList;
-
 import appeng.api.config.Actionable;
 import appeng.api.config.FuzzyMode;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
@@ -364,7 +362,8 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
                 return new StepOutput(Collections.emptyList());
             } else {
                 request.patternParents.add(this.pattern);
-                ArrayList<CraftingRequest<IAEItemStack>> newChildren = new ArrayList<>(patternRecursionInputs.length + patternInputs.length);
+                ArrayList<CraftingRequest<IAEItemStack>> newChildren = new ArrayList<>(
+                        patternRecursionInputs.length + patternInputs.length);
                 if (isComplex) {
                     if (toCraft > 1) {
                         throw new IllegalStateException();

@@ -22,14 +22,16 @@ import appeng.crafting.v2.resolvers.EmitableItemResolver;
 import appeng.crafting.v2.resolvers.ExtractItemResolver;
 import appeng.crafting.v2.resolvers.IgnoreMissingItemResolver;
 import appeng.crafting.v2.resolvers.SimulateMissingItemResolver;
+import appeng.util.ArrayBasedMultiMap;
 
 /**
  * You can register additional crafting handlers here
  */
 public class CraftingCalculations {
 
-    private static final ListMultimap<Class<? extends IAEStack<?>>, CraftingRequestResolver<?>> providers = ArrayListMultimap
-            .create(2, 8);
+    private static final ArrayBasedMultiMap<Class<? extends IAEStack<?>>, CraftingRequestResolver<?>> providers = new ArrayBasedMultiMap<>(
+            Class.class,
+            CraftingRequestResolver.class);
     private static final ListMultimap<Class<? extends IAEStack<?>>, ToLongBiFunction<CraftingRequest<?>, Long>> byteAmountAdjusters = ArrayListMultimap
             .create(2, 8);
 
@@ -59,21 +61,39 @@ public class CraftingCalculations {
     public static <StackType extends IAEStack<StackType>> List<CraftingTask> tryResolveCraftingRequest(
             CraftingRequest<StackType> request, CraftingContext context) {
         final ArrayList<CraftingTask> allTasks = new ArrayList<>(4);
-        for (final CraftingRequestResolver<?> unsafeProvider : Multimaps
-                .filterKeys(providers, key -> key.isAssignableFrom(request.stackTypeClass)).values()) {
-            try {
-                // Safety: Filtered by type using Multimaps.filterKeys
-                final CraftingRequestResolver<StackType> provider = (CraftingRequestResolver<StackType>) unsafeProvider;
-                final List<CraftingTask> tasks = provider.provideCraftingRequestResolvers(request, context);
-                allTasks.addAll(tasks);
-            } catch (Exception t) {
-                AELog.log(
-                        Level.WARN,
-                        t,
-                        "Error encountered when trying to generate the list of CraftingTasks for crafting {}",
-                        request.toString());
+
+        Class<? extends IAEStack<?>>[] keyArray = providers.keyArray();
+        int size = keyArray.length;
+        for (int i = 0; i < size; i++) {
+            Class<? extends IAEStack<?>> aClass = keyArray[i];
+            if (aClass == null) {
+                break;
+            }
+
+            if (!aClass.isAssignableFrom(request.stackTypeClass)) {
+                continue;
+            }
+
+            for (CraftingRequestResolver<?> resolver : providers.valuesArrayAt(i)) {
+                if (resolver == null) {
+                    break;
+                }
+
+                try {
+                    // Safety: Filtered by type using isAssignableFrom on the keys
+                    final CraftingRequestResolver<StackType> provider = (CraftingRequestResolver<StackType>) resolver;
+                    final List<CraftingTask> tasks = provider.provideCraftingRequestResolvers(request, context);
+                    allTasks.addAll(tasks);
+                } catch (Exception t) {
+                    AELog.log(
+                            Level.WARN,
+                            t,
+                            "Error encountered when trying to generate the list of CraftingTasks for crafting {}",
+                            request.toString());
+                }
             }
         }
+
         allTasks.sort(CraftingTask.PRIORITY_COMPARATOR);
         return Collections.unmodifiableList(allTasks);
     }
