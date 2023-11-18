@@ -2,6 +2,7 @@ package appeng.crafting.v2.resolvers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,7 +37,6 @@ import appeng.crafting.v2.ITreeSerializable;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
-import appeng.util.item.HashBasedItemList;
 import io.netty.buffer.ByteBuf;
 
 public class CraftableItemResolver implements CraftingRequestResolver<IAEItemStack> {
@@ -108,13 +108,9 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
             this.allowSimulation = allowSimulation;
             this.isComplex = isComplex;
 
-            HashBasedItemList pInputs = new HashBasedItemList();
-            HashBasedItemList pOutputs = new HashBasedItemList();
-            HashBasedItemList pRecInputs = new HashBasedItemList();
-            calculatePatternIO(pattern, pInputs, pOutputs, pRecInputs);
-            this.patternInputs = pInputs.toArray(new IAEItemStack[0]);
-            this.patternOutputs = pOutputs.toArray(new IAEItemStack[0]);
-            this.patternRecursionInputs = pRecInputs.toArray(new IAEItemStack[0]);
+            this.patternInputs = pattern.getCondensedInputs();
+            this.patternOutputs = pattern.getCondensedOutputs();
+            this.patternRecursionInputs = calculateRecursiveInputs(patternInputs, patternOutputs);
 
             IAEItemStack matchingOutput = null;
             for (IAEItemStack patternOutput : patternOutputs) {
@@ -131,35 +127,39 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
             this.matchingOutput = matchingOutput;
         }
 
-        private static void calculatePatternIO(ICraftingPatternDetails pattern, HashBasedItemList pInputs,
-                HashBasedItemList pOutputs, HashBasedItemList pRecInputs) {
-            for (IAEItemStack stack : pattern.getInputs()) {
-                if (stack != null) {
-                    pInputs.add(stack);
-                }
-            }
-            for (IAEItemStack stack : pattern.getOutputs()) {
-                if (stack != null) {
-                    pOutputs.add(stack);
-                }
-            }
-
+        private static IAEItemStack[] calculateRecursiveInputs(IAEItemStack[] pInputs, IAEItemStack[] pOutputs) {
+            IAEItemStack[] recInputs = null;
+            // While this is a O(n*m) algorithm, no allocations are needed except for the actual output.
             for (IAEItemStack output : pOutputs) {
-                IAEItemStack input = pInputs.findPrecise(output);
-                if (input != null) {
+                for (IAEItemStack input : pInputs) {
+                    if (!input.isSameType(output)) {
+                        continue;
+                    }
+
                     final long netProduced = output.getStackSize() - input.getStackSize();
+
+                    IAEItemStack recInput;
                     if (netProduced > 0) {
-                        pRecInputs.add(input);
+                        recInput = input;
                         input.setStackSize(0);
                         output.setStackSize(netProduced);
                     } else {
                         // Ensure recInput.stackSize + input.stackSize == original input.stackSize
-                        pRecInputs.add(input.copy().setStackSize(input.getStackSize() + netProduced));
+                        recInput = input.copy().setStackSize(input.getStackSize() + netProduced);
                         input.setStackSize(-netProduced);
                         output.setStackSize(0);
                     }
+
+                    if (recInputs == null) {
+                        recInputs = new IAEItemStack[] { recInput };
+                    } else {
+                        recInputs = Arrays.copyOf(recInputs, recInputs.length + 1);
+                        recInputs[recInputs.length - 1] = recInput;
+                    }
                 }
             }
+
+            return recInputs == null ? new IAEItemStack[0] : recInputs;
         }
 
         @SuppressWarnings("unused")
@@ -174,13 +174,9 @@ public class CraftableItemResolver implements CraftingRequestResolver<IAEItemSta
             this.craftingMachine = serializer.readItemStack();
             this.totalCraftsDone = buffer.readLong();
 
-            HashBasedItemList pInputs = new HashBasedItemList();
-            HashBasedItemList pOutputs = new HashBasedItemList();
-            HashBasedItemList pRecInputs = new HashBasedItemList();
-            calculatePatternIO(pattern, pInputs, pOutputs, pRecInputs);
-            this.patternInputs = pInputs.toArray(new IAEItemStack[0]);
-            this.patternOutputs = pOutputs.toArray(new IAEItemStack[0]);
-            this.patternRecursionInputs = pRecInputs.toArray(new IAEItemStack[0]);
+            this.patternInputs = pattern.getCondensedInputs();
+            this.patternOutputs = pattern.getCondensedOutputs();
+            this.patternRecursionInputs = calculateRecursiveInputs(patternInputs, patternOutputs);
         }
 
         @Override
