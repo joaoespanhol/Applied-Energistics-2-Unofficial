@@ -84,6 +84,14 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
     public static final int LIST_VIEW_TEXTURE_NONROW_HEIGHT = LIST_VIEW_TEXTURE_HEIGHT
             - (LIST_VIEW_TEXTURE_ABOVE_BOTTOM_ROW_Y - LIST_VIEW_TEXTURE_BELOW_TOP_ROW_Y)
             - 2 * LIST_VIEW_TEXTURE_ROW_HEIGHT;
+    public static final int LIST_VIEW_SETTINGS_START_Y = 206;
+    public static final int LIST_VIEW_SETTINGS_START_HEIGHT = 4;
+    public static final int LIST_VIEW_SETTINGS_MIDDLE_Y = LIST_VIEW_SETTINGS_START_Y + LIST_VIEW_SETTINGS_START_HEIGHT;
+    public static final int LIST_VIEW_SETTINGS_MIDDLE_HEIGHT = 25;
+    public static final int LIST_VIEW_SETTINGS_END_Y = LIST_VIEW_SETTINGS_MIDDLE_Y + LIST_VIEW_SETTINGS_MIDDLE_HEIGHT;
+    public static final int LIST_VIEW_SETTINGS_END_HEIGHT = 4;
+    // public static final int LIST_VIEW_SETTINGS_X_END = 126;
+    public static final int LIST_VIEW_SETTINGS_WIDTH = 130;
 
     public enum DisplayMode {
 
@@ -94,6 +102,23 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
             return switch (this) {
                 case LIST -> TREE;
                 case TREE -> LIST;
+                default -> throw new IllegalArgumentException(this.toString());
+            };
+        }
+    }
+
+    public enum SortMode {
+
+        DEFAULT,
+        BY_CRAFTS,
+        BY_AMOUNT,
+        BY_NAME;
+
+        public SortMode next() {
+            return switch (this) {
+                case DEFAULT, BY_NAME -> BY_CRAFTS;
+                case BY_CRAFTS -> BY_AMOUNT;
+                case BY_AMOUNT -> BY_NAME;
                 default -> throw new IllegalArgumentException(this.toString());
             };
         }
@@ -148,6 +173,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
     private GuiTabButton switchDisplayMode;
     private GuiImgButton sortingModeButton;
     private GuiImgButton sortingDirectionButton;
+    private GuiButton optimizeButton;
     private int tooltip = -1;
     private ItemStack hoveredStack;
 
@@ -272,6 +298,15 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 this.sortDir);
         this.buttonList.add(this.sortingDirectionButton);
 
+        this.optimizeButton = new GuiButton(
+                0,
+                this.guiLeft + this.xSize + 2 + 4,
+                this.guiTop + 4 + LIST_VIEW_SETTINGS_MIDDLE_HEIGHT * 3,
+                123,
+                20,
+                "Optimize patterns");
+        this.optimizeButton.enabled = false;
+        this.buttonList.add(this.optimizeButton);
     }
 
     @Override
@@ -288,8 +323,8 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
             }
         }
 
-        this.selectCPU.enabled = (displayMode == DisplayMode.LIST) && !this.isSimulation();
-        this.selectCPU.visible = this.sortingModeButton.visible = this.sortingDirectionButton.visible = (displayMode
+        this.selectCPU.enabled = this.optimizeButton.enabled = (displayMode == DisplayMode.LIST) && !this.isSimulation();
+        this.selectCPU.visible = this.optimizeButton.visible = this.sortingModeButton.visible = this.sortingDirectionButton.visible = (displayMode
                 == DisplayMode.LIST);
         this.takeScreenshot.visible = (displayMode == DisplayMode.TREE);
 
@@ -608,6 +643,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 } else {
                     this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
                 }
+                this.drawSettingsBG(offsetX, offsetY, mouseX, mouseY);
             }
             case TREE -> {
                 this.bindTexture("guis/craftingtree.png");
@@ -622,6 +658,36 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                         TREE_VIEW_TEXTURE_HEIGHT);
             }
         }
+    }
+
+    private void drawSettingsBG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
+        // this.drawTexturedModalRect(offsetX + this.xSize + 2, offsetY, 0, LIST_VIEW_SETTINGS_Y,
+        // LIST_VIEW_SETTINGS_X_END + 4, (LIST_VIEW_SETTINGS_Y_END - LIST_VIEW_SETTINGS_Y) + 4);
+
+        this.drawTexturedModalRect(
+                offsetX + this.xSize + 2,
+                offsetY,
+                0,
+                LIST_VIEW_SETTINGS_START_Y,
+                LIST_VIEW_SETTINGS_WIDTH,
+                LIST_VIEW_SETTINGS_START_HEIGHT);
+        int i = 0;
+        for (; i < 4; i++) {
+            this.drawTexturedModalRect(
+                    offsetX + this.xSize + 2,
+                    offsetY + LIST_VIEW_SETTINGS_START_HEIGHT + LIST_VIEW_SETTINGS_MIDDLE_HEIGHT * i,
+                    0,
+                    LIST_VIEW_SETTINGS_MIDDLE_Y,
+                    LIST_VIEW_SETTINGS_WIDTH,
+                    LIST_VIEW_SETTINGS_MIDDLE_HEIGHT);
+        }
+        this.drawTexturedModalRect(
+                offsetX + this.xSize + 2,
+                offsetY + LIST_VIEW_SETTINGS_START_HEIGHT + LIST_VIEW_SETTINGS_MIDDLE_HEIGHT * i,
+                0,
+                LIST_VIEW_SETTINGS_END_Y,
+                LIST_VIEW_SETTINGS_WIDTH,
+                LIST_VIEW_SETTINGS_END_HEIGHT);
     }
 
     private void setScrollBar() {
@@ -842,6 +908,12 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 this.sortItems();
             }
             iBtn.set(next);
+        } else if (btn == this.optimizeButton) {
+            try {
+                NetworkHandler.instance.sendToServer(new PacketValueConfig("Terminal.OptimizePatterns", "Patterns"));
+            } catch (final Throwable e) {
+                AELog.debug(e);
+            }
         } else if (btn == this.start) {
             try {
                 NetworkHandler.instance.sendToServer(new PacketValueConfig("Terminal.Start", "Start"));
