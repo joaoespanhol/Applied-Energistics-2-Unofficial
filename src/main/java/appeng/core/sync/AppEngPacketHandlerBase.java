@@ -40,6 +40,7 @@ import appeng.core.sync.packets.PacketNewStorageDimension;
 import appeng.core.sync.packets.PacketPaintedEntity;
 import appeng.core.sync.packets.PacketPartPlacement;
 import appeng.core.sync.packets.PacketPartialItem;
+import appeng.core.sync.packets.PacketPatternMultiSet;
 import appeng.core.sync.packets.PacketPatternSlot;
 import appeng.core.sync.packets.PacketPatternValueSet;
 import appeng.core.sync.packets.PacketProgressBar;
@@ -108,6 +109,7 @@ public class AppEngPacketHandlerBase {
         PACKET_NEI_DRAG(PacketNEIDragClick.class),
 
         PACKET_PATTERN_VALUE(PacketPatternValueSet.class),
+        PACKET_PATTERN_MULTI(PacketPatternMultiSet.class),
         PACKET_CRAFTING_REMAINING_OPERATIONS(PacketCraftingRemainingOperations.class),
         PACKET_CRAFTING_ITEM_INTERFACE(PacketCraftingItemInterface.class),
         PACKET_CRAFTING_TREE_DATA(PacketCraftingTreeData.class),

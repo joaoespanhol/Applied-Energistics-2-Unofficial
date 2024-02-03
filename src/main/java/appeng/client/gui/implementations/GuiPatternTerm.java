@@ -31,7 +31,9 @@ import appeng.container.slot.AppEngSlot;
 import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketInventoryAction;
 import appeng.core.sync.packets.PacketValueConfig;
+import appeng.helpers.InventoryAction;
 
 public class GuiPatternTerm extends GuiMEMonitorable {
 
@@ -57,6 +59,18 @@ public class GuiPatternTerm extends GuiMEMonitorable {
         super(inventoryPlayer, te, new ContainerPatternTerm(inventoryPlayer, te));
         this.container = (ContainerPatternTerm) this.inventorySlots;
         this.setReservedSpace(81);
+    }
+
+    @Override
+    protected void mouseClicked(final int xCoord, final int yCoord, final int btn) {
+
+        if (btn == 2 && doubleBtn.mousePressed(this.mc, xCoord, yCoord)) { //
+            InventoryAction action = InventoryAction.SET_PATTERN_MULTI;
+
+            final PacketInventoryAction p = new PacketInventoryAction(action, 0, 0);
+            NetworkHandler.instance.sendToServer(p);
+        } else super.mouseClicked(xCoord, yCoord, btn);
+
     }
 
     @Override
