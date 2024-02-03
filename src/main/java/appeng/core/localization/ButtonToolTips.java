@@ -165,6 +165,10 @@ public enum ButtonToolTips {
     SearchFieldOutputs,
     SearchFieldNames,
 
+    MultiplyPattern,
+    DividePattern,
+    MultiplyOrDividePatternHint,
+
     InsertionModeDefault,
     InsertionModeDefaultDesc,
     InsertionModePreferEmpty,

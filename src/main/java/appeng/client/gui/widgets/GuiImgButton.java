@@ -582,6 +582,18 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ActionItems.HIGHLIGHT_INTERFACE,
                     ButtonToolTips.HighlightInterface,
                     "");
+            this.registerApp(
+                    72,
+                    Settings.ACTIONS,
+                    ActionItems.MULTIPLY,
+                    ButtonToolTips.MultiplyPattern,
+                    ButtonToolTips.MultiplyOrDividePatternHint);
+            this.registerApp(
+                    73,
+                    Settings.ACTIONS,
+                    ActionItems.DIVIDE,
+                    ButtonToolTips.DividePattern,
+                    ButtonToolTips.MultiplyOrDividePatternHint);
 
             this.registerApp(
                     16 * 9 + 3,

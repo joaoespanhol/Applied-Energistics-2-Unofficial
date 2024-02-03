@@ -435,7 +435,7 @@ gui.tooltips.appliedenergistics2.SaveSearchString=Save Search String
 gui.tooltips.appliedenergistics2.SaveSearchStringYes=Yes
 gui.tooltips.appliedenergistics2.SaveSearchStringNo=No
 gui.tooltips.appliedenergistics2.DoublePattern=Double pattern
-gui.tooltips.appliedenergistics2.DoublePatternHint=Double stack sizes of pattern inputs and output(s) if it can. x8 when shift is held.
+gui.tooltips.appliedenergistics2.DoublePatternHint=Double stack sizes of pattern inputs and output(s) if it can. x8 when shift is held. Click the middle mouse button to customize the multiplier.
 gui.tooltips.appliedenergistics2.CraftingStatus=Crafting Status
 gui.tooltips.appliedenergistics2.CraftingStatusDesc=Opens crafting status window
 gui.tooltips.appliedenergistics2.ToggleMolecularAssemblers=Toggles showing crafting interfaces only
@@ -494,6 +494,10 @@ gui.tooltips.appliedenergistics2.PriorityCardMode_View=Print priority of targets
 gui.tooltips.appliedenergistics2.PriorityCardMode_Set=Apply priority to targets.
 gui.tooltips.appliedenergistics2.PriorityCardMode_Inc=Apply priority to targets and increment by 1.
 gui.tooltips.appliedenergistics2.PriorityCardMode_Dec=Apply priority to targets and decrement by 1.
+
+gui.tooltips.appliedenergistics2.MultiplyPattern=Multiply
+gui.tooltips.appliedenergistics2.DividePattern=Divide
+gui.tooltips.appliedenergistics2.MultiplyOrDividePatternHint=If it's positive, it's multiplying by that number. If it's negative, it's dividing by that number. It will not work if it is not divisible.
 
 # Units
 gui.appliedenergistics2.units.appliedenergstics=AE

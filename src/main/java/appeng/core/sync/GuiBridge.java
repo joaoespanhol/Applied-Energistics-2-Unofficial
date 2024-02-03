@@ -69,6 +69,7 @@ import appeng.container.implementations.ContainerMEPortableCell;
 import appeng.container.implementations.ContainerNetworkStatus;
 import appeng.container.implementations.ContainerNetworkTool;
 import appeng.container.implementations.ContainerOreFilter;
+import appeng.container.implementations.ContainerPatternMulti;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.implementations.ContainerPatternTermEx;
 import appeng.container.implementations.ContainerPatternValueAmount;
@@ -199,6 +200,7 @@ public enum GuiBridge implements IGuiHandler {
 
     GUI_PATTERN_VALUE_AMOUNT(ContainerPatternValueAmount.class, ITerminalHost.class, GuiHostType.WORLD,
             SecurityPermissions.CRAFT),
+    GUI_PATTERN_MULTI(ContainerPatternMulti.class, ITerminalHost.class, GuiHostType.WORLD, SecurityPermissions.CRAFT),
 
     GUI_CRAFTING_CONFIRM(ContainerCraftConfirm.class, ITerminalHost.class, GuiHostType.ITEM_OR_WORLD,
             SecurityPermissions.CRAFT),

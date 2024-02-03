@@ -1,6 +1,7 @@
 package appeng.container.implementations;
 
-import static appeng.container.implementations.ContainerPatternTerm.doubleStacksInternal;
+import static appeng.container.implementations.ContainerPatternTerm.canMultiplyOrDivide;
+import static appeng.container.implementations.ContainerPatternTerm.multiplyOrDivideStacksInternal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -408,12 +409,13 @@ public class ContainerPatternTermEx extends ContainerMEMonitorable
     }
 
     public void doubleStacks(boolean isShift) {
-        if (isShift) {
-            doubleStacksInternal(this.craftingSlots, 8);
-            doubleStacksInternal(this.outputSlots, 8);
-        } else {
-            doubleStacksInternal(this.craftingSlots, 2);
-            doubleStacksInternal(this.outputSlots, 2);
+        multiplyOrDivideStacks(isShift ? 8 : 2);
+    }
+
+    public void multiplyOrDivideStacks(int multi) {
+        if (canMultiplyOrDivide(this.craftingSlots, multi) && canMultiplyOrDivide(this.outputSlots, multi)) {
+            multiplyOrDivideStacksInternal(this.craftingSlots, multi);
+            multiplyOrDivideStacksInternal(this.outputSlots, multi);
         }
         this.detectAndSendChanges();
     }
