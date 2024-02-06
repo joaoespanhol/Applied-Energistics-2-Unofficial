@@ -25,6 +25,7 @@ import appeng.recipes.CustomRecipeConfig;
 import appeng.recipes.loader.ConfigLoader;
 import appeng.recipes.loader.JarLoader;
 import appeng.recipes.loader.RecipeResourceCopier;
+import cpw.mods.fml.common.Loader;
 
 /**
  * handles the decision if recipes should be loaded from jar, loaded from file system or force copied from jar
@@ -39,6 +40,7 @@ public class RecipeLoader implements Runnable {
      * recipe path in the jar
      */
     private static final String ASSETS_RECIPE_PATH = "/assets/appliedenergistics2/recipes/";
+    private static final String ASSETS_EASY_RECIPE_PATH = "/assets/appliedenergistics2/recipes/";
 
     @Nonnull
     private final IRecipeHandler handler;
@@ -90,9 +92,15 @@ public class RecipeLoader implements Runnable {
             catch (final IOException | URISyntaxException e) {
                 AELog.debug(e);
                 this.handler.parseRecipes(new JarLoader(ASSETS_RECIPE_PATH), "index.recipe");
+                if (!Loader.isModLoaded("dreamcraft")) {
+                    this.handler.parseRecipes(new JarLoader(ASSETS_EASY_RECIPE_PATH), "index.recipe");
+                }
             }
         } else {
             this.handler.parseRecipes(new JarLoader(ASSETS_RECIPE_PATH), "index.recipe");
+            if (!Loader.isModLoaded("dreamcraft")) {
+                this.handler.parseRecipes(new JarLoader(ASSETS_EASY_RECIPE_PATH), "index.recipe");
+            }
         }
     }
 }
