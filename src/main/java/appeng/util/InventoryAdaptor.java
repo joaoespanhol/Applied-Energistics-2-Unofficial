@@ -39,11 +39,12 @@ import appeng.util.inv.AdaptorPlayerInventory;
 import appeng.util.inv.IInventoryDestination;
 import appeng.util.inv.ItemSlot;
 import appeng.util.inv.WrapperMCISidedInventory;
+import thaumic.tinkerer.common.block.tile.transvector.TileTransvectorInterface;
 
 public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
 
     // returns an appropriate adaptor, or null
-    public static InventoryAdaptor getAdaptor(final Object te, final ForgeDirection d) {
+    public static InventoryAdaptor getAdaptor(Object te, final ForgeDirection d) {
         if (te == null) {
             return null;
         }
@@ -51,6 +52,10 @@ public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
         final IBetterStorage bs = (IBetterStorage) (IntegrationRegistry.INSTANCE.isEnabled(
                 IntegrationType.BetterStorage) ? IntegrationRegistry.INSTANCE.getInstance(IntegrationType.BetterStorage)
                         : null);
+
+        if (te instanceof TileTransvectorInterface ti) {
+            te = ti.getTile();
+        }
 
         if (te instanceof EntityPlayer) {
             return new AdaptorIInventory(new AdaptorPlayerInventory(((EntityPlayer) te).inventory, false));
