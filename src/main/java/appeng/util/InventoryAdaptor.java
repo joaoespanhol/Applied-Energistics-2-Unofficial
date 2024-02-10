@@ -12,6 +12,7 @@ package appeng.util;
 
 import java.util.ArrayList;
 
+import appeng.integration.abstraction.IThaumicTinkerer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -39,7 +40,6 @@ import appeng.util.inv.AdaptorPlayerInventory;
 import appeng.util.inv.IInventoryDestination;
 import appeng.util.inv.ItemSlot;
 import appeng.util.inv.WrapperMCISidedInventory;
-import thaumic.tinkerer.common.block.tile.transvector.TileTransvectorInterface;
 
 public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
 
@@ -52,9 +52,12 @@ public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
         final IBetterStorage bs = (IBetterStorage) (IntegrationRegistry.INSTANCE.isEnabled(
                 IntegrationType.BetterStorage) ? IntegrationRegistry.INSTANCE.getInstance(IntegrationType.BetterStorage)
                         : null);
+        final IThaumicTinkerer tt = (IThaumicTinkerer) (
+                IntegrationRegistry.INSTANCE.isEnabled(IntegrationType.ThaumicTinkerer) ?
+                        IntegrationRegistry.INSTANCE.getInstance(IntegrationType.ThaumicTinkerer) : null);
 
-        if (te instanceof TileTransvectorInterface ti) {
-            te = ti.getTile();
+        if (tt != null && tt.isTransvectorInterface(te)){
+            te = tt.getTile(te);
         }
 
         if (te instanceof EntityPlayer) {
