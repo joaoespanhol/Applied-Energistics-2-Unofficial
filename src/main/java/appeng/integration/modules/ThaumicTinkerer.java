@@ -1,18 +1,20 @@
 package appeng.integration.modules;
 
+import net.minecraft.tileentity.TileEntity;
+
 import appeng.helpers.Reflected;
 import appeng.integration.IIntegrationModule;
 import appeng.integration.IntegrationHelper;
 import appeng.integration.abstraction.IThaumicTinkerer;
-import net.minecraft.tileentity.TileEntity;
 import thaumic.tinkerer.common.block.tile.transvector.TileTransvectorInterface;
 
 public class ThaumicTinkerer implements IIntegrationModule, IThaumicTinkerer {
+
     @Reflected
     public static ThaumicTinkerer instance;
 
     @Reflected
-    public ThaumicTinkerer(){
+    public ThaumicTinkerer() {
         IntegrationHelper.testClassExistence(this, TileTransvectorInterface.class);
     }
 

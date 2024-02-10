@@ -12,7 +12,6 @@ package appeng.util;
 
 import java.util.ArrayList;
 
-import appeng.integration.abstraction.IThaumicTinkerer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
@@ -27,6 +26,7 @@ import appeng.helpers.IInterfaceHost;
 import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
 import appeng.integration.abstraction.IBetterStorage;
+import appeng.integration.abstraction.IThaumicTinkerer;
 import appeng.parts.p2p.PartP2PItems;
 import appeng.tile.misc.TileInterface;
 import appeng.tile.networking.TileCableBus;
@@ -52,11 +52,12 @@ public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
         final IBetterStorage bs = (IBetterStorage) (IntegrationRegistry.INSTANCE.isEnabled(
                 IntegrationType.BetterStorage) ? IntegrationRegistry.INSTANCE.getInstance(IntegrationType.BetterStorage)
                         : null);
-        final IThaumicTinkerer tt = (IThaumicTinkerer) (
-                IntegrationRegistry.INSTANCE.isEnabled(IntegrationType.ThaumicTinkerer) ?
-                        IntegrationRegistry.INSTANCE.getInstance(IntegrationType.ThaumicTinkerer) : null);
+        final IThaumicTinkerer tt = (IThaumicTinkerer) (IntegrationRegistry.INSTANCE
+                .isEnabled(IntegrationType.ThaumicTinkerer)
+                        ? IntegrationRegistry.INSTANCE.getInstance(IntegrationType.ThaumicTinkerer)
+                        : null);
 
-        if (tt != null && tt.isTransvectorInterface(te)){
+        if (tt != null && tt.isTransvectorInterface(te)) {
             te = tt.getTile(te);
         }
 
