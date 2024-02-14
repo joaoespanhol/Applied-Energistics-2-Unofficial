@@ -26,6 +26,7 @@ import appeng.helpers.IInterfaceHost;
 import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
 import appeng.integration.abstraction.IBetterStorage;
+import appeng.integration.abstraction.IThaumicTinkerer;
 import appeng.parts.p2p.PartP2PItems;
 import appeng.tile.misc.TileInterface;
 import appeng.tile.networking.TileCableBus;
@@ -39,7 +40,6 @@ import appeng.util.inv.AdaptorPlayerInventory;
 import appeng.util.inv.IInventoryDestination;
 import appeng.util.inv.ItemSlot;
 import appeng.util.inv.WrapperMCISidedInventory;
-import thaumic.tinkerer.common.block.tile.transvector.TileTransvectorInterface;
 
 public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
 
@@ -52,9 +52,13 @@ public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
         final IBetterStorage bs = (IBetterStorage) (IntegrationRegistry.INSTANCE.isEnabled(
                 IntegrationType.BetterStorage) ? IntegrationRegistry.INSTANCE.getInstance(IntegrationType.BetterStorage)
                         : null);
+        final IThaumicTinkerer tt = (IThaumicTinkerer) (IntegrationRegistry.INSTANCE
+                .isEnabled(IntegrationType.ThaumicTinkerer)
+                        ? IntegrationRegistry.INSTANCE.getInstance(IntegrationType.ThaumicTinkerer)
+                        : null);
 
-        if (te instanceof TileTransvectorInterface ti) {
-            te = ti.getTile();
+        if (tt != null && tt.isTransvectorInterface(te)) {
+            te = tt.getTile(te);
         }
 
         if (te instanceof EntityPlayer) {
