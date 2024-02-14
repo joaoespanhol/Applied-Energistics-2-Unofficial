@@ -66,9 +66,12 @@ public class RecipeLoader implements Runnable {
 
     @Override
     public final void run() {
+        final String recipesFolder = Loader.isModLoaded("dreamcraft") ? ASSETS_RECIPE_PATH : ASSETS_EASY_RECIPE_PATH;
+        boolean useResourceFallBack = true;
+
         if (this.config.isEnabled()) {
             // setup copying
-            final RecipeResourceCopier copier = new RecipeResourceCopier("assets/appliedenergistics2/recipes/");
+            final RecipeResourceCopier copier = new RecipeResourceCopier(recipesFolder.substring(1));
 
             final File generatedRecipesDir = new File(this.recipeDirectory, "generated");
             final File userRecipesDir = new File(this.recipeDirectory, "user");
@@ -87,20 +90,17 @@ public class RecipeLoader implements Runnable {
 
                 // parse recipes prioritising the user scripts by using the generated as template
                 this.handler.parseRecipes(new ConfigLoader(generatedRecipesDir, userRecipesDir), "index.recipe");
+
+                useResourceFallBack = false;
             }
             // on failure use jar parsing
             catch (final IOException | URISyntaxException e) {
                 AELog.debug(e);
-                this.handler.parseRecipes(new JarLoader(ASSETS_RECIPE_PATH), "index.recipe");
-                if (!Loader.isModLoaded("dreamcraft")) {
-                    this.handler.parseRecipes(new JarLoader(ASSETS_EASY_RECIPE_PATH), "index.recipe");
-                }
             }
-        } else {
-            this.handler.parseRecipes(new JarLoader(ASSETS_RECIPE_PATH), "index.recipe");
-            if (!Loader.isModLoaded("dreamcraft")) {
-                this.handler.parseRecipes(new JarLoader(ASSETS_EASY_RECIPE_PATH), "index.recipe");
-            }
+        }
+
+        if (useResourceFallBack) {
+            this.handler.parseRecipes(new JarLoader(recipesFolder), "index.recipe");
         }
     }
 }
