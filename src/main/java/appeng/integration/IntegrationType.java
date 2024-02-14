@@ -63,7 +63,9 @@ public enum IntegrationType {
 
     Chisel(IntegrationSide.BOTH, "Chisel", "chisel"),
 
-    Jabba(IntegrationSide.BOTH, "Jabba", "JABBA");
+    Jabba(IntegrationSide.BOTH, "Jabba", "JABBA"),
+
+    ThaumicTinkerer(IntegrationSide.BOTH, "Thaumic Tinkerer", "ThaumicTinkerer");
 
     public final IntegrationSide side;
     public final String dspName;

@@ -26,6 +26,7 @@ import appeng.helpers.IInterfaceHost;
 import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
 import appeng.integration.abstraction.IBetterStorage;
+import appeng.integration.abstraction.IThaumicTinkerer;
 import appeng.parts.p2p.PartP2PItems;
 import appeng.tile.misc.TileInterface;
 import appeng.tile.networking.TileCableBus;
@@ -43,7 +44,7 @@ import appeng.util.inv.WrapperMCISidedInventory;
 public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
 
     // returns an appropriate adaptor, or null
-    public static InventoryAdaptor getAdaptor(final Object te, final ForgeDirection d) {
+    public static InventoryAdaptor getAdaptor(Object te, final ForgeDirection d) {
         if (te == null) {
             return null;
         }
@@ -51,6 +52,14 @@ public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
         final IBetterStorage bs = (IBetterStorage) (IntegrationRegistry.INSTANCE.isEnabled(
                 IntegrationType.BetterStorage) ? IntegrationRegistry.INSTANCE.getInstance(IntegrationType.BetterStorage)
                         : null);
+        final IThaumicTinkerer tt = (IThaumicTinkerer) (IntegrationRegistry.INSTANCE
+                .isEnabled(IntegrationType.ThaumicTinkerer)
+                        ? IntegrationRegistry.INSTANCE.getInstance(IntegrationType.ThaumicTinkerer)
+                        : null);
+
+        if (tt != null && tt.isTransvectorInterface(te)) {
+            te = tt.getTile(te);
+        }
 
         if (te instanceof EntityPlayer) {
             return new AdaptorIInventory(new AdaptorPlayerInventory(((EntityPlayer) te).inventory, false));
