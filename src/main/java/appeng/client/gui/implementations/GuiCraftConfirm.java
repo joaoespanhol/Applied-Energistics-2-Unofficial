@@ -290,12 +290,11 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 this.sortDir);
         this.buttonList.add(this.sortingDirectionButton);
 
-        this.optimizeButton = new GuiButton(
-                0,
+
+        this.optimizeButton = new GuiSimpleImgButton(
                 this.guiLeft + this.xSize + 2,
                 this.guiTop + 8 + 20 * 2,
-                123,
-                20,
+                19,
                 "Optimize patterns");
         this.optimizeButton.enabled = false;
         this.buttonList.add(this.optimizeButton);
