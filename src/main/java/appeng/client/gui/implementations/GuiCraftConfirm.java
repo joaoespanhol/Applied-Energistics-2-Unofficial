@@ -99,23 +99,6 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
         }
     }
 
-    public enum SortMode {
-
-        DEFAULT,
-        BY_CRAFTS,
-        BY_AMOUNT,
-        BY_NAME;
-
-        public SortMode next() {
-            return switch (this) {
-                case DEFAULT, BY_NAME -> BY_CRAFTS;
-                case BY_CRAFTS -> BY_AMOUNT;
-                case BY_AMOUNT -> BY_NAME;
-                default -> throw new IllegalArgumentException(this.toString());
-            };
-        }
-    }
-
     protected void recalculateScreenSize() {
         switch (this.displayMode) {
             case LIST -> {
