@@ -5,7 +5,7 @@ import appeng.tile.grid.AENetworkTile;
 
 public class TilePatternOptimizationMatrix extends AENetworkTile {
 
-    public TilePatternOptimizationMatrix(){
+    public TilePatternOptimizationMatrix() {
         this.getProxy().setFlags(GridFlags.REQUIRE_CHANNEL);
     }
 

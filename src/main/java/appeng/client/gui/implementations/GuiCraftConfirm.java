@@ -290,7 +290,6 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                 this.sortDir);
         this.buttonList.add(this.sortingDirectionButton);
 
-
         this.optimizeButton = new GuiSimpleImgButton(
                 this.guiLeft + this.xSize + 2,
                 this.guiTop + 8 + 20 * 2,
@@ -314,14 +313,12 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
             }
         }
 
-        this.selectCPU.enabled = (displayMode == DisplayMode.LIST)
-                && !this.isSimulation();
-        this.optimizeButton.enabled = (displayMode == DisplayMode.LIST)
-                && !this.isSimulation() && this.ccc.isAllowedToRunPatternOptimization;
-        if (!this.ccc.isAllowedToRunPatternOptimization)
-            this.optimizeButton.setTooltip(ButtonToolTips.OptimizePatterns.getLocal() + "\n" + ButtonToolTips.OptimizePatternsNoReq.getLocal());
-        else
-            this.optimizeButton.setTooltip(ButtonToolTips.OptimizePatterns.getLocal());
+        this.selectCPU.enabled = (displayMode == DisplayMode.LIST) && !this.isSimulation();
+        this.optimizeButton.enabled = (displayMode == DisplayMode.LIST) && !this.isSimulation()
+                && this.ccc.isAllowedToRunPatternOptimization;
+        if (!this.ccc.isAllowedToRunPatternOptimization) this.optimizeButton.setTooltip(
+                ButtonToolTips.OptimizePatterns.getLocal() + "\n" + ButtonToolTips.OptimizePatternsNoReq.getLocal());
+        else this.optimizeButton.setTooltip(ButtonToolTips.OptimizePatterns.getLocal());
         this.selectCPU.visible = this.optimizeButton.visible = this.sortingModeButton.visible = this.sortingDirectionButton.visible = (displayMode
                 == DisplayMode.LIST);
         this.takeScreenshot.visible = (displayMode == DisplayMode.TREE);

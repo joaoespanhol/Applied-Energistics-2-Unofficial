@@ -196,7 +196,10 @@ public abstract class AEBaseGui extends GuiContainer {
                 height += 2 + (lines.length - 1) * 10;
             }
 
-            ScaledResolution scaledresolution = new ScaledResolution(this.mc, this.mc.displayWidth, this.mc.displayHeight);
+            ScaledResolution scaledresolution = new ScaledResolution(
+                    this.mc,
+                    this.mc.displayWidth,
+                    this.mc.displayHeight);
 
             if (top + height + 6 > scaledresolution.getScaledHeight()) {
                 top = scaledresolution.getScaledHeight() - height - 6;
@@ -206,7 +209,7 @@ public abstract class AEBaseGui extends GuiContainer {
                 width = forceWidth;
             }
 
-            if (left + width + 6 > scaledresolution.getScaledWidth()){
+            if (left + width + 6 > scaledresolution.getScaledWidth()) {
                 left = scaledresolution.getScaledWidth() - width - 6;
             }
 
@@ -219,9 +222,15 @@ public abstract class AEBaseGui extends GuiContainer {
             this.drawGradientRect(left - 4, top - 3, left - 3, top + height + 3, color1, color1);
             this.drawGradientRect(left + width + 3, top - 3, left + width + 4, top + height + 3, color1, color1);
             final int color2 = 0x505000FF;
-            final int color3 = 0x5028007F; //(color2 & 16711422) >> 1 | color2 & -16777216;
+            final int color3 = 0x5028007F; // (color2 & 16711422) >> 1 | color2 & -16777216;
             this.drawGradientRect(left - 3, top - 3 + 1, left - 3 + 1, top + height + 3 - 1, color2, color3);
-            this.drawGradientRect(left + width + 2, top - 3 + 1, left + width + 3, top + height + 3 - 1, color2, color3);
+            this.drawGradientRect(
+                    left + width + 2,
+                    top - 3 + 1,
+                    left + width + 3,
+                    top + height + 3 - 1,
+                    color2,
+                    color3);
             this.drawGradientRect(left - 3, top - 3, left + width + 3, top - 3 + 1, color2, color2);
             this.drawGradientRect(left - 3, top + height + 2, left + width + 3, top + height + 3, color3, color3);
 

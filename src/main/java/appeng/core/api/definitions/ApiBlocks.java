@@ -13,7 +13,6 @@ package appeng.core.api.definitions;
 import java.util.EnumSet;
 import java.util.Set;
 
-import appeng.block.misc.BlockPatternOptimizationMatrix;
 import com.google.common.collect.ImmutableSet;
 
 import appeng.api.definitions.IBlockDefinition;
@@ -37,6 +36,7 @@ import appeng.block.misc.BlockInscriber;
 import appeng.block.misc.BlockInterface;
 import appeng.block.misc.BlockLightDetector;
 import appeng.block.misc.BlockPaint;
+import appeng.block.misc.BlockPatternOptimizationMatrix;
 import appeng.block.misc.BlockQuartzGrowthAccelerator;
 import appeng.block.misc.BlockQuartzTorch;
 import appeng.block.misc.BlockSecurity;

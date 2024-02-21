@@ -10,7 +10,6 @@
 
 package appeng.core.localization;
 
-import appeng.api.config.CraftingStatus;
 import net.minecraft.util.StatCollector;
 
 public enum ButtonToolTips {

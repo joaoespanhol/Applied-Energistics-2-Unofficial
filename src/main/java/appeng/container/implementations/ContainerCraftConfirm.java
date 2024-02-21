@@ -16,7 +16,6 @@ import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
-import appeng.tile.misc.TilePatternOptimizationMatrix;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -56,6 +55,7 @@ import appeng.parts.reporting.PartCraftingTerminal;
 import appeng.parts.reporting.PartPatternTerminal;
 import appeng.parts.reporting.PartPatternTerminalEx;
 import appeng.parts.reporting.PartTerminal;
+import appeng.tile.misc.TilePatternOptimizationMatrix;
 import appeng.util.Platform;
 
 public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingCPUSelectorContainer {
@@ -125,8 +125,8 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
         this.setNoCPU(this.cpuTable.getCPUs().isEmpty());
 
         IGrid grid = getGrid();
-        if (grid != null)
-            this.isAllowedToRunPatternOptimization = !getGrid().getMachines(TilePatternOptimizationMatrix.class).isEmpty();
+        if (grid != null) this.isAllowedToRunPatternOptimization = !getGrid()
+                .getMachines(TilePatternOptimizationMatrix.class).isEmpty();
 
         super.detectAndSendChanges();
 
@@ -260,7 +260,9 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
 
     public void optimizePatterns() {
         // only V2 supported
-        if (this.result instanceof CraftingJobV2 && !this.isSimulation() && getGrid() != null && !getGrid().getMachines(TilePatternOptimizationMatrix.class).isEmpty()) {
+        if (this.result instanceof CraftingJobV2 && !this.isSimulation()
+                && getGrid() != null
+                && !getGrid().getMachines(TilePatternOptimizationMatrix.class).isEmpty()) {
             Platform.openGUI(
                     this.getPlayerInv().player,
                     this.getOpenContext().getTile(),
