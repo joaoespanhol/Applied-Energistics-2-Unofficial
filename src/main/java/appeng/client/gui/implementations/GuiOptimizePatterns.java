@@ -1,7 +1,6 @@
 package appeng.client.gui.implementations;
 
-import static appeng.client.gui.implementations.GuiCraftConfirm.LIST_VIEW_TEXTURE_HEIGHT;
-import static appeng.client.gui.implementations.GuiCraftConfirm.LIST_VIEW_TEXTURE_WIDTH;
+import static appeng.client.gui.implementations.GuiCraftConfirm.*;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -23,12 +22,15 @@ import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Joiner;
 
+import appeng.api.config.Settings;
+import appeng.api.config.TerminalStyle;
 import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.IGuiTooltipHandler;
 import appeng.client.gui.widgets.GuiScrollbar;
 import appeng.container.implementations.ContainerOptimizePatterns;
+import appeng.core.AEConfig;
 import appeng.core.AELog;
 import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
@@ -53,6 +55,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
 
     private final List<IAEItemStack> visual = new ArrayList<>();
     private int rows = 5;
+    final private boolean tallMode;
 
     final GuiScrollbar scrollbar;
 
@@ -67,6 +70,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
 
     public GuiOptimizePatterns(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         super(new ContainerOptimizePatterns(inventoryPlayer, te));
+        this.tallMode = AEConfig.instance.getConfigManager().getSetting(Settings.TERMINAL_STYLE) == TerminalStyle.TALL;
 
         this.xSize = LIST_VIEW_TEXTURE_WIDTH;
         this.rows = 5;
@@ -98,6 +102,15 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
 
     @Override
     public void initGui() {
+        if (tallMode) {
+            final int maxAvailableHeight = height - 64;
+            this.rows = (maxAvailableHeight - LIST_VIEW_TEXTURE_NONROW_HEIGHT) / LIST_VIEW_TEXTURE_ROW_HEIGHT;
+            this.ySize = LIST_VIEW_TEXTURE_NONROW_HEIGHT + this.rows * LIST_VIEW_TEXTURE_ROW_HEIGHT;
+        } else {
+            this.rows = 5;
+            this.ySize = LIST_VIEW_TEXTURE_HEIGHT;
+        }
+
         super.initGui();
 
         this.setScrollBar();
@@ -303,7 +316,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
             }
         }
 
-        if (this.tooltip >= 0 && dspToolTip.length() > 0) {
+        if (this.tooltip >= 0 && !dspToolTip.isEmpty()) {
             this.drawTooltip(toolPosX, toolPosY + 10, 0, dspToolTip);
         }
     }
@@ -311,7 +324,30 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
     @Override
     public void drawBG(int offsetX, int offsetY, int mouseX, int mouseY) {
         this.bindTexture("guis/craftingreport.png");
-        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
+        if (tallMode) {
+            this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, LIST_VIEW_TEXTURE_BELOW_TOP_ROW_Y);
+            int y = LIST_VIEW_TEXTURE_BELOW_TOP_ROW_Y;
+            // first and last row are pre-baked
+            for (int row = 1; row < rows - 1; row++) {
+                this.drawTexturedModalRect(
+                        offsetX,
+                        offsetY + y,
+                        0,
+                        LIST_VIEW_TEXTURE_BELOW_TOP_ROW_Y,
+                        this.xSize,
+                        LIST_VIEW_TEXTURE_ROW_HEIGHT);
+                y += LIST_VIEW_TEXTURE_ROW_HEIGHT;
+            }
+            this.drawTexturedModalRect(
+                    offsetX,
+                    offsetY + y,
+                    0,
+                    LIST_VIEW_TEXTURE_ABOVE_BOTTOM_ROW_Y,
+                    this.xSize,
+                    LIST_VIEW_TEXTURE_HEIGHT - LIST_VIEW_TEXTURE_ABOVE_BOTTOM_ROW_Y);
+        } else {
+            this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
+        }
 
         this.amountToCraft.drawTextBox();
     }
