@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
@@ -193,7 +191,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
                 (ySize - 68) + (20 / 2) - (this.fontRendererObj.FONT_HEIGHT / 2),
                 GuiColors.CraftConfirmSimulation.getColor());
 
-        String dsp = "Patterns affected: ";
+        String dsp = "Patterns affected: " + multiplierMap.size();
 
         final int offset = (219 - this.fontRendererObj.getStringWidth(dsp)) / 2;
         this.fontRendererObj.drawString(dsp, offset, ySize - 41, GuiColors.CraftConfirmSimulation.getColor());
@@ -282,7 +280,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
 
                 if (this.tooltip == z - viewStart) {
                     dspToolTip = Platform.getItemDisplayName(is);
-                    if (lineList.size() > 0) {
+                    if (!lineList.isEmpty()) {
                         addItemTooltip(is, lineList);
                         dspToolTip = dspToolTip + '\n' + Joiner.on("\n").join(lineList);
                     }
@@ -373,8 +371,8 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
             }
 
             amountToCraftI = resultI;
-            this.optimize.enabled = resultI > 0;
             updateMultipliers();
+            this.optimize.enabled = resultI > 0 && !multiplierMap.isEmpty();
         }
     }
 
@@ -383,14 +381,15 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
         multiplierMap.clear();
 
         for (IAEItemStack stack : this.visual) {
-            multiplierMap.put(
-                    stack,
-                    Math.min(
-                            ContainerOptimizePatterns.getBitMultiplier(
-                                    stack.getCountRequestableCrafts(),
-                                    stack.getCountRequestable(),
-                                    amountToCraftI),
-                            (int) stack.getStackSize()));
+            if (!ignoreList.contains(stack)) {
+                int v = Math.min(
+                        ContainerOptimizePatterns.getBitMultiplier(
+                                stack.getCountRequestableCrafts(),
+                                stack.getCountRequestable(),
+                                amountToCraftI),
+                        (int) stack.getStackSize());
+                if (v > 0) multiplierMap.put(stack, v);
+            }
         }
     }
 
@@ -404,11 +403,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
             }
         } else if (btn == this.optimize && this.optimize.enabled) {
             try {
-                NetworkHandler.instance.sendToServer(
-                        new PacketOptimizePatterns(
-                                (HashMap<IAEItemStack, Integer>) multiplierMap.entrySet().stream()
-                                        .filter(e -> !ignoreList.contains(e.getKey())).filter(e -> e.getValue() > 0)
-                                        .collect(Collectors.toMap(Entry::getKey, Entry::getValue))));
+                NetworkHandler.instance.sendToServer(new PacketOptimizePatterns(multiplierMap));
             } catch (final Throwable e) {
                 AELog.debug(e);
             }
@@ -421,6 +416,8 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
         if (hoveredStack != null) {
             if (ignoreList.contains(hoveredStack)) ignoreList.remove(hoveredStack);
             else ignoreList.add(hoveredStack);
+            updateMultipliers();
+            this.optimize.enabled = amountToCraftI > 0 && !multiplierMap.isEmpty();
             return;
         }
         super.mouseClicked(xCoord, yCoord, btn);
@@ -435,8 +432,8 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
         this.sortItems();
         this.setScrollBar();
 
-        this.optimize.enabled = amountToCraftI > 0;
         updateMultipliers();
+        this.optimize.enabled = amountToCraftI > 0 && !multiplierMap.isEmpty();
     }
 
     @Override
