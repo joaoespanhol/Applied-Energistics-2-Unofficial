@@ -13,6 +13,7 @@ package appeng.core.api.definitions;
 import java.util.EnumSet;
 import java.util.Set;
 
+import appeng.block.misc.BlockPatternOptimizationMatrix;
 import com.google.common.collect.ImmutableSet;
 
 import appeng.api.definitions.IBlockDefinition;
@@ -146,6 +147,7 @@ public final class ApiBlocks implements IBlocks {
     private final ITileDefinition molecularAssembler;
     private final ITileDefinition lightDetector;
     private final ITileDefinition paint;
+    private final ITileDefinition patternOptimizationMatrix;
     private final IBlockDefinition skyStoneStair;
     private final IBlockDefinition skyStoneBlockStair;
     private final IBlockDefinition skyStoneBrickStair;
@@ -241,6 +243,7 @@ public final class ApiBlocks implements IBlocks {
         this.molecularAssembler = constructor.registerTileDefinition(new BlockMolecularAssembler());
         this.lightDetector = constructor.registerTileDefinition(lightDetector);
         this.paint = constructor.registerTileDefinition(new BlockPaint());
+        this.patternOptimizationMatrix = constructor.registerTileDefinition(new BlockPatternOptimizationMatrix());
 
         this.skyStoneStair = constructor.registerBlockDefinition(new SkyStoneStairBlock(skyStone, 0));
         this.skyStoneBlockStair = constructor.registerBlockDefinition(new SkyStoneBlockStairBlock(skyStone, 1));
@@ -688,6 +691,11 @@ public final class ApiBlocks implements IBlocks {
     @Override
     public ITileDefinition paint() {
         return this.paint;
+    }
+
+    @Override
+    public ITileDefinition patternsOptimizationMatrix() {
+        return this.patternOptimizationMatrix;
     }
 
     public IBlockDefinition chunkLoader() {

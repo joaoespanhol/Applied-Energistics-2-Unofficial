@@ -10,6 +10,7 @@
 
 package appeng.core.localization;
 
+import appeng.api.config.CraftingStatus;
 import net.minecraft.util.StatCollector;
 
 public enum ButtonToolTips {
@@ -144,6 +145,8 @@ public enum ButtonToolTips {
     OreFilterHint,
     DoublePattern,
     DoublePatternHint,
+    OptimizePatterns,
+    OptimizePatternsNoReq,
 
     SaveSearchString,
     SaveSearchStringYes,

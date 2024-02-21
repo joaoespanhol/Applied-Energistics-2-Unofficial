@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
+import appeng.tile.misc.TilePatternOptimizationMatrix;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -83,7 +84,10 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
     @GuiSync(7)
     public String myName = "";
 
-    @GuiSync.Recurse(8)
+    @GuiSync(8)
+    public boolean isAllowedToRunPatternOptimization = false;
+
+    @GuiSync.Recurse(9)
     public final ContainerCPUTable cpuTable;
 
     public ContainerCraftConfirm(final InventoryPlayer ip, final ITerminalHost te) {
@@ -119,6 +123,10 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
         }
 
         this.setNoCPU(this.cpuTable.getCPUs().isEmpty());
+
+        IGrid grid = getGrid();
+        if (grid != null)
+            this.isAllowedToRunPatternOptimization = !getGrid().getMachines(TilePatternOptimizationMatrix.class).isEmpty();
 
         super.detectAndSendChanges();
 
@@ -252,7 +260,7 @@ public class ContainerCraftConfirm extends AEBaseContainer implements ICraftingC
 
     public void optimizePatterns() {
         // only V2 supported
-        if (this.result instanceof CraftingJobV2 && !this.isSimulation() && getGrid() != null) {
+        if (this.result instanceof CraftingJobV2 && !this.isSimulation() && getGrid() != null && !getGrid().getMachines(TilePatternOptimizationMatrix.class).isEmpty()) {
             Platform.openGUI(
                     this.getPlayerInv().player,
                     this.getOpenContext().getTile(),
