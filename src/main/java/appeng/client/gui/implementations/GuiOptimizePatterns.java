@@ -183,7 +183,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
     @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
 
-        this.fontRendererObj.drawString("Patterns optimizer", 8, 7, GuiColors.CraftConfirmCraftingPlan.getColor());
+        this.fontRendererObj.drawString("Pattern optimizer", 8, 7, GuiColors.CraftConfirmCraftingPlan.getColor());
 
         this.fontRendererObj.drawString(
                 "Max steps per craft:",

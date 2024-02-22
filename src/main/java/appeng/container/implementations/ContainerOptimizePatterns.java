@@ -45,6 +45,7 @@ import appeng.parts.reporting.PartPatternTerminalEx;
 import appeng.parts.reporting.PartTerminal;
 import appeng.util.Platform;
 import codechicken.nei.ItemStackMap;
+import codechicken.nei.ItemStackSet;
 
 public class ContainerOptimizePatterns extends AEBaseContainer {
 
@@ -64,9 +65,30 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
         if (this.result instanceof CraftingJobV2 cj) {
             // use context to reuse caches
             CraftingContext context = cj.getContext();
+
+            // check blacklisted interfaces
+            ItemStackSet blacklistedPatterns = new ItemStackSet();
+
+            var supported = InterfaceTerminalRegistry.instance().getSupportedClasses();
+
+            for (Class<? extends IInterfaceViewable> c : supported) {
+                for (IGridNode node : context.meGrid.getMachines(c)) {
+                    IInterfaceViewable machine = (IInterfaceViewable) node.getMachine();
+                    if (!machine.allowsPatternOptimization()) {
+                        IInventory patternInv = machine.getPatterns();
+
+                        for (int i = 0; i < patternInv.getSizeInventory(); i++) {
+                            ItemStack stack = patternInv.getStackInSlot(i);
+                            if (stack != null) blacklistedPatterns.add(stack);
+                        }
+                    }
+                }
+            }
+
             for (CraftingTask resolvedTask : context.getResolvedTasks()) {
                 if (resolvedTask instanceof CraftFromPatternTask cfpt) {
-                    patterns.computeIfAbsent(cfpt.request.stack, i -> new Pattern()).addCraftingTask(cfpt);
+                    if (!blacklistedPatterns.contains(cfpt.pattern.getPattern()))
+                        patterns.computeIfAbsent(cfpt.request.stack, i -> new Pattern()).addCraftingTask(cfpt);
                 }
             }
             this.patterns.entrySet().removeIf(entry -> entry.getValue().patternDetails.size() != 1);
@@ -119,6 +141,7 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
             for (Class<? extends IInterfaceViewable> c : supported) {
                 for (IGridNode node : grid.getMachines(c)) {
                     IInterfaceViewable machine = (IInterfaceViewable) node.getMachine();
+                    if (!machine.allowsPatternOptimization()) continue;
 
                     IInventory patternInv = machine.getPatterns();
 

@@ -39,6 +39,7 @@ public class GuiInterface extends GuiUpgradeable {
     private GuiImgButton BlockMode;
     private GuiToggleButton interfaceMode;
     private GuiImgButton insertionMode;
+    private GuiToggleButton patternOptimization;
 
     private GuiImgButton advancedBlockingMode;
     private GuiImgButton lockCraftingMode;
@@ -58,36 +59,57 @@ public class GuiInterface extends GuiUpgradeable {
                 itemRender);
         this.buttonList.add(this.priority);
 
-        this.BlockMode = new GuiImgButton(this.guiLeft - 18, this.guiTop + 8, Settings.BLOCK, YesNo.NO);
+        int offset = 8;
+
+        this.BlockMode = new GuiImgButton(this.guiLeft - 18, this.guiTop + offset, Settings.BLOCK, YesNo.NO);
         this.buttonList.add(this.BlockMode);
+
+        offset += 18;
 
         this.interfaceMode = new GuiToggleButton(
                 this.guiLeft - 18,
-                this.guiTop + 26,
+                this.guiTop + offset,
                 84,
                 85,
                 GuiText.InterfaceTerminal.getLocal(),
                 GuiText.InterfaceTerminalHint.getLocal());
         this.buttonList.add(this.interfaceMode);
 
+        offset += 18;
+
         this.insertionMode = new GuiImgButton(
                 this.guiLeft - 18,
-                this.guiTop + 44,
+                this.guiTop + offset,
                 Settings.INSERTION_MODE,
                 InsertionMode.DEFAULT);
         this.buttonList.add(this.insertionMode);
 
+        offset += 18;
+
+        this.patternOptimization = new GuiToggleButton(
+                this.guiLeft - 18,
+                this.guiTop + offset,
+                178,
+                194,
+                "Allow pattern optimization",
+                "Allows patterns from this interface to be modified by pattern optimizer");
+        this.buttonList.add(this.patternOptimization);
+
+        offset += 18;
+
         this.advancedBlockingMode = new GuiImgButton(
                 this.guiLeft - 18,
-                this.guiTop + 62,
+                this.guiTop + offset,
                 Settings.ADVANCED_BLOCKING_MODE,
                 AdvancedBlockingMode.DEFAULT);
         this.advancedBlockingMode.visible = this.bc.getInstalledUpgrades(Upgrades.ADVANCED_BLOCKING) > 0;
         this.buttonList.add(advancedBlockingMode);
 
+        offset += 18;
+
         this.lockCraftingMode = new GuiImgButton(
                 this.guiLeft - 18,
-                this.guiTop + 80,
+                this.guiTop + offset,
                 Settings.LOCK_CRAFTING_MODE,
                 LockCraftingMode.NONE);
         this.lockCraftingMode.visible = this.bc.getInstalledUpgrades(Upgrades.LOCK_CRAFTING) > 0;
@@ -106,6 +128,10 @@ public class GuiInterface extends GuiUpgradeable {
 
         if (this.insertionMode != null) {
             this.insertionMode.set(((ContainerInterface) this.cvb).getInsertionMode());
+        }
+
+        if (this.patternOptimization != null) {
+            this.patternOptimization.setState(((ContainerInterface) this.cvb).getPatternOptimization() == YesNo.YES);
         }
 
         if (this.advancedBlockingMode != null) {
@@ -154,6 +180,10 @@ public class GuiInterface extends GuiUpgradeable {
 
         if (btn == this.insertionMode) {
             NetworkHandler.instance.sendToServer(new PacketConfigButton(this.insertionMode.getSetting(), backwards));
+        }
+
+        if (btn == this.patternOptimization) {
+            NetworkHandler.instance.sendToServer(new PacketConfigButton(Settings.PATTERN_OPTIMIZATION, backwards));
         }
 
         if (btn == this.advancedBlockingMode) {
