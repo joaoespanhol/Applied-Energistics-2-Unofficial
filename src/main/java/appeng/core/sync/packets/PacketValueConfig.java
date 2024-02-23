@@ -32,6 +32,7 @@ import appeng.container.implementations.ContainerAdvancedNetworkTool;
 import appeng.container.implementations.ContainerCellWorkbench;
 import appeng.container.implementations.ContainerCraftConfirm;
 import appeng.container.implementations.ContainerCraftingCPU;
+import appeng.container.implementations.ContainerInterface;
 import appeng.container.implementations.ContainerLevelEmitter;
 import appeng.container.implementations.ContainerNetworkTool;
 import appeng.container.implementations.ContainerOreFilter;
@@ -98,6 +99,8 @@ public class PacketValueConfig extends AppEngPacket {
             qk.startJob();
         } else if(this.Name.equals("Terminal.OptimizePatterns") && c instanceof final ContainerCraftConfirm qk){
             qk.optimizePatterns();
+        } else if(this.Name.equals("Interface.DoublePatterns") && c instanceof final ContainerInterface qk){
+            qk.doublePatterns(Integer.parseInt(this.Value));
         }
         else if (this.Name.equals("TileCrafting.Cancel") && c instanceof final ContainerCraftingCPU qk) {
             qk.cancelCrafting();

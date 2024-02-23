@@ -13,8 +13,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -43,6 +41,7 @@ import appeng.parts.reporting.PartCraftingTerminal;
 import appeng.parts.reporting.PartPatternTerminal;
 import appeng.parts.reporting.PartPatternTerminalEx;
 import appeng.parts.reporting.PartTerminal;
+import appeng.util.PatternMultiplierHelper;
 import appeng.util.Platform;
 import codechicken.nei.ItemStackMap;
 import codechicken.nei.ItemStackSet;
@@ -241,63 +240,12 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
             return patternDetails.stream().findFirst().get();
         }
 
-        private static final int FINAL_BIT = 1 << 30; // 1 bit before integer overflow
-
         private int getMaxBitMultiplier() {
-            // limit to 2B per item in pattern
-            int maxMulti = 30;
-            ICraftingPatternDetails details = getPattern();
-            for (IAEItemStack input : details.getInputs()) {
-                if (input == null) continue;
-                long size = input.getStackSize();
-                int max = 0;
-                while ((size & FINAL_BIT) == 0) {
-                    size <<= 1;
-                    max++;
-                }
-                if (max < maxMulti) maxMulti = max;
-            }
-            for (IAEItemStack out : details.getOutputs()) {
-                if (out == null) continue;
-                long size = out.getStackSize();
-                int max = 0;
-                while ((size & FINAL_BIT) == 0) {
-                    size <<= 1;
-                    max++;
-                }
-                if (max < maxMulti) maxMulti = max;
-            }
-
-            return maxMulti;
+            return PatternMultiplierHelper.getMaxBitMultiplier(this.getPattern());
         }
 
         private void applyModification(ItemStack stack, int multiplier) {
-            NBTTagCompound encodedValue = stack.stackTagCompound;
-            final NBTTagList inTag = encodedValue.getTagList("in", 10);
-            final NBTTagList outTag = encodedValue.getTagList("out", 10);
-            for (int x = 0; x < inTag.tagCount(); x++) {
-                final NBTTagCompound tag = inTag.getCompoundTagAt(x);
-                if (tag.hasNoTags()) continue;
-                if (tag.hasKey("Count", 3)) {
-                    tag.setInteger("Count", tag.getInteger("Count") << multiplier);
-                }
-                // Support for IAEItemStack (ae2fc patterns)
-                if (tag.hasKey("Cnt", 4)) {
-                    tag.setLong("Cnt", tag.getLong("Cnt") << multiplier);
-                }
-            }
-
-            for (int x = 0; x < outTag.tagCount(); x++) {
-                final NBTTagCompound tag = outTag.getCompoundTagAt(x);
-                if (tag.hasNoTags()) continue;
-                if (tag.hasKey("Count", 3)) {
-                    tag.setInteger("Count", tag.getInteger("Count") << multiplier);
-                }
-                // Support for IAEItemStack (ae2fc patterns)
-                if (tag.hasKey("Cnt", 4)) {
-                    tag.setLong("Cnt", tag.getLong("Cnt") << multiplier);
-                }
-            }
+            PatternMultiplierHelper.applyModification(stack, multiplier);
         }
     }
 }

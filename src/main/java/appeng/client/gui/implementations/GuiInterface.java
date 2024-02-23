@@ -13,6 +13,7 @@ package appeng.client.gui.implementations;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import appeng.api.config.AdvancedBlockingMode;
@@ -22,15 +23,19 @@ import appeng.api.config.Settings;
 import appeng.api.config.Upgrades;
 import appeng.api.config.YesNo;
 import appeng.client.gui.widgets.GuiImgButton;
+import appeng.client.gui.widgets.GuiSimpleImgButton;
 import appeng.client.gui.widgets.GuiTabButton;
 import appeng.client.gui.widgets.GuiToggleButton;
 import appeng.container.implementations.ContainerInterface;
+import appeng.core.AELog;
+import appeng.core.localization.ButtonToolTips;
 import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
 import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketConfigButton;
 import appeng.core.sync.packets.PacketSwitchGuis;
+import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.IInterfaceHost;
 
 public class GuiInterface extends GuiUpgradeable {
@@ -39,6 +44,7 @@ public class GuiInterface extends GuiUpgradeable {
     private GuiImgButton BlockMode;
     private GuiToggleButton interfaceMode;
     private GuiImgButton insertionMode;
+    private GuiSimpleImgButton doublePatterns;
     private GuiToggleButton patternOptimization;
 
     private GuiImgButton advancedBlockingMode;
@@ -86,6 +92,16 @@ public class GuiInterface extends GuiUpgradeable {
 
         offset += 18;
 
+        this.doublePatterns = new GuiSimpleImgButton(
+                this.guiLeft - 18,
+                this.guiTop + offset,
+                71,
+                "Multiply patterns by two");
+        this.doublePatterns.enabled = false;
+        this.buttonList.add(this.doublePatterns);
+
+        offset += 18;
+
         this.patternOptimization = new GuiToggleButton(
                 this.guiLeft - 18,
                 this.guiTop + offset,
@@ -128,6 +144,14 @@ public class GuiInterface extends GuiUpgradeable {
 
         if (this.insertionMode != null) {
             this.insertionMode.set(((ContainerInterface) this.cvb).getInsertionMode());
+        }
+
+        if (this.doublePatterns != null) {
+            this.doublePatterns.enabled = ((ContainerInterface) this.cvb).isAllowedToMultiplyPatterns;
+            if (this.doublePatterns.enabled) this.doublePatterns.setTooltip(
+                    ButtonToolTips.DoublePattern.getLocal() + "\n" + ButtonToolTips.DoublePatternHint.getLocal());
+            else this.doublePatterns.setTooltip(
+                    ButtonToolTips.DoublePattern.getLocal() + "\n" + ButtonToolTips.OptimizePatternsNoReq.getLocal());
         }
 
         if (this.patternOptimization != null) {
@@ -180,6 +204,17 @@ public class GuiInterface extends GuiUpgradeable {
 
         if (btn == this.insertionMode) {
             NetworkHandler.instance.sendToServer(new PacketConfigButton(this.insertionMode.getSetting(), backwards));
+        }
+
+        if (btn == this.doublePatterns) {
+            try {
+                int val = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) ? 1 : 0;
+                if (backwards) val |= 0b10;
+                NetworkHandler.instance
+                        .sendToServer(new PacketValueConfig("Interface.DoublePatterns", String.valueOf(val)));
+            } catch (final Throwable e) {
+                AELog.debug(e);
+            }
         }
 
         if (btn == this.patternOptimization) {
