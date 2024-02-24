@@ -54,7 +54,25 @@ public class GuiSimpleImgButton extends GuiButton implements ITooltip {
 
     @Override
     public String getMessage() {
-        return tooltip;
+        if (!tooltip.contains("\n")){
+            return tooltip;
+        }
+
+        int i = tooltip.indexOf("\n");
+        String name = tooltip.substring(0, i);
+        String value = tooltip.substring(i + 1);
+
+        final StringBuilder sb = new StringBuilder(value);
+
+        i = sb.lastIndexOf("\n");
+        if (i <= 0) {
+            i = 0;
+        }
+        while (i + 30 < sb.length() && (i = sb.lastIndexOf(" ", i + 30)) != -1) {
+            sb.replace(i, i + 1, "\n");
+        }
+
+        return name + '\n' + sb;
     }
 
     @Override
