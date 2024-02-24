@@ -128,7 +128,7 @@ public class PacketValueConfig extends AppEngPacket {
                 case "PatternTerminal.Substitute" -> cpt.getPatternTerminal().setSubstitution(this.Value.equals("1"));
                 case "PatternTerminal.BeSubstitute" -> cpt.getPatternTerminal()
                         .setCanBeSubstitution(this.Value.equals("1"));
-                case "PatternTerminal.Double" -> cpt.doubleStacks(Value.equals("1"));
+                case "PatternTerminal.Double" -> cpt.doubleStacks(Integer.parseInt(this.Value));
             }
         } else if (this.Name.startsWith("PatternTerminalEx.") && c instanceof final ContainerPatternTermEx cpt) {
             switch (this.Name) {
@@ -142,7 +142,7 @@ public class PacketValueConfig extends AppEngPacket {
                 case "PatternTerminalEx.BeSubstitute" -> cpt.getPatternTerminal()
                         .setCanBeSubstitution(this.Value.equals("1"));
                 case "PatternTerminalEx.Invert" -> cpt.getPatternTerminal().setInverted(Value.equals("1"));
-                case "PatternTerminalEx.Double" -> cpt.doubleStacks(Value.equals("1"));
+                case "PatternTerminalEx.Double" -> cpt.doubleStacks(Integer.parseInt(this.Value));
                 case "PatternTerminalEx.ActivePage" -> cpt.getPatternTerminal().setActivePage(Integer.parseInt(Value));
             }
         } else if (this.Name.startsWith("StorageBus.") && c instanceof final ContainerStorageBus ccw) {
