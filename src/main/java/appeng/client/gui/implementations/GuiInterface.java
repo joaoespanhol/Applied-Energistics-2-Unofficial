@@ -92,11 +92,7 @@ public class GuiInterface extends GuiUpgradeable {
 
         offset += 18;
 
-        this.doublePatterns = new GuiSimpleImgButton(
-                this.guiLeft - 18,
-                this.guiTop + offset,
-                71,
-                "Multiply patterns by two");
+        this.doublePatterns = new GuiSimpleImgButton(this.guiLeft - 18, this.guiTop + offset, 71, "");
         this.doublePatterns.enabled = false;
         this.buttonList.add(this.doublePatterns);
 
@@ -107,8 +103,8 @@ public class GuiInterface extends GuiUpgradeable {
                 this.guiTop + offset,
                 178,
                 194,
-                "Allow pattern optimization",
-                "Allows patterns from this interface to be modified by pattern optimizer");
+                GuiText.PatternOptimization.getLocal(),
+                GuiText.PatternOptimizationHint.getLocal());
         this.buttonList.add(this.patternOptimization);
 
         offset += 18;
@@ -149,9 +145,9 @@ public class GuiInterface extends GuiUpgradeable {
         if (this.doublePatterns != null) {
             this.doublePatterns.enabled = ((ContainerInterface) this.cvb).isAllowedToMultiplyPatterns;
             if (this.doublePatterns.enabled) this.doublePatterns.setTooltip(
-                    ButtonToolTips.DoublePattern.getLocal() + "\n" + ButtonToolTips.DoublePatternHint.getLocal());
+                    ButtonToolTips.DoublePatterns.getLocal() + "\n" + ButtonToolTips.DoublePatternsHint.getLocal());
             else this.doublePatterns.setTooltip(
-                    ButtonToolTips.DoublePattern.getLocal() + "\n" + ButtonToolTips.OptimizePatternsNoReq.getLocal());
+                    ButtonToolTips.DoublePatterns.getLocal() + "\n" + ButtonToolTips.OptimizePatternsNoReq.getLocal());
         }
 
         if (this.patternOptimization != null) {

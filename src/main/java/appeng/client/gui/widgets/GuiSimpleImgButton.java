@@ -54,7 +54,7 @@ public class GuiSimpleImgButton extends GuiButton implements ITooltip {
 
     @Override
     public String getMessage() {
-        if (!tooltip.contains("\n")){
+        if (!tooltip.contains("\n")) {
             return tooltip;
         }
 

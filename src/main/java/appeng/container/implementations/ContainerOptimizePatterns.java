@@ -41,6 +41,7 @@ import appeng.parts.reporting.PartCraftingTerminal;
 import appeng.parts.reporting.PartPatternTerminal;
 import appeng.parts.reporting.PartPatternTerminalEx;
 import appeng.parts.reporting.PartTerminal;
+import appeng.tile.misc.TilePatternOptimizationMatrix;
 import appeng.util.PatternMultiplierHelper;
 import appeng.util.Platform;
 import codechicken.nei.ItemStackMap;
@@ -118,6 +119,11 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
     }
 
     public void optimizePatterns(HashMap<Integer, Integer> hashCodeToMultipliers) {
+
+        IGrid grid = getGrid();
+
+        if (grid == null || grid.getMachines(TilePatternOptimizationMatrix.class).isEmpty()) return;
+
         Map<IAEItemStack, Integer> multipliersMap = patterns.keySet().stream()
                 .filter(i -> hashCodeToMultipliers.containsKey(i.hashCode()))
                 .collect(Collectors.toMap(i -> i, i -> hashCodeToMultipliers.get(i.hashCode())));
@@ -133,7 +139,6 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
 
         var supported = InterfaceTerminalRegistry.instance().getSupportedClasses();
 
-        IGrid grid = getGrid();
         CraftingGridCache.pauseRebuilds();
         try {
 

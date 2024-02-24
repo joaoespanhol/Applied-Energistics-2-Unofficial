@@ -119,7 +119,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
                 this.guiTop + this.ySize - 25,
                 50,
                 20,
-                "Optimize");
+                GuiText.Optimize.getLocal());
         this.optimize.enabled = false;
         this.buttonList.add(this.optimize);
 
@@ -183,15 +183,16 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
     @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
 
-        this.fontRendererObj.drawString("Pattern optimizer", 8, 7, GuiColors.CraftConfirmCraftingPlan.getColor());
+        this.fontRendererObj
+                .drawString(GuiText.PatternOptimizer.getLocal(), 8, 7, GuiColors.CraftConfirmCraftingPlan.getColor());
 
         this.fontRendererObj.drawString(
-                "Max steps per craft:",
+                GuiText.StepsPerCraft.getLocal() + ":",
                 6,
                 (ySize - 68) + (20 / 2) - (this.fontRendererObj.FONT_HEIGHT / 2),
                 GuiColors.CraftConfirmSimulation.getColor());
 
-        String dsp = "Patterns affected: " + multiplierMap.size();
+        String dsp = GuiText.PatternsAffected.getLocal() + ": " + multiplierMap.size();
 
         final int offset = (219 - this.fontRendererObj.getStringWidth(dsp)) / 2;
         this.fontRendererObj.drawString(dsp, offset, ySize - 41, GuiColors.CraftConfirmSimulation.getColor());
@@ -230,7 +231,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
                 int downY = 0;
 
                 {
-                    String str = "Steps" + ": "
+                    String str = GuiText.ToCraftRequests.getLocal() + ": "
                             + ReadableNumberConverter.INSTANCE.toWideReadableForm(refStack.getCountRequestableCrafts());
                     final int w = 4 + this.fontRendererObj.getStringWidth(str);
                     this.fontRendererObj.drawString(
@@ -241,7 +242,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
 
                     if (this.tooltip == z - viewStart) {
                         lineList.add(
-                                "Steps" + ": "
+                                GuiText.ToCraftRequests.getLocal() + ": "
                                         + NumberFormat.getInstance().format(refStack.getCountRequestableCrafts()));
                     }
 
@@ -249,7 +250,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
                 }
 
                 if (amountToCraftI > 0 && multipliedBy > 0) {
-                    String str = "Multiplied" + ": x"
+                    String str = GuiText.Multiplied.getLocal() + ": x"
                             + ReadableNumberConverter.INSTANCE.toWideReadableForm(1L << multipliedBy);
                     final int w = 4 + this.fontRendererObj.getStringWidth(str);
                     this.fontRendererObj.drawString(
@@ -259,12 +260,14 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
                             GuiColors.CraftConfirmMissing.getColor());
 
                     if (this.tooltip == z - viewStart) {
-                        lineList.add("Multiplied by" + ": " + NumberFormat.getInstance().format(1L << multipliedBy));
                         lineList.add(
-                                "Current pattern output" + ": "
+                                GuiText.MultipliedBy.getLocal() + ": "
+                                        + NumberFormat.getInstance().format(1L << multipliedBy));
+                        lineList.add(
+                                GuiText.CurrentPatternOutput.getLocal() + ": "
                                         + NumberFormat.getInstance().format(refStack.getCountRequestable()));
                         lineList.add(
-                                "New pattern output" + ": "
+                                GuiText.NewPatternOutput.getLocal() + ": "
                                         + NumberFormat.getInstance()
                                                 .format(refStack.getCountRequestable() << multipliedBy));
                     }
