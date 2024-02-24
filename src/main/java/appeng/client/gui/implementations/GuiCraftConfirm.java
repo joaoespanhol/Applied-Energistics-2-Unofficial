@@ -66,8 +66,10 @@ import appeng.parts.reporting.PartCraftingTerminal;
 import appeng.parts.reporting.PartPatternTerminal;
 import appeng.parts.reporting.PartPatternTerminalEx;
 import appeng.parts.reporting.PartTerminal;
+import appeng.util.ColorPickHelper;
 import appeng.util.Platform;
 import appeng.util.ReadableNumberConverter;
+import appeng.util.RoundHelper;
 import appeng.util.item.AEItemStack;
 
 public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolder, IGuiTooltipHandler {
@@ -445,6 +447,9 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
 
                 if (stored != null && stored.getStackSize() > 0) {
                     lines++;
+                    if (missingStack == null && pendingStack == null) {
+                        lines++;
+                    }
                 }
                 if (missingStack != null && missingStack.getStackSize() > 0) {
                     lines++;
@@ -524,6 +529,24 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
                         lineList.add(
                                 GuiText.ToCraftRequests.getLocal() + ": "
                                         + NumberFormat.getInstance().format(pendingStack.getCountRequestableCrafts()));
+                    }
+                }
+
+                if (stored != null && stored.getStackSize() > 0 && missingStack == null && pendingStack == null) {
+                    String str = GuiText.FromStoragePercent.getLocal() + ": "
+                            + RoundHelper.toRoundedFormattedForm(stored.getUsedPercent(), 2)
+                            + "%";
+                    int w = 4 + this.fontRendererObj.getStringWidth(str);
+                    this.fontRendererObj.drawString(
+                            str,
+                            (int) ((x * (1 + sectionLength) + xo + sectionLength - 19 - (w * 0.5)) * 2),
+                            (y * offY + yo + 6 - negY + downY) * 2,
+                            ColorPickHelper.selectColorFromThreshold(stored.getUsedPercent()).getColor());
+                    if (this.tooltip == z - viewStart) {
+                        lineList.add(
+                                GuiText.FromStoragePercent.getLocal() + ": "
+                                        + RoundHelper.toRoundedFormattedForm(stored.getUsedPercent(), 4)
+                                        + "%");
                     }
                 }
 
@@ -727,6 +750,13 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
             return (v == 0
                     ? ((AEItemStack) i1).getDisplayName().compareToIgnoreCase(((AEItemStack) i2).getDisplayName())
                     : v) * sortDir.sortHint;
+        }
+        if (sortMode == CraftingSortOrder.PERCENT) {
+            float percent1 = (storage1 != null && pending1 == null && missing1 == null ? storage1.getUsedPercent()
+                    : -1);
+            float percent2 = (storage2 != null && pending2 == null && missing2 == null ? storage2.getUsedPercent()
+                    : -1);
+            return Float.compare(percent1, percent2) * sortDir.sortHint;
         }
         return 0;
     };
