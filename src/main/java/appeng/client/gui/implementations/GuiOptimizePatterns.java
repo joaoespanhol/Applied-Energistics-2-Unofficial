@@ -390,7 +390,7 @@ public class GuiOptimizePatterns extends AEBaseGui implements IGuiTooltipHandler
                                 stack.getCountRequestableCrafts(),
                                 stack.getCountRequestable(),
                                 amountToCraftI),
-                        (int) stack.getStackSize());
+                        (int) (stack.getStackSize() & 0b11111));
                 if (v > 0) multiplierMap.put(stack, v);
             }
         }

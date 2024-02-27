@@ -26,6 +26,7 @@ import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.util.IInterfaceViewable;
 import appeng.container.AEBaseContainer;
+import appeng.core.AELog;
 import appeng.core.features.registries.InterfaceTerminalRegistry;
 import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
@@ -101,7 +102,10 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
                     IAEItemStack stack = entry.getKey().copy();
                     stack.setCountRequestableCrafts(entry.getValue().requestedCrafts);
                     long perCraft = entry.getValue().getCraftAmountForItem(stack);
-                    stack.setStackSize(entry.getValue().getMaxBitMultiplier());
+                    int hash = entry.getKey().hashCode();
+                    if (hash < 0) // max multi is 30, that's 5 bits MAX!! + 1 bit to store sign of the hash
+                        stack.setStackSize((long) (-hash) << 6 | 0b100000 | entry.getValue().getMaxBitMultiplier());
+                    else stack.setStackSize((long) hash << 6 | entry.getValue().getMaxBitMultiplier());
                     stack.setCountRequestable(perCraft);
                     patternsUpdate.appendItem(stack);
                 }
@@ -164,7 +168,7 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
                 }
             }
         } catch (Throwable t) {
-            // :)
+            AELog.debug(t);
         }
 
         CraftingGridCache.unpauseRebuilds();
