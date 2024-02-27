@@ -19,6 +19,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.IItemRenderer.ItemRenderType;
 
+import com.gtnewhorizons.angelica.api.ThreadSafeISBRH;
+
 import appeng.block.AEBaseBlock;
 import appeng.core.AELog;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
@@ -27,6 +29,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
+@ThreadSafeISBRH(perThread = false)
 public final class WorldRender implements ISimpleBlockRenderingHandler {
 
     public static final WorldRender INSTANCE = new WorldRender();
