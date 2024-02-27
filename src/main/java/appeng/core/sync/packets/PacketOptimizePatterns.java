@@ -32,7 +32,8 @@ public class PacketOptimizePatterns extends AppEngPacket {
         data.writeInt(this.getPacketID());
         data.writeInt(multipliersMap.size());
         for (Entry<IAEItemStack, Integer> entry : multipliersMap.entrySet()) {
-            data.writeInt(entry.getKey().hashCode());
+            long encoded = entry.getKey().getStackSize();
+            data.writeInt((int) (encoded >> 6) * ((encoded & 0b100000) == 0 ? 1 : -1));
             data.writeInt(entry.getValue());
         }
 
