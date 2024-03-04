@@ -79,6 +79,7 @@ import appeng.integration.IntegrationType;
 import appeng.integration.abstraction.INEI;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
+import codechicken.nei.guihook.GuiContainerManager;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 
@@ -966,6 +967,9 @@ public abstract class AEBaseGui extends GuiContainer {
         String s = null;
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+        GuiContainerManager.getManager().renderSlotUnderlay(slotIn);
+
         translatedRenderItem.zLevel = 100.0f;
         translatedRenderItem
                 .renderItemAndEffectIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), itemstack, i, j);
@@ -978,6 +982,8 @@ public abstract class AEBaseGui extends GuiContainer {
                 j,
                 s,
                 (slotIn instanceof OptionalSlotRestrictedInput) ? AEConfig.instance.getTerminalFontSize() : null);
+
+        GuiContainerManager.getManager().renderSlotOverlay(slotIn);
 
         translatedRenderItem.zLevel = 0.0f;
     }
