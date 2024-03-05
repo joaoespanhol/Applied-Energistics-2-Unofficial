@@ -57,6 +57,7 @@ import appeng.container.slot.AppEngCraftingSlot;
 import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.AppEngSlot.hasCalculatedValidness;
 import appeng.container.slot.OptionalSlotFake;
+import appeng.container.slot.OptionalSlotRestrictedInput;
 import appeng.container.slot.SlotCraftingTerm;
 import appeng.container.slot.SlotDisabled;
 import appeng.container.slot.SlotFake;
@@ -65,6 +66,7 @@ import appeng.container.slot.SlotInaccessible;
 import appeng.container.slot.SlotOutput;
 import appeng.container.slot.SlotPatternTerm;
 import appeng.container.slot.SlotRestrictedInput;
+import appeng.core.AEConfig;
 import appeng.core.AELog;
 import appeng.core.AppEng;
 import appeng.core.localization.GuiColors;
@@ -264,7 +266,7 @@ public abstract class AEBaseGui extends GuiContainer {
      */
     public void addTexturedRectToTesselator(float x0, float y0, float x1, float y1, float zLevel, float u0, float v0,
             float u1, float v1) {
-        Tessellator tessellator = Tessellator.instance;
+        final Tessellator tessellator = Tessellator.instance;
         tessellator.addVertexWithUV(x0, y1, this.zLevel, u0, v1);
         tessellator.addVertexWithUV(x1, y1, this.zLevel, u1, v1);
         tessellator.addVertexWithUV(x1, y0, this.zLevel, u1, v0);
@@ -984,8 +986,15 @@ public abstract class AEBaseGui extends GuiContainer {
         translatedRenderItem
                 .renderItemAndEffectIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), itemstack, i, j);
         translatedRenderItem.zLevel = 200.0f;
-        translatedRenderItem
-                .renderItemOverlayIntoGUI(this.fontRendererObj, this.mc.getTextureManager(), itemstack, i, j, s);
+        translatedRenderItem.renderItemOverlayIntoGUI(
+                this.fontRendererObj,
+                this.mc.getTextureManager(),
+                itemstack,
+                i,
+                j,
+                s,
+                (slotIn instanceof OptionalSlotRestrictedInput) ? AEConfig.instance.getTerminalFontSize() : null);
+
         translatedRenderItem.zLevel = 0.0f;
     }
 
