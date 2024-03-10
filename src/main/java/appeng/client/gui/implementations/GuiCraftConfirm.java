@@ -159,7 +159,7 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
     public GuiCraftConfirm(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         super(new ContainerCraftConfirm(inventoryPlayer, te));
         this.craftingTree = new GuiCraftingTree(this, 9, 19, 203, 192);
-        this.tallMode = AEConfig.instance.getConfigManager().getSetting(Settings.TERMINAL_STYLE) == TerminalStyle.TALL;
+        this.tallMode = AEConfig.instance.getConfigManager().getSetting(Settings.CRAFT_GUI_STYLE) == TerminalStyle.TALL;
         recalculateScreenSize();
 
         scrollbar = new GuiScrollbar();
@@ -873,6 +873,8 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
             final Enum next = Platform.rotateEnum(cv, backwards, iBtn.getSetting().getPossibleValues());
             if (btn == this.switchTallMode) {
                 tallMode = next == TerminalStyle.TALL;
+                AEConfig.instance.settings
+                        .putSetting(Settings.CRAFT_GUI_STYLE, tallMode ? TerminalStyle.TALL : TerminalStyle.SMALL);
                 recalculateScreenSize();
                 this.setWorldAndResolution(mc, width, height);
             } else if (btn == this.sortingModeButton) {

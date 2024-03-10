@@ -157,6 +157,7 @@ public final class AEConfig extends Configuration implements IConfigurableObject
         this.settings.registerSetting(Settings.CRAFTING_SORT_BY, CraftingSortOrder.NAME);
         this.settings.registerSetting(Settings.SORT_DIRECTION, SortDir.ASCENDING);
         this.settings.registerSetting(Settings.TERMINAL_FONT_SIZE, TerminalFontSize.SMALL);
+        this.settings.registerSetting(Settings.CRAFT_GUI_STYLE, TerminalStyle.TALL);
 
         this.spawnChargedChance = (float) (1.0
                 - this.get("worldGen", "spawnChargedChance", 1.0 - this.spawnChargedChance)

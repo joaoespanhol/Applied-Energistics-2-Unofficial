@@ -60,7 +60,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
         super(new ContainerCraftingStatus(inventoryPlayer, te));
 
         this.status = (ContainerCraftingStatus) this.inventorySlots;
-        this.tallMode = AEConfig.instance.getConfigManager().getSetting(Settings.TERMINAL_STYLE) == TerminalStyle.TALL;
+        this.tallMode = AEConfig.instance.getConfigManager().getSetting(Settings.CRAFT_GUI_STYLE) == TerminalStyle.TALL;
         recalculateScreenSize();
 
         final Object target = this.status.getTarget();
@@ -123,6 +123,8 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
         } else if (btn == this.switchTallMode) {
             tallMode = !tallMode;
             switchTallMode.set(tallMode ? TerminalStyle.TALL : TerminalStyle.SMALL);
+            AEConfig.instance.getConfigManager()
+                    .putSetting(Settings.CRAFT_GUI_STYLE, tallMode ? TerminalStyle.TALL : TerminalStyle.SMALL);
             recalculateScreenSize();
             this.setWorldAndResolution(mc, width, height);
         }
