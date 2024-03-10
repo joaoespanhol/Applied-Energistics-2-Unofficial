@@ -79,7 +79,9 @@ public enum Settings {
 
     PRIORITY_CARD_MODE(EnumSet.allOf(PriorityCardMode.class)),
 
-    TERMINAL_FONT_SIZE(EnumSet.allOf(TerminalFontSize.class));
+    TERMINAL_FONT_SIZE(EnumSet.allOf(TerminalFontSize.class)),
+
+    CRAFT_GUI_STYLE(EnumSet.of(TerminalStyle.TALL, TerminalStyle.SMALL));
 
     private final EnumSet<? extends Enum<?>> values;
 
