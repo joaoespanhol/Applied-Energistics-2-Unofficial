@@ -119,10 +119,13 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private int remainingOperations;
     private boolean somethingChanged;
 
+    // No longer in use
     private long lastTime;
     private long elapsedTime;
     private long startItemCount;
     private long remainingItemCount;
+
+    private long startTime = System.nanoTime();
 
     public CraftingCPUCluster(final WorldCoord min, final WorldCoord max) {
         this.min = min;
@@ -794,6 +797,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         try {
             this.waitingFor.resetStatus();
             job.startCrafting(ci, this, src);
+            this.startTime = System.nanoTime();
             if (ci.commit(src)) {
                 this.finalOutput = job.getOutput();
                 this.waiting = false;
@@ -807,6 +811,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         this.generateLinkData(craftID, requestingMachine == null, false),
                         this);
 
+                // No longer in use
                 this.prepareElapsedTime();
 
                 if (requestingMachine == null) {
@@ -1201,6 +1206,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         }
     }
 
+    @Deprecated
     private void prepareElapsedTime() {
         this.lastTime = System.nanoTime();
         this.elapsedTime = 0;
@@ -1219,6 +1225,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.remainingItemCount = itemCount;
     }
 
+    @Deprecated
     private void updateElapsedTime(final IAEItemStack is) {
         final long nextStartTime = System.nanoTime();
         this.elapsedTime = this.getElapsedTime() + nextStartTime - this.lastTime;
@@ -1226,6 +1233,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.remainingItemCount = this.getRemainingItemCount() - is.getStackSize();
     }
 
+    @Deprecated
     public long getElapsedTime() {
         return this.elapsedTime;
     }
@@ -1273,5 +1281,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private static class TaskProgress {
 
         private long value;
+    }
+
+    public long getStartTime() {
+        return this.startTime;
     }
 }

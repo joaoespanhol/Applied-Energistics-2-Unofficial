@@ -53,6 +53,9 @@ public class ContainerCraftingCPU extends AEBaseContainer
     @GuiSync(0)
     public long eta = -1;
 
+    @GuiSync(1)
+    public long pass = -1;
+
     public ContainerCraftingCPU(final InventoryPlayer ip, final Object te) {
         super(ip, te);
         final IGridHost host = (IGridHost) (te instanceof IGridHost ? te : null);
@@ -153,6 +156,8 @@ public class ContainerCraftingCPU extends AEBaseContainer
                     this.setEstimatedTime(eta);
                 }
 
+                this.setPassTime(System.nanoTime() - this.getMonitor().getStartTime());
+
                 final PacketMEInventoryUpdate a = new PacketMEInventoryUpdate((byte) 0);
                 final PacketMEInventoryUpdate b = new PacketMEInventoryUpdate((byte) 1);
                 final PacketMEInventoryUpdate c = new PacketMEInventoryUpdate((byte) 2);
@@ -229,6 +234,14 @@ public class ContainerCraftingCPU extends AEBaseContainer
 
     private void setEstimatedTime(final long eta) {
         this.eta = eta;
+    }
+
+    public long getPassTime() {
+        return this.pass;
+    }
+
+    private void setPassTime(final long pass) {
+        this.pass = pass;
     }
 
     CraftingCPUCluster getMonitor() {

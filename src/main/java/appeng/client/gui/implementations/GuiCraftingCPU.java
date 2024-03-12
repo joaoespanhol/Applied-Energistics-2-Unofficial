@@ -297,9 +297,9 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         String title = this.getGuiDisplayName(GuiText.CraftingStatus.getLocal());
 
-        if (this.craftingCpu.getEstimatedTime() > 0 && !this.visual.isEmpty()) {
+        if (this.craftingCpu.getPassTime() > 0 && !this.visual.isEmpty()) {
             final long etaInMilliseconds = TimeUnit.MILLISECONDS
-                    .convert(this.craftingCpu.getEstimatedTime(), TimeUnit.NANOSECONDS);
+                    .convert(this.craftingCpu.getPassTime(), TimeUnit.NANOSECONDS);
             final String etaTimeText = DurationFormatUtils
                     .formatDuration(etaInMilliseconds, GuiText.ETAFormat.getLocal());
             title += " - " + etaTimeText;
