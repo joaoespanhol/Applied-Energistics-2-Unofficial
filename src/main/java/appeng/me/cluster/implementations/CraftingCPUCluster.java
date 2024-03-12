@@ -1045,6 +1045,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         data.setTag("inventory", this.writeList(this.inventory.getItemList()));
         data.setBoolean("waiting", this.waiting);
         data.setBoolean("isComplete", this.isComplete);
+        data.setLong("startTime", this.startTime);
+        data.setLong("saveTime", System.nanoTime());
 
         if (this.myLastLink != null) {
             final NBTTagCompound link = new NBTTagCompound();
@@ -1118,6 +1120,11 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
         this.waiting = data.getBoolean("waiting");
         this.isComplete = data.getBoolean("isComplete");
+        if (data.hasKey("startTime") && data.hasKey("saveTime")) {
+            this.startTime = data.getLong("startTime") + System.nanoTime() - data.getLong("saveTime");
+        } else {
+            this.startTime = System.nanoTime();
+        }
 
         if (data.hasKey("link")) {
             final NBTTagCompound link = data.getCompoundTag("link");
