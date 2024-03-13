@@ -302,8 +302,8 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
                     .convert(this.craftingCpu.getElapsedTime(), TimeUnit.NANOSECONDS);
             final String elapsedTimeText = DurationFormatUtils
                     .formatDuration(elapsedInMilliseconds, GuiText.ETAFormat.getLocal());
-            
-         // If title is empty, don't show that ' - '
+
+            // If title is empty, don't show that ' - '
             if (title.length() == 0) {
                 title = elapsedTimeText;
             } else {
