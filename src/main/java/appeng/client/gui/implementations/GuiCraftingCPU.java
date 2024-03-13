@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -296,16 +297,17 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
     public void drawFG(final int offsetX, final int offsetY, final int mouseX, final int mouseY) {
         String title = this.getGuiDisplayName(GuiText.CraftingStatus.getLocal());
 
-        if (this.craftingCpu.getPassTime() > 0 && !this.visual.isEmpty()) {
-            final long passInMilliseconds = this.craftingCpu.getPassTime();
-            final String passTimeText = DurationFormatUtils
-                    .formatDuration(passInMilliseconds, GuiText.ETAFormat.getLocal());
-
-            // If title is empty, don't show that ' - '
+        if (this.craftingCpu.getElapsedTime() > 0 && !this.visual.isEmpty()) {
+            final long elapsedInMilliseconds = TimeUnit.MILLISECONDS
+                    .convert(this.craftingCpu.getElapsedTime(), TimeUnit.NANOSECONDS);
+            final String elapsedTimeText = DurationFormatUtils
+                    .formatDuration(elapsedInMilliseconds, GuiText.ETAFormat.getLocal());
+            
+         // If title is empty, don't show that ' - '
             if (title.length() == 0) {
-                title = passTimeText;
+                title = elapsedTimeText;
             } else {
-                title += " - " + passTimeText;
+                title += " - " + elapsedTimeText;
             }
         }
         updateRemainingOperations();

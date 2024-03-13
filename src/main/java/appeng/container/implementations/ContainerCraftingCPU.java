@@ -51,7 +51,7 @@ public class ContainerCraftingCPU extends AEBaseContainer
     private String cpuName = null;
 
     @GuiSync(0)
-    public long pass = -1;
+    public long elapsed = -1;
 
     public ContainerCraftingCPU(final InventoryPlayer ip, final Object te) {
         super(ip, te);
@@ -108,11 +108,11 @@ public class ContainerCraftingCPU extends AEBaseContainer
             this.list.resetStatus();
             this.getMonitor().getListOfItem(this.list, CraftingItemList.ALL);
             this.getMonitor().addListener(this, null);
-            this.setPassTime(0);
+            this.setElapsedTime(0);
         } else {
             this.setMonitor(null);
             this.cpuName = "";
-            this.setPassTime(-1);
+            this.setElapsedTime(-1);
         }
     }
 
@@ -120,7 +120,7 @@ public class ContainerCraftingCPU extends AEBaseContainer
         if (this.getMonitor() != null) {
             this.getMonitor().cancel();
         }
-        this.setPassTime(-1);
+        this.setElapsedTime(-1);
     }
 
     @Override
@@ -144,7 +144,7 @@ public class ContainerCraftingCPU extends AEBaseContainer
     public void detectAndSendChanges() {
         if (Platform.isServer() && this.getMonitor() != null && !this.list.isEmpty()) {
             try {
-                this.setPassTime(System.currentTimeMillis() - this.getMonitor().getStartTime());
+                this.setElapsedTime(this.getMonitor().getElapsedTime());
 
                 final PacketMEInventoryUpdate a = new PacketMEInventoryUpdate((byte) 0);
                 final PacketMEInventoryUpdate b = new PacketMEInventoryUpdate((byte) 1);
@@ -216,12 +216,12 @@ public class ContainerCraftingCPU extends AEBaseContainer
         this.cpuName = name;
     }
 
-    public long getPassTime() {
-        return this.pass;
+    public long getElapsedTime() {
+        return this.elapsed;
     }
 
-    private void setPassTime(final long pass) {
-        this.pass = pass;
+    private void setElapsedTime(final long elapsed) {
+        this.elapsed = elapsed;
     }
 
     CraftingCPUCluster getMonitor() {
