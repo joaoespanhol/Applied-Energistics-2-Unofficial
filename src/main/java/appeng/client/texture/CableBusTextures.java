@@ -225,12 +225,11 @@ public enum CableBusTextures {
         return null;
     }
 
-
     @SideOnly(Side.CLIENT)
     public static IIcon getMissing() {
         if (missingTexture == null) {
-            missingTexture = ((TextureMap) Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.locationBlocksTexture))
-                    .getAtlasSprite("missingno");
+            missingTexture = ((TextureMap) Minecraft.getMinecraft().getTextureManager()
+                    .getTexture(TextureMap.locationBlocksTexture)).getAtlasSprite("missingno");
         }
 
         return missingTexture;
