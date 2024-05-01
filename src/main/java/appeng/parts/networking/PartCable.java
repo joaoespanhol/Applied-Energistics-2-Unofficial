@@ -206,62 +206,37 @@ public class PartCable extends AEBasePart implements IPartCable {
     }
 
     public IIcon getGlassTexture(final AEColor c) {
-        switch (c) {
-            case Black -> {
-                return CableBusTextures.MECable_Black.getIcon();
+        IIcon val = switch (c) {
+            case Black -> CableBusTextures.MECable_Black.getIcon();
+            case Blue -> CableBusTextures.MECable_Blue.getIcon();
+            case Brown -> CableBusTextures.MECable_Brown.getIcon();
+            case Cyan -> CableBusTextures.MECable_Cyan.getIcon();
+            case Gray -> CableBusTextures.MECable_Grey.getIcon();
+            case Green -> CableBusTextures.MECable_Green.getIcon();
+            case LightBlue -> CableBusTextures.MECable_LightBlue.getIcon();
+            case LightGray -> CableBusTextures.MECable_LightGrey.getIcon();
+            case Lime -> CableBusTextures.MECable_Lime.getIcon();
+            case Magenta -> CableBusTextures.MECable_Magenta.getIcon();
+            case Orange -> CableBusTextures.MECable_Orange.getIcon();
+            case Pink -> CableBusTextures.MECable_Pink.getIcon();
+            case Purple -> CableBusTextures.MECable_Purple.getIcon();
+            case Red -> CableBusTextures.MECable_Red.getIcon();
+            case White -> CableBusTextures.MECable_White.getIcon();
+            case Yellow -> CableBusTextures.MECable_Yellow.getIcon();
+            default -> {
+                final AEColoredItemDefinition cable = AEApi.instance().definitions().parts().cableGlass();
+                yield cable.stack(AEColor.Transparent, 1).getIconIndex();
             }
-            case Blue -> {
-                return CableBusTextures.MECable_Blue.getIcon();
-            }
-            case Brown -> {
-                return CableBusTextures.MECable_Brown.getIcon();
-            }
-            case Cyan -> {
-                return CableBusTextures.MECable_Cyan.getIcon();
-            }
-            case Gray -> {
-                return CableBusTextures.MECable_Grey.getIcon();
-            }
-            case Green -> {
-                return CableBusTextures.MECable_Green.getIcon();
-            }
-            case LightBlue -> {
-                return CableBusTextures.MECable_LightBlue.getIcon();
-            }
-            case LightGray -> {
-                return CableBusTextures.MECable_LightGrey.getIcon();
-            }
-            case Lime -> {
-                return CableBusTextures.MECable_Lime.getIcon();
-            }
-            case Magenta -> {
-                return CableBusTextures.MECable_Magenta.getIcon();
-            }
-            case Orange -> {
-                return CableBusTextures.MECable_Orange.getIcon();
-            }
-            case Pink -> {
-                return CableBusTextures.MECable_Pink.getIcon();
-            }
-            case Purple -> {
-                return CableBusTextures.MECable_Purple.getIcon();
-            }
-            case Red -> {
-                return CableBusTextures.MECable_Red.getIcon();
-            }
-            case White -> {
-                return CableBusTextures.MECable_White.getIcon();
-            }
-            case Yellow -> {
-                return CableBusTextures.MECable_Yellow.getIcon();
-            }
-            default -> {}
+        };
+
+        if (val == null) {
+            val = CableBusTextures.getMissing();
         }
 
-        final AEColoredItemDefinition glassCable = AEApi.instance().definitions().parts().cableGlass();
-        final ItemStack glassCableStack = glassCable.stack(AEColor.Transparent, 1);
+        // this can't be null
+        assert val != null;
 
-        return glassCable.item(AEColor.Transparent).getIconIndex(glassCableStack);
+        return val;
     }
 
     @Override
@@ -733,62 +708,37 @@ public class PartCable extends AEBasePart implements IPartCable {
     }
 
     IIcon getSmartTexture(final AEColor c) {
-        switch (c) {
-            case Black -> {
-                return CableBusTextures.MESmart_Black.getIcon();
+        IIcon val = switch (c) {
+            case Black -> CableBusTextures.MESmart_Black.getIcon();
+            case Blue -> CableBusTextures.MESmart_Blue.getIcon();
+            case Brown -> CableBusTextures.MESmart_Brown.getIcon();
+            case Cyan -> CableBusTextures.MESmart_Cyan.getIcon();
+            case Gray -> CableBusTextures.MESmart_Gray.getIcon();
+            case Green -> CableBusTextures.MESmart_Green.getIcon();
+            case LightBlue -> CableBusTextures.MESmart_LightBlue.getIcon();
+            case LightGray -> CableBusTextures.MESmart_LightGrey.getIcon();
+            case Lime -> CableBusTextures.MESmart_Lime.getIcon();
+            case Magenta -> CableBusTextures.MESmart_Magenta.getIcon();
+            case Orange -> CableBusTextures.MESmart_Orange.getIcon();
+            case Pink -> CableBusTextures.MESmart_Pink.getIcon();
+            case Purple -> CableBusTextures.MESmart_Purple.getIcon();
+            case Red -> CableBusTextures.MESmart_Red.getIcon();
+            case White -> CableBusTextures.MESmart_White.getIcon();
+            case Yellow -> CableBusTextures.MESmart_Yellow.getIcon();
+            default -> {
+                final AEColoredItemDefinition smartCable = AEApi.instance().definitions().parts().cableSmart();
+                yield smartCable.stack(AEColor.Transparent, 1).getIconIndex();
             }
-            case Blue -> {
-                return CableBusTextures.MESmart_Blue.getIcon();
-            }
-            case Brown -> {
-                return CableBusTextures.MESmart_Brown.getIcon();
-            }
-            case Cyan -> {
-                return CableBusTextures.MESmart_Cyan.getIcon();
-            }
-            case Gray -> {
-                return CableBusTextures.MESmart_Gray.getIcon();
-            }
-            case Green -> {
-                return CableBusTextures.MESmart_Green.getIcon();
-            }
-            case LightBlue -> {
-                return CableBusTextures.MESmart_LightBlue.getIcon();
-            }
-            case LightGray -> {
-                return CableBusTextures.MESmart_LightGrey.getIcon();
-            }
-            case Lime -> {
-                return CableBusTextures.MESmart_Lime.getIcon();
-            }
-            case Magenta -> {
-                return CableBusTextures.MESmart_Magenta.getIcon();
-            }
-            case Orange -> {
-                return CableBusTextures.MESmart_Orange.getIcon();
-            }
-            case Pink -> {
-                return CableBusTextures.MESmart_Pink.getIcon();
-            }
-            case Purple -> {
-                return CableBusTextures.MESmart_Purple.getIcon();
-            }
-            case Red -> {
-                return CableBusTextures.MESmart_Red.getIcon();
-            }
-            case White -> {
-                return CableBusTextures.MESmart_White.getIcon();
-            }
-            case Yellow -> {
-                return CableBusTextures.MESmart_Yellow.getIcon();
-            }
-            default -> {}
+        };
+
+        if (val == null) {
+            val = CableBusTextures.getMissing();
         }
 
-        final IParts parts = AEApi.instance().definitions().parts();
-        final ItemStack smartCableStack = parts.cableSmart().stack(AEColor.Transparent, 1);
+        // this can't be null
+        assert val != null;
 
-        return parts.cableCovered().item(AEColor.Transparent).getIconIndex(smartCableStack);
+        return val;
     }
 
     @SideOnly(Side.CLIENT)
