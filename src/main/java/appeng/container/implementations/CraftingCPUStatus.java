@@ -29,6 +29,7 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
     private final String name;
     private final int serial;
     private final long storage;
+    private final long usedStorage;
     private final long coprocessors;
     private final boolean isBusy;
     private final long totalItems;
@@ -40,6 +41,7 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         this.name = "ERROR";
         this.serial = 0;
         this.storage = 0;
+        this.usedStorage = 0;
         this.coprocessors = 0;
         this.isBusy = false;
         this.totalItems = 0;
@@ -54,10 +56,12 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         this.isBusy = cluster.isBusy();
         if (isBusy) {
             crafting = cluster.getFinalOutput();
+            usedStorage = cluster.getUsedStorage();
             totalItems = cluster.getStartItemCount();
             remainingItems = cluster.getRemainingItemCount();
         } else {
             crafting = null;
+            usedStorage = 0;
             totalItems = 0;
             remainingItems = 0;
         }
@@ -70,6 +74,7 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         this.name = i.getString("name");
         this.serial = i.getInteger("serial");
         this.storage = i.getLong("storage");
+        this.usedStorage = i.getLong("usedStorage");
         this.coprocessors = i.getLong("coprocessors");
         this.isBusy = i.getBoolean("isBusy");
         this.totalItems = i.getLong("totalItems");
@@ -95,6 +100,7 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         }
         i.setInteger("serial", serial);
         i.setLong("storage", storage);
+        i.setLong("usedStorage", usedStorage);
         i.setLong("coprocessors", coprocessors);
         i.setBoolean("isBusy", isBusy);
         i.setLong("totalItems", totalItems);
@@ -136,6 +142,10 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
 
     public long getStorage() {
         return storage;
+    }
+
+    public long getUsedStorage() {
+        return usedStorage;
     }
 
     public long getCoprocessors() {
