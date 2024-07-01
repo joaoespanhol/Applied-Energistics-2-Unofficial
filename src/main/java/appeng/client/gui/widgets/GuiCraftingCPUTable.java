@@ -202,7 +202,14 @@ public class GuiCraftingCPUTable {
                 tooltip.append(NumberFormat.getInstance().format(hoveredCpu.getTotalItems()));
                 tooltip.append('\n');
             }
-            if (hoveredCpu.getStorage() > 0) {
+            if (hoveredCpu.getUsedStorage() > 0) {
+                tooltip.append(GuiText.BytesUsed.getLocal());
+                tooltip.append(": ");
+                tooltip.append(hoveredCpu.formatUsedStorage());
+                tooltip.append(" / ");
+                tooltip.append(hoveredCpu.formatStorage());
+                tooltip.append('\n');
+            } else if (hoveredCpu.getStorage() > 0) {
                 tooltip.append(GuiText.Bytes.getLocal());
                 tooltip.append(": ");
                 tooltip.append(hoveredCpu.formatStorage());

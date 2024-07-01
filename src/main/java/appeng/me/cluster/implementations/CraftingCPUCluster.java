@@ -824,6 +824,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                             this);
 
                     this.prepareElapsedTime();
+                    this.prepareStepCount();
 
                     if (requestingMachine == null) {
                         return this.myLastLink;
@@ -904,6 +905,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 this.usedStorage += job.getByteTotal();
                 job.startCrafting(ci, this, src);
 
+                this.prepareStepCount();
                 this.markDirty();
                 this.updateCPU();
                 return this.myLastLink;
@@ -1259,7 +1261,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private void prepareElapsedTime() {
         this.lastTime = System.nanoTime();
         this.elapsedTime = 0;
+    }
 
+    private void prepareStepCount() {
         final IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
 
         this.getListOfItem(list, CraftingItemList.ACTIVE);
@@ -1270,7 +1274,13 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             itemCount += ge.getStackSize();
         }
 
-        this.startItemCount = itemCount;
+        if (this.startItemCount > 0) {
+            // If a job was merged, update total steps to be inclusive of completed steps
+            long completedSteps = this.startItemCount - this.remainingItemCount;
+            this.startItemCount = itemCount + completedSteps;
+        } else {
+            this.startItemCount = itemCount;
+        }
         this.remainingItemCount = itemCount;
     }
 
