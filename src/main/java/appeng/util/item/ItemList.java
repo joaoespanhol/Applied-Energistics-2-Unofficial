@@ -10,6 +10,12 @@
 
 package appeng.util.item;
 
+import appeng.api.config.FuzzyMode;
+import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IItemList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.minecraftforge.oredict.OreDictionary;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -17,15 +23,10 @@ import java.util.LinkedList;
 import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import net.minecraftforge.oredict.OreDictionary;
-
-import appeng.api.config.FuzzyMode;
-import appeng.api.storage.data.IAEItemStack;
-import appeng.api.storage.data.IItemList;
-
 public final class ItemList implements IItemList<IAEItemStack> {
 
     private final NavigableMap<IAEItemStack, IAEItemStack> records = new ConcurrentSkipListMap<>();
+    private final ObjectOpenHashSet<IAEItemStack> setRecords = new ObjectOpenHashSet<>();
 
     @Override
     public void add(final IAEItemStack option) {
@@ -33,7 +34,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
             return;
         }
 
-        final IAEItemStack st = this.records.get(option);
+        final IAEItemStack st = this.setRecords.get(option);
 
         if (st != null) {
             st.add(option);
@@ -51,7 +52,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
             return null;
         }
 
-        return this.records.get(itemStack);
+        return this.setRecords.get(itemStack);
     }
 
     @Override
@@ -99,7 +100,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
             return;
         }
 
-        final IAEItemStack st = this.records.get(option);
+        final IAEItemStack st = this.setRecords.get(option);
 
         if (st != null) {
             st.incStackSize(option.getStackSize());
@@ -122,7 +123,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
             return;
         }
 
-        final IAEItemStack st = this.records.get(option);
+        final IAEItemStack st = this.setRecords.get(option);
 
         if (st != null) {
             st.setCraftable(true);
@@ -142,7 +143,7 @@ public final class ItemList implements IItemList<IAEItemStack> {
             return;
         }
 
-        final IAEItemStack st = this.records.get(option);
+        final IAEItemStack st = this.setRecords.get(option);
 
         if (st != null) {
             st.setCountRequestable(st.getCountRequestable() + option.getCountRequestable());
@@ -170,12 +171,32 @@ public final class ItemList implements IItemList<IAEItemStack> {
 
     @Override
     public int size() {
-        return this.records.size();
+        return this.setRecords.size();
     }
 
     @Override
     public Iterator<IAEItemStack> iterator() {
-        return new MeaningfulItemIterator<>(this.records.values().iterator());
+        return new MeaningfulItemIterator<>(new Iterator<>() {
+
+            private final Iterator<IAEItemStack> i = ItemList.this.setRecords.iterator();
+            private IAEItemStack next = null;
+
+            @Override
+            public boolean hasNext() {
+                return i.hasNext();
+            }
+
+            @Override
+            public IAEItemStack next() {
+                return (next = i.next());
+            }
+
+            @Override
+            public void remove() {
+                i.remove();
+                ItemList.this.records.remove(next);
+            }
+        });
     }
 
     @Override
@@ -186,11 +207,13 @@ public final class ItemList implements IItemList<IAEItemStack> {
     }
 
     public void clear() {
+        this.setRecords.clear();
         this.records.clear();
     }
 
-    private IAEItemStack putItemRecord(final IAEItemStack itemStack) {
-        return this.records.put(itemStack, itemStack);
+    private void putItemRecord(final IAEItemStack itemStack) {
+        this.setRecords.add(itemStack);
+        this.records.put(itemStack, itemStack);
     }
 
     private Collection<IAEItemStack> findFuzzyDamage(final AEItemStack filter, final FuzzyMode fuzzy,
