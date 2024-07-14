@@ -1,4 +1,4 @@
-package appeng.util;
+package appeng.crafting.v2;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -6,8 +6,6 @@ import java.util.Map.Entry;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import appeng.crafting.v2.FastToIterateArrayBasedMultiMap;
 
 public class FastToIterateArrayBasedMultiMapTest {
 
