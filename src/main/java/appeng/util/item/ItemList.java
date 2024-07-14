@@ -10,18 +10,19 @@
 
 package appeng.util.item;
 
-import appeng.api.config.FuzzyMode;
-import appeng.api.storage.data.IAEItemStack;
-import appeng.api.storage.data.IItemList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraftforge.oredict.OreDictionary;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+
+import net.minecraftforge.oredict.OreDictionary;
+
+import appeng.api.config.FuzzyMode;
+import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IItemList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public final class ItemList implements IItemList<IAEItemStack> {
 

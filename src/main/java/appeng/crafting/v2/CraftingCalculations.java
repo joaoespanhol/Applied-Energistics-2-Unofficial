@@ -18,17 +18,16 @@ import appeng.crafting.v2.resolvers.EmitableItemResolver;
 import appeng.crafting.v2.resolvers.ExtractItemResolver;
 import appeng.crafting.v2.resolvers.IgnoreMissingItemResolver;
 import appeng.crafting.v2.resolvers.SimulateMissingItemResolver;
-import appeng.util.ArrayBasedMultiMap;
 
 /**
  * You can register additional crafting handlers here
  */
 public class CraftingCalculations {
 
-    private static final ArrayBasedMultiMap<Class<? extends IAEStack<?>>, CraftingRequestResolver<?>> providers = new ArrayBasedMultiMap<>(
+    private static final FastToIterateArrayBasedMultiMap<Class<? extends IAEStack<?>>, CraftingRequestResolver<?>> providers = new FastToIterateArrayBasedMultiMap<>(
             Class.class,
             CraftingRequestResolver.class);
-    private static final ArrayBasedMultiMap<Class<? extends IAEStack<?>>, ToLongBiFunction<CraftingRequest<?>, Long>> byteAmountAdjusters = new ArrayBasedMultiMap<>(
+    private static final FastToIterateArrayBasedMultiMap<Class<? extends IAEStack<?>>, ToLongBiFunction<CraftingRequest<?>, Long>> byteAmountAdjusters = new FastToIterateArrayBasedMultiMap<>(
             Class.class,
             ToLongBiFunction.class);
 
@@ -64,6 +63,8 @@ public class CraftingCalculations {
         for (int i = 0; i < size; i++) {
             Class<? extends IAEStack<?>> aClass = keyArray[i];
             if (aClass == null) {
+                // We never remove from the providers map, therefore the key array will never have holes, allowing us
+                // to exit early here
                 break;
             }
 
@@ -73,6 +74,7 @@ public class CraftingCalculations {
 
             for (CraftingRequestResolver<?> resolver : providers.valuesArrayAt(i)) {
                 if (resolver == null) {
+                    // See comment on break above
                     break;
                 }
 
@@ -102,6 +104,8 @@ public class CraftingCalculations {
         for (int i = 0; i < size; i++) {
             Class<? extends IAEStack<?>> aClass = keyArray[i];
             if (aClass == null) {
+                // We never remove from the byteAmountAdjusters map, therefore the key array will never have holes,
+                // allowing us to exit early here
                 break;
             }
 
@@ -111,6 +115,7 @@ public class CraftingCalculations {
 
             for (ToLongBiFunction<CraftingRequest<?>, Long> value : byteAmountAdjusters.valuesArrayAt(i)) {
                 if (value == null) {
+                    // See comment on break above
                     break;
                 }
 
