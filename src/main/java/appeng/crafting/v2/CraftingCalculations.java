@@ -7,10 +7,6 @@ import java.util.function.ToLongBiFunction;
 
 import org.apache.logging.log4j.Level;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimaps;
-
 import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
@@ -28,10 +24,12 @@ import appeng.crafting.v2.resolvers.SimulateMissingItemResolver;
  */
 public class CraftingCalculations {
 
-    private static final ListMultimap<Class<? extends IAEStack<?>>, CraftingRequestResolver<?>> providers = ArrayListMultimap
-            .create(2, 8);
-    private static final ListMultimap<Class<? extends IAEStack<?>>, ToLongBiFunction<CraftingRequest<?>, Long>> byteAmountAdjusters = ArrayListMultimap
-            .create(2, 8);
+    private static final FastToIterateArrayBasedMultiMap<Class<? extends IAEStack<?>>, CraftingRequestResolver<?>> providers = new FastToIterateArrayBasedMultiMap<>(
+            Class.class,
+            CraftingRequestResolver.class);
+    private static final FastToIterateArrayBasedMultiMap<Class<? extends IAEStack<?>>, ToLongBiFunction<CraftingRequest<?>, Long>> byteAmountAdjusters = new FastToIterateArrayBasedMultiMap<>(
+            Class.class,
+            ToLongBiFunction.class);
 
     /**
      * @param provider       A custom resolver that can provide potential solutions ({@link CraftingTask}) to crafting
@@ -59,32 +57,73 @@ public class CraftingCalculations {
     public static <StackType extends IAEStack<StackType>> List<CraftingTask> tryResolveCraftingRequest(
             CraftingRequest<StackType> request, CraftingContext context) {
         final ArrayList<CraftingTask> allTasks = new ArrayList<>(4);
-        for (final CraftingRequestResolver<?> unsafeProvider : Multimaps
-                .filterKeys(providers, key -> key.isAssignableFrom(request.stackTypeClass)).values()) {
-            try {
-                // Safety: Filtered by type using Multimaps.filterKeys
-                final CraftingRequestResolver<StackType> provider = (CraftingRequestResolver<StackType>) unsafeProvider;
-                final List<CraftingTask> tasks = provider.provideCraftingRequestResolvers(request, context);
-                allTasks.addAll(tasks);
-            } catch (Exception t) {
-                AELog.log(
-                        Level.WARN,
-                        t,
-                        "Error encountered when trying to generate the list of CraftingTasks for crafting {}",
-                        request.toString());
+
+        Class<? extends IAEStack<?>>[] keyArray = providers.keyArray();
+        int size = keyArray.length;
+        for (int i = 0; i < size; i++) {
+            Class<? extends IAEStack<?>> aClass = keyArray[i];
+            if (aClass == null) {
+                // We never remove from the providers map, therefore the key array will never have holes, allowing us
+                // to exit early here
+                break;
+            }
+
+            if (!aClass.isAssignableFrom(request.stackTypeClass)) {
+                continue;
+            }
+
+            for (CraftingRequestResolver<?> resolver : providers.valuesArrayAt(i)) {
+                if (resolver == null) {
+                    // See comment on break above
+                    break;
+                }
+
+                try {
+                    // Safety: Filtered by type using isAssignableFrom on the keys
+                    final CraftingRequestResolver<StackType> provider = (CraftingRequestResolver<StackType>) resolver;
+                    final List<CraftingTask> tasks = provider.provideCraftingRequestResolvers(request, context);
+                    allTasks.addAll(tasks);
+                } catch (Exception t) {
+                    AELog.log(
+                            Level.WARN,
+                            t,
+                            "Error encountered when trying to generate the list of CraftingTasks for crafting {}",
+                            request.toString());
+                }
             }
         }
+
         allTasks.sort(CraftingTask.PRIORITY_COMPARATOR);
         return Collections.unmodifiableList(allTasks);
     }
 
     public static <StackType extends IAEStack<StackType>> long adjustByteCost(CraftingRequest<StackType> request,
             long byteCost) {
-        for (final ToLongBiFunction<CraftingRequest<?>, Long> unsafeAdjuster : Multimaps
-                .filterKeys(byteAmountAdjusters, key -> key.isAssignableFrom(request.stackTypeClass)).values()) {
-            final ToLongBiFunction<CraftingRequest<StackType>, Long> adjuster = (ToLongBiFunction<CraftingRequest<StackType>, Long>) (Object) unsafeAdjuster;
-            byteCost = adjuster.applyAsLong(request, byteCost);
+        Class<? extends IAEStack<?>>[] keyArray = byteAmountAdjusters.keyArray();
+        int size = keyArray.length;
+        for (int i = 0; i < size; i++) {
+            Class<? extends IAEStack<?>> aClass = keyArray[i];
+            if (aClass == null) {
+                // We never remove from the byteAmountAdjusters map, therefore the key array will never have holes,
+                // allowing us to exit early here
+                break;
+            }
+
+            if (!aClass.isAssignableFrom(request.stackTypeClass)) {
+                continue;
+            }
+
+            for (ToLongBiFunction<CraftingRequest<?>, Long> value : byteAmountAdjusters.valuesArrayAt(i)) {
+                if (value == null) {
+                    // See comment on break above
+                    break;
+                }
+
+                final ToLongBiFunction<CraftingRequest<StackType>, Long> adjuster = (ToLongBiFunction<CraftingRequest<StackType>, Long>) (Object) value;
+                byteCost = adjuster.applyAsLong(request, byteCost);
+            }
         }
+
         return byteCost;
     }
 
