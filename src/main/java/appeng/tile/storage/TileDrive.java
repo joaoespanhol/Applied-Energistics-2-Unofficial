@@ -406,14 +406,17 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
                     }
                 }
                 if (freeSlot != -1) {
-                    ItemStack stickyCard = p.getHeldItem().copy();
-                    stickyCard.stackSize = 1;
-                    cellUpgrades.setInventorySlotContents(freeSlot, stickyCard);
-                    ItemStack heldItemStack = p.getHeldItem();
-                    heldItemStack.stackSize--;
-                    p.inventory.setInventorySlotContents(
-                            p.inventory.currentItem,
-                            heldItemStack.stackSize == 0 ? null : heldItemStack);
+                    ItemStack hand = p.getHeldItem();
+                    if(hand != null && hand.stackSize - 1 >= 0) {
+                        ItemStack stickyCard = p.getHeldItem().copy();
+                        stickyCard.stackSize = 1;
+                        cellUpgrades.setInventorySlotContents(freeSlot, stickyCard);
+                        ItemStack heldItemStack = p.getHeldItem();
+                        heldItemStack.stackSize--;
+                        p.inventory.setInventorySlotContents(
+                                p.inventory.currentItem,
+                                heldItemStack.stackSize == 0 ? null : heldItemStack);
+                    }
                 }
             }
             idx++;
