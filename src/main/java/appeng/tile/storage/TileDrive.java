@@ -407,7 +407,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
                 }
                 if (freeSlot != -1) {
                     ItemStack hand = p.getHeldItem();
-                    if(hand != null && hand.stackSize - 1 >= 0) {
+                    if (hand != null && hand.stackSize - 1 >= 0) {
                         ItemStack stickyCard = p.getHeldItem().copy();
                         stickyCard.stackSize = 1;
                         cellUpgrades.setInventorySlotContents(freeSlot, stickyCard);
