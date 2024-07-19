@@ -12,6 +12,16 @@ package appeng.block.storage;
 
 import java.util.EnumSet;
 
+import appeng.api.config.Upgrades;
+import appeng.api.implementations.items.IAEWrench;
+import appeng.core.localization.PlayerMessages;
+import appeng.items.materials.ItemMultiMaterial;
+import appeng.items.tools.ToolAdvancedNetworkTool;
+import appeng.items.tools.ToolNetworkTool;
+import appeng.items.tools.quartz.ToolQuartzWrench;
+import gregtech.api.GregTech_API;
+import gregtech.api.util.GT_Utility;
+import gregtech.common.tools.GT_Tool_WireCutter;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -50,6 +60,11 @@ public class BlockDrive extends AEBaseTileBlock {
         final TileDrive tg = this.getTileEntity(w, x, y, z);
         if (tg != null) {
             if (Platform.isServer()) {
+                if (GT_Utility.isStackInList(p.getHeldItem(), GregTech_API.sWireCutterList)) {
+                    tg.lockCells();
+                    p.addChatMessage(PlayerMessages.DriveLocked.get());
+                    return true;
+                }
                 Platform.openGUI(p, tg, ForgeDirection.getOrientation(side), GuiBridge.GUI_DRIVE);
             }
             return true;

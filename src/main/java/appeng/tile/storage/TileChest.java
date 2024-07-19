@@ -14,6 +14,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import appeng.api.config.Upgrades;
+import appeng.api.storage.ICellInventory;
+import appeng.api.storage.ICellInventoryHandler;
+import appeng.api.storage.ICellWorkbenchItem;
+import appeng.items.materials.ItemMultiMaterial;
+import appeng.items.storage.ItemExtremeStorageCell;
+import appeng.util.item.ItemList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -701,6 +708,55 @@ public class TileChest extends AENetworkPowerTile
     @Override
     public void saveChanges(final IMEInventory cellInventory) {
         this.worldObj.markTileEntityChunkModified(this.xCoord, this.yCoord, this.zCoord, this);
+    }
+
+    public boolean lockCells() {
+        final ItemStack cell = this.inv.getStackInSlot(1);
+        if(cellHandler == null || cell == null || !(cell.getItem() instanceof ItemExtremeStorageCell)) {
+            return false;
+        }
+        final IMEInventoryHandler<?> inv = cellHandler.getCellInventory(cell, this, StorageChannel.ITEMS);
+        if(inv instanceof ICellInventoryHandler handler) {
+            final ICellInventory cellInventory = handler.getCellInv();
+            if(cellInventory != null) {
+                if(cellInventory.getStoredItemTypes() != 0) {
+                    cellInventory.getConfigInventory().setInventorySlotContents(0, handler.getAvailableItems(new ItemList()).getFirstItem().getItemStack());
+                }
+            }
+        }
+        return true;
+    }
+
+    public boolean applyStickyToCells(EntityPlayer p) {
+        ItemStack cell = this.inv.getStackInSlot(1);
+        if(cellHandler == null || cell == null || !(cell.getItem() instanceof ItemExtremeStorageCell)) {
+            return true;
+        }
+        if(cell.getItem() instanceof ICellWorkbenchItem cellItem) {
+            IInventory cellUpgrades = cellItem.getUpgradesInventory(cell);
+            int freeSlot = -1;
+            for(int i = 0; i < cellUpgrades.getSizeInventory(); i++) {
+                if(freeSlot == -1 && cellUpgrades.getStackInSlot(i) == null) {
+                    freeSlot = i;
+                    continue;
+                } else if(cellUpgrades.getStackInSlot(i) == null) {
+                    continue;
+                }
+                if(ItemMultiMaterial.instance.getType(cellUpgrades.getStackInSlot(i)) == Upgrades.STICKY) {
+                    freeSlot = -1;
+                    break;
+                }
+            }
+            if(freeSlot != -1) {
+                ItemStack stickyCard = p.getHeldItem().copy();
+                stickyCard.stackSize = 1;
+                cellUpgrades.setInventorySlotContents(freeSlot, stickyCard);
+                ItemStack heldItemStack = p.getHeldItem();
+                heldItemStack.stackSize--;
+                p.inventory.setInventorySlotContents(p.inventory.currentItem, heldItemStack.stackSize == 0 ? null : heldItemStack);
+            }
+        }
+        return true;
     }
 
     private static class ChestNoHandler extends Exception {

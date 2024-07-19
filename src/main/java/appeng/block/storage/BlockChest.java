@@ -12,6 +12,8 @@ package appeng.block.storage;
 
 import java.util.EnumSet;
 
+import gregtech.api.GregTech_API;
+import gregtech.api.util.GT_Utility;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -50,6 +52,13 @@ public class BlockChest extends AEBaseTileBlock {
         final TileChest tg = this.getTileEntity(w, x, y, z);
         if (tg != null && !p.isSneaking()) {
             if (Platform.isClient()) {
+                return true;
+            }
+
+            if (GT_Utility.isStackInList(p.getHeldItem(), GregTech_API.sWireCutterList)) {
+                if(tg.lockCells()) {
+                    p.addChatMessage(PlayerMessages.ChestLocked.get());
+                }
                 return true;
             }
 
