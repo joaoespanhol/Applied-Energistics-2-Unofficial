@@ -12,16 +12,6 @@ package appeng.block.storage;
 
 import java.util.EnumSet;
 
-import appeng.api.config.Upgrades;
-import appeng.api.implementations.items.IAEWrench;
-import appeng.core.localization.PlayerMessages;
-import appeng.items.materials.ItemMultiMaterial;
-import appeng.items.tools.ToolAdvancedNetworkTool;
-import appeng.items.tools.ToolNetworkTool;
-import appeng.items.tools.quartz.ToolQuartzWrench;
-import gregtech.api.GregTech_API;
-import gregtech.api.util.GT_Utility;
-import gregtech.common.tools.GT_Tool_WireCutter;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -30,11 +20,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 import appeng.block.AEBaseTileBlock;
 import appeng.client.render.blocks.RenderDrive;
 import appeng.core.features.AEFeature;
+import appeng.core.localization.PlayerMessages;
 import appeng.core.sync.GuiBridge;
 import appeng.tile.storage.TileDrive;
 import appeng.util.Platform;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import gregtech.api.GregTech_API;
+import gregtech.api.util.GT_Utility;
 
 public class BlockDrive extends AEBaseTileBlock {
 
