@@ -14,12 +14,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import appeng.api.AEApi;
+import appeng.api.config.Upgrades;
 import appeng.api.implementations.tiles.IChestOrDrive;
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGridNode;
@@ -34,6 +36,9 @@ import appeng.api.networking.ticking.IGridTickable;
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.storage.ICellHandler;
+import appeng.api.storage.ICellInventory;
+import appeng.api.storage.ICellInventoryHandler;
+import appeng.api.storage.ICellWorkbenchItem;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.StorageChannel;
@@ -41,6 +46,8 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.util.AECableType;
 import appeng.api.util.DimensionalCoord;
 import appeng.helpers.IPriorityHost;
+import appeng.items.materials.ItemMultiMaterial;
+import appeng.items.storage.ItemExtremeStorageCell;
 import appeng.me.GridAccessException;
 import appeng.me.storage.MEInventoryHandler;
 import appeng.tile.TileEvent;
@@ -49,6 +56,7 @@ import appeng.tile.grid.AENetworkInvTile;
 import appeng.tile.inventory.AppEngInternalInventory;
 import appeng.tile.inventory.InvOperation;
 import appeng.util.Platform;
+import appeng.util.item.ItemList;
 import io.netty.buffer.ByteBuf;
 
 public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPriorityHost, IGridTickable {
@@ -328,5 +336,71 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     @Override
     public void saveChanges(final IMEInventory cellInventory) {
         this.worldObj.markTileEntityChunkModified(this.xCoord, this.yCoord, this.zCoord, this);
+    }
+
+    public void lockCells() {
+        int idx = 0;
+        for (ICellHandler cellHandler : this.handlersBySlot) {
+            final ItemStack cell = this.inv.getStackInSlot(idx);
+            if (cellHandler == null || cell == null || !(cell.getItem() instanceof ItemExtremeStorageCell)) {
+                idx++;
+                continue;
+            }
+            final IMEInventoryHandler<?> inv = cellHandler.getCellInventory(cell, this, StorageChannel.ITEMS);
+            if (inv instanceof ICellInventoryHandler handler) {
+                final ICellInventory cellInventory = handler.getCellInv();
+                if (cellInventory != null) {
+                    if (cellInventory.getStoredItemTypes() != 0) {
+                        cellInventory.getConfigInventory().setInventorySlotContents(
+                                0,
+                                handler.getAvailableItems(new ItemList()).getFirstItem().getItemStack());
+                    }
+                }
+            }
+            idx++;
+        }
+
+    }
+
+    public boolean applyStickyToCells(EntityPlayer p) {
+        int idx = 0;
+        for (ICellHandler cellHandler : this.handlersBySlot) {
+            ItemStack cell = this.inv.getStackInSlot(idx);
+            if (cellHandler == null || cell == null || !(cell.getItem() instanceof ItemExtremeStorageCell)) {
+                idx++;
+                continue;
+            }
+            if (cell.getItem() instanceof ICellWorkbenchItem cellItem) {
+                IInventory cellUpgrades = cellItem.getUpgradesInventory(cell);
+                int freeSlot = -1;
+                for (int i = 0; i < cellUpgrades.getSizeInventory(); i++) {
+                    if (freeSlot == -1 && cellUpgrades.getStackInSlot(i) == null) {
+                        freeSlot = i;
+                        continue;
+                    } else if (cellUpgrades.getStackInSlot(i) == null) {
+                        continue;
+                    }
+                    if (ItemMultiMaterial.instance.getType(cellUpgrades.getStackInSlot(i)) == Upgrades.STICKY) {
+                        freeSlot = -1;
+                        break;
+                    }
+                }
+                if (freeSlot != -1) {
+                    ItemStack hand = p.getHeldItem();
+                    if (hand != null && hand.stackSize - 1 >= 0) {
+                        ItemStack stickyCard = p.getHeldItem().copy();
+                        stickyCard.stackSize = 1;
+                        cellUpgrades.setInventorySlotContents(freeSlot, stickyCard);
+                        ItemStack heldItemStack = p.getHeldItem();
+                        heldItemStack.stackSize--;
+                        p.inventory.setInventorySlotContents(
+                                p.inventory.currentItem,
+                                heldItemStack.stackSize == 0 ? null : heldItemStack);
+                    }
+                }
+            }
+            idx++;
+        }
+        return false;
     }
 }
