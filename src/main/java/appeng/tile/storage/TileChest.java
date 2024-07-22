@@ -712,8 +712,8 @@ public class TileChest extends AENetworkPowerTile
 
     public boolean lockCells() {
         final ItemStack cell = this.inv.getStackInSlot(1);
-        if (cellHandler == null || cell == null || !(cell.getItem() instanceof ItemExtremeStorageCell)) {
-            return false;
+        if (cellHandler == null || cell == null || !(cell.getItem() instanceof ItemExtremeStorageCell) || (cell.getItem() instanceof ItemExtremeStorageCell exCell && exCell.getTotalTypes(cell) != 1)) {
+            return true;
         }
         final IMEInventoryHandler<?> inv = cellHandler.getCellInventory(cell, this, StorageChannel.ITEMS);
         if (inv instanceof ICellInventoryHandler handler) {
@@ -731,33 +731,39 @@ public class TileChest extends AENetworkPowerTile
 
     public boolean applyStickyToCells(EntityPlayer p) {
         ItemStack cell = this.inv.getStackInSlot(1);
-        if (cellHandler == null || cell == null || !(cell.getItem() instanceof ItemExtremeStorageCell)) {
+        if (cellHandler == null || cell == null || !(cell.getItem() instanceof ItemExtremeStorageCell) || (cell.getItem() instanceof ItemExtremeStorageCell exCell && exCell.getTotalTypes(cell) != 1)) {
             return true;
         }
         if (cell.getItem() instanceof ICellWorkbenchItem cellItem) {
-            IInventory cellUpgrades = cellItem.getUpgradesInventory(cell);
-            int freeSlot = -1;
-            for (int i = 0; i < cellUpgrades.getSizeInventory(); i++) {
-                if (freeSlot == -1 && cellUpgrades.getStackInSlot(i) == null) {
-                    freeSlot = i;
-                    continue;
-                } else if (cellUpgrades.getStackInSlot(i) == null) {
-                    continue;
+            final IMEInventoryHandler<?> inv = cellHandler.getCellInventory(cell, this, StorageChannel.ITEMS);
+            if(inv instanceof ICellInventoryHandler handler) {
+                final ICellInventory cellInventory = handler.getCellInv();
+                if(cellInventory != null && cellInventory.getStoredItemTypes() != 0 && cellInventory.getConfigInventory().getSizeInventory() != 0) {
+                    IInventory cellUpgrades = cellItem.getUpgradesInventory(cell);
+                    int freeSlot = -1;
+                    for (int i = 0; i < cellUpgrades.getSizeInventory(); i++) {
+                        if (freeSlot == -1 && cellUpgrades.getStackInSlot(i) == null) {
+                            freeSlot = i;
+                            continue;
+                        } else if (cellUpgrades.getStackInSlot(i) == null) {
+                            continue;
+                        }
+                        if (ItemMultiMaterial.instance.getType(cellUpgrades.getStackInSlot(i)) == Upgrades.STICKY) {
+                            freeSlot = -1;
+                            break;
+                        }
+                    }
+                    if (freeSlot != -1) {
+                        ItemStack stickyCard = p.getHeldItem().copy();
+                        stickyCard.stackSize = 1;
+                        cellUpgrades.setInventorySlotContents(freeSlot, stickyCard);
+                        ItemStack heldItemStack = p.getHeldItem();
+                        heldItemStack.stackSize--;
+                        p.inventory.setInventorySlotContents(
+                                p.inventory.currentItem,
+                                heldItemStack.stackSize == 0 ? null : heldItemStack);
+                    }
                 }
-                if (ItemMultiMaterial.instance.getType(cellUpgrades.getStackInSlot(i)) == Upgrades.STICKY) {
-                    freeSlot = -1;
-                    break;
-                }
-            }
-            if (freeSlot != -1) {
-                ItemStack stickyCard = p.getHeldItem().copy();
-                stickyCard.stackSize = 1;
-                cellUpgrades.setInventorySlotContents(freeSlot, stickyCard);
-                ItemStack heldItemStack = p.getHeldItem();
-                heldItemStack.stackSize--;
-                p.inventory.setInventorySlotContents(
-                        p.inventory.currentItem,
-                        heldItemStack.stackSize == 0 ? null : heldItemStack);
             }
         }
         return true;
