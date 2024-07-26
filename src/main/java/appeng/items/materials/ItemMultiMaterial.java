@@ -56,6 +56,8 @@ import appeng.core.features.IStackSrc;
 import appeng.core.features.MaterialStackSrc;
 import appeng.core.features.NameResolver;
 import appeng.items.AEBaseItem;
+import appeng.tile.storage.TileChest;
+import appeng.tile.storage.TileDrive;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
 
@@ -273,6 +275,19 @@ public final class ItemMultiMaterial extends AEBaseItem implements IStorageCompo
 
         if (player.isSneaking()) {
             final TileEntity te = world.getTileEntity(x, y, z);
+            if (te instanceof TileDrive drive) {
+                if (is != null && this.getType(is) == Upgrades.STICKY) {
+                    if (Platform.isServer()) {
+                        return drive.applyStickyToCells(player);
+                    }
+                }
+            } else if (te instanceof TileChest chest) {
+                if (is != null && this.getType(is) == Upgrades.STICKY) {
+                    if (Platform.isServer()) {
+                        return chest.applyStickyToCells(player);
+                    }
+                }
+            }
             IInventory upgrades = null;
 
             if (te instanceof IPartHost) {
