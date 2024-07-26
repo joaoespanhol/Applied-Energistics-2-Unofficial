@@ -91,8 +91,8 @@ public class ItemExtremeStorageCell extends ItemBasicStorageCell {
                                 + NumberFormat.getInstance().format(cellInventory.getTotalItemTypes())
                                 + ' '
                                 + GuiText.Types.getLocal());
-if (cellInventory.getTotalItemTypes() == 1 && cellInventory.getStoredItemTypes() != 0) {
-                ItemStack itemStack = handler.getAvailableItems(new ItemList(), IterationCounter.fetchNewId())
+                if (cellInventory.getTotalItemTypes() == 1 && cellInventory.getStoredItemTypes() != 0) {
+                    ItemStack itemStack = handler.getAvailableItems(new ItemList(), IterationCounter.fetchNewId())
                             .getFirstItem().getItemStack();
                     lines.add(GuiText.Contains.getLocal() + ": " + itemStack.getDisplayName());
                 }
