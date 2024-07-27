@@ -900,10 +900,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         final MECraftingInventory ci = new MECraftingInventory(storage, true, false, false);
 
         try {
+            job.startCrafting(ci, this, src);
             if (ci.commit(src)) {
                 this.finalOutput.add(job.getOutput());
                 this.usedStorage += job.getByteTotal();
-                job.startCrafting(ci, this, src);
 
                 this.prepareStepCount();
                 this.markDirty();
