@@ -46,6 +46,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.api.util.AECableType;
 import appeng.api.util.DimensionalCoord;
 import appeng.api.util.IConfigManager;
+import appeng.core.AELog;
 import appeng.core.settings.TickRates;
 import appeng.helpers.Reflected;
 import appeng.me.GridAccessException;
@@ -446,6 +447,7 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         }
 
         boolean didStuff;
+        boolean warned = false;
 
         do {
             didStuff = false;
@@ -453,6 +455,18 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
             for (final IAEStack s : myList) {
                 final long totalStackSize = s.getStackSize();
                 if (totalStackSize > 0) {
+                    if (s.isCraftable()) {
+                        if (!warned) {
+                            warned = true;
+                            AELog.error(
+                                    "Invalid stack encountered in IO port transferContents at %s (%s, %s, %s)",
+                                    worldObj.provider.dimensionId,
+                                    xCoord,
+                                    yCoord,
+                                    zCoord);
+                        }
+                        s.setCraftable(false);
+                    }
                     final IAEStack stack = destination.injectItems(s, Actionable.SIMULATE, this.mySrc);
 
                     long possible = 0;
