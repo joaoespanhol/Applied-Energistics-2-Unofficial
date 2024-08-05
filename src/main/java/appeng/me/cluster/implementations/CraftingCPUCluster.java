@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -32,10 +33,13 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -74,6 +78,7 @@ import appeng.api.util.IInterfaceViewable;
 import appeng.api.util.WorldCoord;
 import appeng.container.ContainerNull;
 import appeng.core.AELog;
+import appeng.core.localization.GuiText;
 import appeng.core.localization.PlayerMessages;
 import appeng.crafting.CraftBranchFailure;
 import appeng.crafting.CraftingLink;
@@ -93,6 +98,7 @@ import cpw.mods.fml.common.FMLCommonHandler;
 public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
     private static final String LOG_MARK_AS_COMPLETE = "Completed job for %s.";
+    private static final ChatComponentText GREEN_CHAT = new ChatComponentText(EnumChatFormatting.GREEN + "");
 
     private final WorldCoord min;
     private final WorldCoord max;
@@ -129,6 +135,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private long elapsedTime;
     private long startItemCount;
     private long remainingItemCount;
+
+    private boolean needSendRemind = false;
+
+    private String playerName;
 
     public CraftingCPUCluster(final WorldCoord min, final WorldCoord max) {
         this.min = min;
@@ -405,12 +415,29 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             AELog.crafting(LOG_MARK_AS_COMPLETE, logStack);
         }
 
+        if (true || this.needSendRemind && this.playerName != null) {
+            // Get EntityPlayer
+            EntityPlayer pl = this.getWorld().getPlayerEntityByName(playerName);
+            if (pl != null) {
+                final String elapsedTimeText = DurationFormatUtils.formatDuration(
+                        TimeUnit.MILLISECONDS.convert(this.getElapsedTime(), TimeUnit.NANOSECONDS),
+                        GuiText.ETAFormat.getLocal());
+                // Send message to player
+                pl.addChatMessage(
+                        PlayerMessages.FinishCraftingRemind.get(
+                                new ChatComponentText(EnumChatFormatting.GREEN + String.valueOf(this.startItemCount)),
+                                this.finalOutput.getItemStack().func_151000_E(),
+                                new ChatComponentText(EnumChatFormatting.GREEN + elapsedTimeText)));
+            }
+        }
+
         this.usedStorage = 0;
         this.remainingItemCount = 0;
         this.startItemCount = 0;
         this.lastTime = 0;
         this.elapsedTime = 0;
         this.isComplete = true;
+        this.playerName = null;
     }
 
     private void updateCPU() {
@@ -809,6 +836,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         try {
             this.waitingFor.resetStatus();
             job.startCrafting(ci, this, src);
+            this.playerName = ((PlayerSource) src).player.getDisplayName();
             if (ci.commit(src)) {
                 if (job.getOutput() != null) {
                     this.finalOutput = job.getOutput();
@@ -1098,6 +1126,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         data.setBoolean("waiting", this.waiting);
         data.setBoolean("isComplete", this.isComplete);
         data.setLong("usedStorage", this.usedStorage);
+        data.setString("playerName", this.playerName);
+        data.setBoolean("needSendRemind", this.needSendRemind);
 
         if (this.myLastLink != null) {
             final NBTTagCompound link = new NBTTagCompound();
@@ -1176,6 +1206,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.waiting = data.getBoolean("waiting");
         this.isComplete = data.getBoolean("isComplete");
         this.usedStorage = data.getLong("usedStorage");
+        this.needSendRemind = data.getBoolean("needSendRemind");
 
         if (data.hasKey("link")) {
             final NBTTagCompound link = data.getCompoundTag("link");
@@ -1206,6 +1237,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.elapsedTime = data.getLong("elapsedTime");
         this.startItemCount = data.getLong("startItemCount");
         this.remainingItemCount = data.getLong("remainingItemCount");
+        this.playerName = data.getString("playerName");
 
         list = data.getTagList("providers", 10);
         for (int x = 0; x < list.tagCount(); x++) {
@@ -1309,6 +1341,14 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     @Override
     public long getStartItemCount() {
         return this.startItemCount;
+    }
+
+    public boolean isNeedSendRemind() {
+        return needSendRemind;
+    }
+
+    public void setNeedSendRemind(boolean needSendRemind) {
+        this.needSendRemind = needSendRemind;
     }
 
     @SuppressWarnings("unchecked")
