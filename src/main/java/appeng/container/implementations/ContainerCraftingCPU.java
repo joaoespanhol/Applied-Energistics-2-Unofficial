@@ -11,11 +11,15 @@
 package appeng.container.implementations;
 
 import java.io.IOException;
+import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ICrafting;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import appeng.api.AEApi;
@@ -33,6 +37,7 @@ import appeng.container.AEBaseContainer;
 import appeng.container.guisync.GuiSync;
 import appeng.core.AELog;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketCompressedNBT;
 import appeng.core.sync.packets.PacketCraftingRemainingOperations;
 import appeng.core.sync.packets.PacketMEInventoryUpdate;
 import appeng.core.sync.packets.PacketValueConfig;
@@ -52,6 +57,9 @@ public class ContainerCraftingCPU extends AEBaseContainer
 
     @GuiSync(0)
     public long elapsed = -1;
+
+    @GuiSync(10)
+    public boolean isFollow = false;
 
     public ContainerCraftingCPU(final InventoryPlayer ip, final Object te) {
         super(ip, te);
@@ -145,10 +153,22 @@ public class ContainerCraftingCPU extends AEBaseContainer
         if (Platform.isServer() && this.getMonitor() != null && !this.list.isEmpty()) {
             try {
                 this.setElapsedTime(this.getMonitor().getElapsedTime());
+                this.setIsFollow(this.getMonitor().isNeedSendRemind());
+
+                NBTTagCompound nbttc = new NBTTagCompound();
+                NBTTagList tagList = new NBTTagList();
+                if (this.getClusterFollowPlayerList() != null) {
+                    for (String name : this.getClusterFollowPlayerList()) {
+                        tagList.appendTag(new NBTTagString(name));
+                    }
+                }
+                nbttc.setTag("playNameList", tagList);
 
                 final PacketMEInventoryUpdate a = new PacketMEInventoryUpdate((byte) 0);
                 final PacketMEInventoryUpdate b = new PacketMEInventoryUpdate((byte) 1);
                 final PacketMEInventoryUpdate c = new PacketMEInventoryUpdate((byte) 2);
+
+                final PacketCompressedNBT d = new PacketCompressedNBT(nbttc);
 
                 for (final IAEItemStack out : this.list) {
                     a.appendItem(this.getMonitor().getItemStack(out, CraftingItemList.STORAGE));
@@ -171,6 +191,9 @@ public class ContainerCraftingCPU extends AEBaseContainer
                         if (!c.isEmpty()) {
                             NetworkHandler.instance.sendTo(c, (EntityPlayerMP) g);
                         }
+
+                        NetworkHandler.instance.sendTo(d, (EntityPlayerMP) g);
+
                         NetworkHandler.instance.sendTo(
                                 new PacketCraftingRemainingOperations(this.getMonitor().getRemainingOperations()),
                                 (EntityPlayerMP) g);
@@ -238,5 +261,33 @@ public class ContainerCraftingCPU extends AEBaseContainer
 
     private void setNetwork(final IGrid network) {
         this.network = network;
+    }
+
+    public void revertFollow() {
+        if (this.getMonitor() != null) {
+            this.getMonitor().setNeedSendRemind(!this.getMonitor().isNeedSendRemind());
+            // this.setIsFollow(this.getMonitor().isNeedSendRemind());
+        }
+    }
+
+    public boolean isFollow() {
+        return isFollow;
+    }
+
+    private void setIsFollow(final boolean isFollow) {
+        this.isFollow = isFollow;
+    }
+
+    public void addOrRemovePlayerName(final String name) {
+        if (this.getMonitor() != null) {
+            this.getMonitor().addOrRemovePlayerName(name);
+        }
+    }
+
+    public List<String> getClusterFollowPlayerList() {
+        if (this.getMonitor() != null) {
+            return this.getMonitor().getPlayerNameList();
+        }
+        return null;
     }
 }
