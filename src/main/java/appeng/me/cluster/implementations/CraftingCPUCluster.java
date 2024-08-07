@@ -417,18 +417,18 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         }
 
         if (this.isFollow && this.followPlayerNameList != null && this.followPlayerNameList.size() > 0) {
-        	
+
             final String elapsedTimeText = DurationFormatUtils.formatDuration(
                     TimeUnit.MILLISECONDS.convert(this.getElapsedTime(), TimeUnit.NANOSECONDS),
                     GuiText.ETAFormat.getLocal());
-            
+
             IChatComponent messageWaitToSend = PlayerMessages.FinishCraftingRemind.get(
                     new ChatComponentText(EnumChatFormatting.GREEN + String.valueOf(this.startItemCount)),
                     this.finalOutput.getItemStack().func_151000_E(),
                     new ChatComponentText(EnumChatFormatting.GREEN + elapsedTimeText));
-            
+
             for (String playerName : this.followPlayerNameList) {
-            	// Get each EntityPlayer
+                // Get each EntityPlayer
                 EntityPlayer pl = this.getWorld().getPlayerEntityByName(playerName);
                 if (pl != null) {
                     // Send message to player
@@ -1251,7 +1251,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.elapsedTime = data.getLong("elapsedTime");
         this.startItemCount = data.getLong("startItemCount");
         this.remainingItemCount = data.getLong("remainingItemCount");
-        
+
         NBTBase tag = data.getTag("playerNameList");
         if (tag != null && tag instanceof NBTTagList ntl) {
             this.followPlayerNameList.clear();
