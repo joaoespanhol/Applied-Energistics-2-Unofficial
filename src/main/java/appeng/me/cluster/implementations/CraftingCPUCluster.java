@@ -843,7 +843,11 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         try {
             this.waitingFor.resetStatus();
             job.startCrafting(ci, this, src);
-            this.followPlayerNameList.add(((PlayerSource) src).player.getDisplayName());
+            try {
+                this.followPlayerNameList.add(((PlayerSource) src).player.getDisplayName());
+            } catch (ClassCastException e) {
+                // If this is not submit from player will be here
+            }
             if (ci.commit(src)) {
                 if (job.getOutput() != null) {
                     this.finalOutput = job.getOutput();
