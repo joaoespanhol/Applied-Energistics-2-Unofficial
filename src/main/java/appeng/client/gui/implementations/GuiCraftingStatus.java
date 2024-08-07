@@ -56,7 +56,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
 
     private final ContainerCraftingStatus status;
     private GuiButton selectCPU;
-    private GuiAeButton needFollow;
+    private GuiAeButton follow;
     private final GuiCraftingCPUTable cpuTable;
 
     private GuiTabButton originalGuiBtn;
@@ -129,7 +129,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
 
         if (btn == this.selectCPU) {
             cpuTable.cycleCPU(rightClick);
-        } else if (btn == this.needFollow) {
+        } else if (btn == this.follow) {
             if (leftClick) {
                 try {
                     NetworkHandler.instance.sendToServer(new PacketValueConfig("TileCrafting.Follow", "Follow"));
@@ -169,7 +169,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
                 GuiText.CraftingCPU.getLocal() + ": " + GuiText.NoCraftingCPUs);
         this.buttonList.add(this.selectCPU);
 
-        this.needFollow = new GuiAeButton(
+        this.follow = new GuiAeButton(
                 1,
                 this.guiLeft + 111,
                 this.guiTop + this.ySize - 25,
@@ -177,7 +177,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
                 20,
                 GuiText.Unfollow.getLocal(),
                 ButtonToolTips.FollowOrUnfollow.getLocal());
-        this.buttonList.add(this.needFollow);
+        this.buttonList.add(this.follow);
 
         if (this.myIcon != null) {
             this.buttonList.add(
@@ -199,7 +199,7 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
 
     @Override
     public void drawScreen(final int mouseX, final int mouseY, final float btn) {
-        this.needFollow.enabled = !this.visual.isEmpty();
+        this.follow.enabled = !this.visual.isEmpty();
         this.cpuTable.drawScreen();
         this.updateCPUButtonText();
         this.updateFollowButtonText();
@@ -303,8 +303,8 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
             }
         }
 
-        this.needFollow.displayString = isFollow ? GuiText.Follow.getLocal() : GuiText.Unfollow.getLocal();
-        this.needFollow.setTootipString(tempTooltip);
+        this.follow.displayString = isFollow ? GuiText.Follow.getLocal() : GuiText.Unfollow.getLocal();
+        this.follow.setTootipString(tempTooltip);
     }
 
     @Override

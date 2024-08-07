@@ -100,7 +100,6 @@ import cpw.mods.fml.common.FMLCommonHandler;
 public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
     private static final String LOG_MARK_AS_COMPLETE = "Completed job for %s.";
-    private static final ChatComponentText GREEN_CHAT = new ChatComponentText(EnumChatFormatting.GREEN + "");
 
     private final WorldCoord min;
     private final WorldCoord max;
@@ -138,9 +137,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private long startItemCount;
     private long remainingItemCount;
 
-    private boolean needSendRemind = false;
+    private boolean isFollow = false;
 
-    private List<String> playerNameList = new ArrayList<>();
+    private List<String> followPlayerNameList = new ArrayList<>();
 
     public CraftingCPUCluster(final WorldCoord min, final WorldCoord max) {
         this.min = min;
@@ -417,16 +416,19 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             AELog.crafting(LOG_MARK_AS_COMPLETE, logStack);
         }
 
-        if (this.needSendRemind && this.playerNameList != null && this.playerNameList.size() > 0) {
+        if (this.isFollow && this.followPlayerNameList != null && this.followPlayerNameList.size() > 0) {
+        	
             final String elapsedTimeText = DurationFormatUtils.formatDuration(
                     TimeUnit.MILLISECONDS.convert(this.getElapsedTime(), TimeUnit.NANOSECONDS),
                     GuiText.ETAFormat.getLocal());
+            
             IChatComponent messageWaitToSend = PlayerMessages.FinishCraftingRemind.get(
                     new ChatComponentText(EnumChatFormatting.GREEN + String.valueOf(this.startItemCount)),
                     this.finalOutput.getItemStack().func_151000_E(),
                     new ChatComponentText(EnumChatFormatting.GREEN + elapsedTimeText));
-            // Get EntityPlayer
-            for (String playerName : this.playerNameList) {
+            
+            for (String playerName : this.followPlayerNameList) {
+            	// Get each EntityPlayer
                 EntityPlayer pl = this.getWorld().getPlayerEntityByName(playerName);
                 if (pl != null) {
                     // Send message to player
@@ -441,8 +443,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.lastTime = 0;
         this.elapsedTime = 0;
         this.isComplete = true;
-        this.needSendRemind = false;
-        this.playerNameList.clear();
+        this.isFollow = false;
+        this.followPlayerNameList.clear();
     }
 
     private void updateCPU() {
@@ -841,7 +843,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         try {
             this.waitingFor.resetStatus();
             job.startCrafting(ci, this, src);
-            this.playerNameList.add(((PlayerSource) src).player.getDisplayName());
+            this.followPlayerNameList.add(((PlayerSource) src).player.getDisplayName());
             if (ci.commit(src)) {
                 if (job.getOutput() != null) {
                     this.finalOutput = job.getOutput();
@@ -1131,14 +1133,14 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         data.setBoolean("waiting", this.waiting);
         data.setBoolean("isComplete", this.isComplete);
         data.setLong("usedStorage", this.usedStorage);
-        data.setBoolean("needSendRemind", this.needSendRemind);
+        data.setBoolean("isFollow", this.isFollow);
 
-        if (this.playerNameList != null && !this.playerNameList.isEmpty()) {
+        if (this.followPlayerNameList != null && !this.followPlayerNameList.isEmpty()) {
             NBTTagList nbtTagList = new NBTTagList();
-            for (String name : this.playerNameList) {
+            for (String name : this.followPlayerNameList) {
                 nbtTagList.appendTag(new NBTTagString(name));
             }
-            data.setTag("playerName", nbtTagList);
+            data.setTag("playerNameList", nbtTagList);
         }
 
         if (this.myLastLink != null) {
@@ -1218,7 +1220,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.waiting = data.getBoolean("waiting");
         this.isComplete = data.getBoolean("isComplete");
         this.usedStorage = data.getLong("usedStorage");
-        this.needSendRemind = data.getBoolean("needSendRemind");
+        this.isFollow = data.getBoolean("isFollow");
 
         if (data.hasKey("link")) {
             final NBTTagCompound link = data.getCompoundTag("link");
@@ -1249,11 +1251,12 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.elapsedTime = data.getLong("elapsedTime");
         this.startItemCount = data.getLong("startItemCount");
         this.remainingItemCount = data.getLong("remainingItemCount");
-        NBTBase tag = data.getTag("playerName");
+        
+        NBTBase tag = data.getTag("playerNameList");
         if (tag != null && tag instanceof NBTTagList ntl) {
-            this.playerNameList.clear();
+            this.followPlayerNameList.clear();
             for (int index = 0; index < ntl.tagCount(); index++) {
-                this.playerNameList.add(ntl.getStringTagAt(index));
+                this.followPlayerNameList.add(ntl.getStringTagAt(index));
             }
         }
 
@@ -1361,23 +1364,25 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         return this.startItemCount;
     }
 
-    public boolean isNeedSendRemind() {
-        return needSendRemind;
+    public boolean isFollow() {
+        return isFollow;
     }
 
-    public void setNeedSendRemind(boolean needSendRemind) {
-        this.needSendRemind = needSendRemind;
+    public void setIsFollow(boolean isFollow) {
+        this.isFollow = isFollow;
     }
 
     public List<String> getPlayerNameList() {
-        return playerNameList;
+        return followPlayerNameList;
     }
 
-    public void addOrRemovePlayerName(final String name) {
-        if (this.playerNameList.contains(name)) {
-            this.playerNameList.remove(name);
+    public boolean addOrRemovePlayerName(final String name) {
+        if (this.followPlayerNameList.contains(name)) {
+            this.followPlayerNameList.remove(name);
+            return true;
         } else {
-            this.playerNameList.add(name);
+            this.followPlayerNameList.add(name);
+            return false;
         }
     }
 

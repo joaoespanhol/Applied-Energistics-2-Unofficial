@@ -153,7 +153,7 @@ public class ContainerCraftingCPU extends AEBaseContainer
         if (Platform.isServer() && this.getMonitor() != null && !this.list.isEmpty()) {
             try {
                 this.setElapsedTime(this.getMonitor().getElapsedTime());
-                this.setIsFollow(this.getMonitor().isNeedSendRemind());
+                this.setIsFollow(this.getMonitor().isFollow());
 
                 NBTTagCompound nbttc = new NBTTagCompound();
                 NBTTagList tagList = new NBTTagList();
@@ -265,8 +265,7 @@ public class ContainerCraftingCPU extends AEBaseContainer
 
     public void revertFollow() {
         if (this.getMonitor() != null) {
-            this.getMonitor().setNeedSendRemind(!this.getMonitor().isNeedSendRemind());
-            // this.setIsFollow(this.getMonitor().isNeedSendRemind());
+            this.getMonitor().setIsFollow(!this.getMonitor().isFollow());
         }
     }
 
