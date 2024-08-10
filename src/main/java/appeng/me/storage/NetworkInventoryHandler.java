@@ -38,11 +38,18 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
     private static final ThreadLocal<LinkedList> DEPTH_SIM = new ThreadLocal<>();
 
     /**
-     * Sorter for the {@link #priorityInventory} list. Sticky inventories are always first. The inventories are then
-     * sorted by priority (highest first), and then by placement pass (1 first, 1&2 second, 2 last).
+     * Sorter for the {@link #priorityInventory} list. Crafting inventories are first followed by Sticky inventories.
+     * The inventories are then sorted by priority (highest first), and then by placement pass (1 first, 1&2 second, 2
+     * last).
      */
-    private static final Comparator<IMEInventoryHandler<?>> STICKY_PRIORITY_PLACEMENT_PASS_SORTER = (o1, o2) -> {
-        int result = Boolean.compare(o2.getSticky(), o1.getSticky());
+    private static final Comparator<IMEInventoryHandler<?>> CRAFTING_STICKY_PRIORITY_PLACEMENT_PASS_SORTER = (o1,
+            o2) -> {
+        int result = Boolean.compare(o2.getCraftingInventory(), o1.getCraftingInventory());
+        if (result != 0) {
+            return result;
+        }
+
+        result = Boolean.compare(o2.getSticky(), o1.getSticky());
         if (result != 0) {
             return result;
         }
@@ -72,7 +79,7 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
     public NetworkInventoryHandler(final StorageChannel chan, final SecurityCache security) {
         this.myChannel = chan;
         this.security = security;
-        this.priorityInventory = new SortedArrayList<>(STICKY_PRIORITY_PLACEMENT_PASS_SORTER);
+        this.priorityInventory = new SortedArrayList<>(CRAFTING_STICKY_PRIORITY_PLACEMENT_PASS_SORTER);
     }
 
     public void addNewStorage(final IMEInventoryHandler<T> h) {
@@ -94,24 +101,11 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         final int size = priorityInventory.size();
 
         int i = 0;
-        boolean stickyInventoryFound = false;
-        // Try to insert into all sticky inventories which are at the beginning of the list
-        for (; i < size && input != null; i++) {
-            final IMEInventoryHandler<T> inv = priorityInventory.get(i);
-            if (!inv.getSticky()) break;
-
-            if (inv.canAccept(input)
-                    && (inv.isPrioritized(input) || inv.extractItems(input, Actionable.SIMULATE, src) != null)) {
-                input = inv.injectItems(input, type, src);
-                stickyInventoryFound = true;
-            }
-        }
-
-        if (stickyInventoryFound || input == null || i >= size) {
+        if (i == size) {
             this.surface(this, type);
             return input;
         }
-
+        boolean stickyInventoryFound = false;
         IMEInventoryHandler<T> inv = priorityInventory.get(i);
         int lastPriority = inv.getPriority();
         outer: while (true) {
@@ -125,6 +119,7 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
                 final boolean validForPass1 = inv.validForPass(1);
                 if (validForPass1 && (canAcceptInput = inv.canAccept(input))
                         && (inv.isPrioritized(input) || inv.extractItems(input, Actionable.SIMULATE, src) != null)) {
+                    if (!stickyInventoryFound && inv.getSticky()) stickyInventoryFound = true;
                     input = inv.injectItems(input, type, src);
                     if (input == null) break outer;
                 }
@@ -147,6 +142,11 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
 
                 inv = priorityInventory.get(i);
 
+                // If we found any matching sticky inventory we only allow further injection in other sticky inventories
+                if (stickyInventoryFound && !inv.getSticky()) {
+                    break outer;
+                }
+
                 final int priority = inv.getPriority();
                 final boolean prioritySwitch = lastPriority != priority;
                 lastPriority = priority;
@@ -161,7 +161,7 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
                 inv = priorityInventory.get(i);
                 lastPriority = inv.getPriority();
                 while (true) {
-                    if (inv.canAccept(input) && !inv.isPrioritized(input)) {
+                    if (inv.canAccept(input) && !inv.isPrioritized(input) && !inv.getSticky()) {
                         input = inv.injectItems(input, type, src);
                         if (input == null) break outer;
                     }

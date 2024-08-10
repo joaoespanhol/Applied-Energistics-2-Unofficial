@@ -181,4 +181,9 @@ public class MEMonitorHandler<StackType extends IAEStack> implements IMEMonitor<
     public boolean getSticky() {
         return this.internalHandler.getSticky();
     }
+
+    @Override
+    public boolean getCraftingInventory() {
+        return this.internalHandler.getCraftingInventory();
+    }
 }
