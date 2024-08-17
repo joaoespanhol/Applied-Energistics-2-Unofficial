@@ -124,7 +124,7 @@ public class GuiOreFilter extends AEBaseGui implements IDropToFillTextField {
     @Override
     protected void mouseClicked(final int xCoord, final int yCoord, final int btn) {
 
-        if (btn == 0 && NEI.searchField.existsSearchField()) {
+        if (btn == 0 && NEI.searchField.existsSearchField() && textField.isMouseIn(xCoord, yCoord)) {
             if (textField.isFocused() && (System.currentTimeMillis() - lastclicktime < 400)) { // double click
                 useNEIFilter = !useNEIFilter;
                 NEI.searchField.updateFilter();
