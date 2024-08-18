@@ -31,6 +31,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     private IncludeExclude myWhitelist;
     private AccessRestriction myAccess;
     private IPartitionList<T> myPartitionList;
+    private IPartitionList<T> myExtractPartitionList;
 
     private AccessRestriction cachedAccessRestriction;
     private boolean hasReadAccess;
@@ -48,6 +49,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         this.myWhitelist = IncludeExclude.WHITELIST;
         this.setBaseAccess(AccessRestriction.READ_WRITE);
         this.myPartitionList = new DefaultPriorityList<>();
+        this.myExtractPartitionList = new DefaultPriorityList<>();
     }
 
     public IncludeExclude getWhitelist() {
@@ -69,7 +71,15 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         this.hasWriteAccess = this.cachedAccessRestriction.hasPermission(AccessRestriction.WRITE);
     }
 
-    IPartitionList<T> getPartitionList() {
+    public IPartitionList<T> getExtractPartitionList() {
+        return this.myExtractPartitionList;
+    }
+
+    public void setExtractPartitionList(IPartitionList<T> myExtractPartitionList) {
+        this.myExtractPartitionList = myExtractPartitionList;
+    }
+
+    public IPartitionList<T> getPartitionList() {
         return this.myPartitionList;
     }
 
@@ -91,6 +101,9 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         if (!this.hasReadAccess) {
             return null;
         }
+        if (!myExtractPartitionList.isEmpty() && !myExtractPartitionList.isListed(request)) {
+            return null;
+        }
 
         return this.internal.extractItems(request, type, src);
     }
@@ -101,7 +114,18 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
             return out;
         }
 
-        return this.internal.getAvailableItems(out, iteration);
+        if (this.isExtractFilter() && !myExtractPartitionList.isEmpty()) {
+            final IItemList<T> allAvailableItems = this.internal
+                    .getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
+            for (T item : allAvailableItems) {
+                if (myExtractPartitionList.isListed(item)) {
+                    out.add(item);
+                }
+            }
+            return out;
+        } else {
+            return this.internal.getAvailableItems(out, iteration);
+        }
     }
 
     @Override
@@ -110,7 +134,17 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
             return null;
         }
 
+        if (this.isExtractFilter() && !myExtractPartitionList.isEmpty() && !myExtractPartitionList.isListed(request)) {
+            return null;
+        }
+
         return this.internal.getAvailableItem(request, iteration);
+    }
+
+    private boolean isExtractFilter() {
+        // only READ since READ_WRITE would break compat of existing storage buses
+        // could use a new setting that is applied via button or a card too
+        return this.cachedAccessRestriction == AccessRestriction.READ;
     }
 
     @Override

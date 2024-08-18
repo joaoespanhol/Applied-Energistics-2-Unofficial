@@ -15,8 +15,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -28,7 +26,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import appeng.api.AEApi;
 import appeng.api.config.AccessRestriction;
-import appeng.api.config.Actionable;
 import appeng.api.config.FuzzyMode;
 import appeng.api.config.IncludeExclude;
 import appeng.api.config.Settings;
@@ -79,9 +76,7 @@ import appeng.transformer.annotations.Integration.Interface;
 import appeng.transformer.annotations.Integration.Method;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
-import appeng.util.prioitylist.DefaultPriorityList;
 import appeng.util.prioitylist.FuzzyPriorityList;
-import appeng.util.prioitylist.IPartitionList;
 import appeng.util.prioitylist.OreFilteredList;
 import appeng.util.prioitylist.PrecisePriorityList;
 import buildcraft.api.transport.IPipeConnection;
@@ -103,7 +98,6 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     private boolean wasActive = false;
     private byte resetCacheLogic = 0;
     private String oreFilterString = "";
-    private IPartitionList<IAEItemStack> myExportPartitionList;
 
     @Reflected
     public PartStorageBus(final ItemStack is) {
@@ -113,7 +107,6 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         this.getConfigManager().registerSetting(Settings.STORAGE_FILTER, StorageFilter.EXTRACTABLE_ONLY);
         this.getConfigManager().registerSetting(Settings.STICKY_MODE, YesNo.NO);
         this.mySrc = new MachineSource(this);
-        this.myExportPartitionList = new DefaultPriorityList<>();
     }
 
     @Override
@@ -223,27 +216,29 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
             final BaseActionSource source) {
         try {
             if (this.getProxy().isActive()) {
-                if (!myExportPartitionList.isEmpty()) {
-                    List<IAEItemStack> partitionedChanges = new ArrayList<>();
-                    for (final IAEItemStack changedItem : change) {
-                        if (this.myExportPartitionList.isListed(changedItem)) {
-                            partitionedChanges.add(changedItem);
-                        }
-                    }
-
-                    if(!partitionedChanges.isEmpty()) {
-                        this.getProxy().getStorage().postAlterationOfStoredItems(
-                                StorageChannel.ITEMS,
-                                Collections.unmodifiableList(partitionedChanges),
-                                this.mySrc);
-                    }
-                } else {
-                    this.getProxy().getStorage().postAlterationOfStoredItems(StorageChannel.ITEMS, change, this.mySrc);
-                }
+                Iterable<IAEItemStack> filteredChanges = filterChanges(change);
+                this.getProxy().getStorage()
+                        .postAlterationOfStoredItems(StorageChannel.ITEMS, filteredChanges, this.mySrc);
             }
         } catch (final GridAccessException e) {
             // :(
         }
+    }
+
+    /**
+     * Filters the changes to only include items that pass the handlers extract filter.
+     */
+    private Iterable<IAEItemStack> filterChanges(Iterable<IAEItemStack> change) {
+        if (!this.handler.getExtractPartitionList().isEmpty()) {
+            List<IAEItemStack> filteredChanges = new ArrayList<>();
+            for (final IAEItemStack changedItem : change) {
+                if (this.handler.getExtractPartitionList().isListed(changedItem)) {
+                    filteredChanges.add(changedItem);
+                }
+            }
+            return Collections.unmodifiableList(filteredChanges);
+        }
+        return change;
     }
 
     @Override
@@ -398,47 +393,6 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         Platform.postListChanges(before, after, this, this.mySrc);
     }
 
-    private class StorageBusInventoryHandler extends MEInventoryHandler<IAEItemStack> {
-
-        public StorageBusInventoryHandler(IMEInventory<IAEItemStack> i) {
-            super(i, StorageChannel.ITEMS);
-        }
-
-        @Override
-        public IItemList<IAEItemStack> getAvailableItems(IItemList<IAEItemStack> out, int iteration) {
-            if (!myExportPartitionList.isEmpty()) {
-                final IItemList<IAEItemStack> allAvailableItems = super.getAvailableItems(
-                        AEApi.instance().storage().createItemList(),
-                        iteration);
-                for (IAEItemStack item : allAvailableItems) {
-                    if (myExportPartitionList.isListed(item)) {
-                        out.add(item);
-                    }
-                }
-                return out;
-            } else {
-                return super.getAvailableItems(out, iteration);
-            }
-        }
-
-        @Override
-        public IAEItemStack getAvailableItem(@Nonnull IAEItemStack request, int iteration) {
-            if (!myExportPartitionList.isEmpty() && !myExportPartitionList.isListed(request)) {
-                return null;
-            }
-            return super.getAvailableItem(request, iteration);
-        }
-
-        @Override
-        public IAEItemStack extractItems(IAEItemStack request, Actionable type, BaseActionSource src) {
-            if (!myExportPartitionList.isEmpty() && !myExportPartitionList.isListed(request)) {
-                return null;
-            } else {
-                return super.extractItems(request, type, src);
-            }
-        }
-    }
-
     public MEInventoryHandler<IAEItemStack> getInternalHandler() {
         if (this.cached) {
             return this.handler;
@@ -481,7 +435,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                 if (inv != null) {
                     this.checkInterfaceVsStorageBus(target, this.getSide().getOpposite());
 
-                    this.handler = new StorageBusInventoryHandler(inv);
+                    this.handler = new MEInventoryHandler<IAEItemStack>(inv, StorageChannel.ITEMS);
 
                     this.handler.setBaseAccess((AccessRestriction) this.getConfigManager().getSetting(Settings.ACCESS));
                     this.handler.setWhitelist(
@@ -501,17 +455,20 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                             this.handler.setSticky(true);
                         }
                         if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
-                            this.handler.setPartitionList(
-                                    new FuzzyPriorityList<>(
-                                            priorityList,
-                                            (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE)));
+                            FuzzyPriorityList<IAEItemStack> partitionList = new FuzzyPriorityList<>(
+                                    priorityList,
+                                    (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE));
+                            this.handler.setPartitionList(partitionList);
+                            this.handler.setExtractPartitionList(partitionList);
                         } else {
-                            PrecisePriorityList<IAEItemStack> myPartitionList = new PrecisePriorityList<>(priorityList);
-                            this.handler.setPartitionList(myPartitionList);
-                            this.myExportPartitionList = myPartitionList;
+                            PrecisePriorityList<IAEItemStack> partitionList = new PrecisePriorityList<>(priorityList);
+                            this.handler.setPartitionList(partitionList);
+                            this.handler.setExtractPartitionList(partitionList);
                         }
                     } else {
-                        this.handler.setPartitionList(new OreFilteredList(oreFilterString));
+                        OreFilteredList partitionList = new OreFilteredList(oreFilterString);
+                        this.handler.setPartitionList(partitionList);
+                        this.handler.setExtractPartitionList(partitionList);
                     }
 
                     if (inv instanceof IMEMonitor) {
