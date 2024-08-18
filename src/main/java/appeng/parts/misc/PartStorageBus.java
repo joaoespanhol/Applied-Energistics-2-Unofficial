@@ -98,6 +98,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     private boolean wasActive = false;
     private byte resetCacheLogic = 0;
     private String oreFilterString = "";
+    private boolean postUnfilteredChangesOnce = false;
 
     @Reflected
     public PartStorageBus(final ItemStack is) {
@@ -140,6 +141,9 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
     @Override
     public void updateSetting(final IConfigManager manager, final Enum settingName, final Enum newValue) {
+        if(settingName == Settings.ACCESS && newValue == AccessRestriction.READ) {
+            postUnfilteredChangesOnce = true;
+        }
         this.resetCache(true);
         this.getHost().markForSave();
     }
@@ -222,6 +226,8 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
             }
         } catch (final GridAccessException e) {
             // :(
+        } finally {
+            postUnfilteredChangesOnce = false;
         }
     }
 
@@ -229,7 +235,11 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
      * Filters the changes to only include items that pass the handlers extract filter.
      */
     private Iterable<IAEItemStack> filterChanges(Iterable<IAEItemStack> change) {
-        if (!this.handler.getExtractPartitionList().isEmpty()) {
+        if(this.postUnfilteredChangesOnce) {
+            return change;
+        }
+
+        if (this.handler != null && this.handler.isExtractFilter() && !this.handler.getExtractPartitionList().isEmpty()) {
             List<IAEItemStack> filteredChanges = new ArrayList<>();
             for (final IAEItemStack changedItem : change) {
                 if (this.handler.getExtractPartitionList().isListed(changedItem)) {
