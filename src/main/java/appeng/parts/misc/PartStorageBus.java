@@ -141,7 +141,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
     @Override
     public void updateSetting(final IConfigManager manager, final Enum settingName, final Enum newValue) {
-        if(settingName == Settings.ACCESS && newValue == AccessRestriction.READ) {
+        if (settingName == Settings.ACCESS && newValue == AccessRestriction.READ) {
             postUnfilteredChangesOnce = true;
         }
         this.resetCache(true);
@@ -235,11 +235,12 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
      * Filters the changes to only include items that pass the handlers extract filter.
      */
     private Iterable<IAEItemStack> filterChanges(Iterable<IAEItemStack> change) {
-        if(this.postUnfilteredChangesOnce) {
+        if (this.postUnfilteredChangesOnce) {
             return change;
         }
 
-        if (this.handler != null && this.handler.isExtractFilter() && !this.handler.getExtractPartitionList().isEmpty()) {
+        if (this.handler != null && this.handler.isExtractFilter()
+                && !this.handler.getExtractPartitionList().isEmpty()) {
             List<IAEItemStack> filteredChanges = new ArrayList<>();
             for (final IAEItemStack changedItem : change) {
                 if (this.handler.getExtractPartitionList().isListed(changedItem)) {
