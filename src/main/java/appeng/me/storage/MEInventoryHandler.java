@@ -101,7 +101,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         if (!this.hasReadAccess) {
             return null;
         }
-        if (!myExtractPartitionList.isEmpty() && !myExtractPartitionList.isListed(request)) {
+        if (this.isExtractFilter() && !myExtractPartitionList.isEmpty() && !myExtractPartitionList.isListed(request)) {
             return null;
         }
 
@@ -141,7 +141,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         return this.internal.getAvailableItem(request, iteration);
     }
 
-    private boolean isExtractFilter() {
+    public boolean isExtractFilter() {
         // only READ since READ_WRITE would break compat of existing storage buses
         // could use a new setting that is applied via button or a card too
         return this.cachedAccessRestriction == AccessRestriction.READ;
