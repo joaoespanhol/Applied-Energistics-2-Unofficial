@@ -231,10 +231,12 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                         }
                     }
 
-                    this.getProxy().getStorage().postAlterationOfStoredItems(
-                            StorageChannel.ITEMS,
-                            Collections.unmodifiableList(partitionedChanges),
-                            this.mySrc);
+                    if(!partitionedChanges.isEmpty()) {
+                        this.getProxy().getStorage().postAlterationOfStoredItems(
+                                StorageChannel.ITEMS,
+                                Collections.unmodifiableList(partitionedChanges),
+                                this.mySrc);
+                    }
                 } else {
                     this.getProxy().getStorage().postAlterationOfStoredItems(StorageChannel.ITEMS, change, this.mySrc);
                 }
