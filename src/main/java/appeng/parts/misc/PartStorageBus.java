@@ -146,7 +146,8 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
     @Override
     public void updateSetting(final IConfigManager manager, final Enum settingName, final Enum newValue) {
-        if (settingName == Settings.ACCESS && newValue == AccessRestriction.READ) {
+        if (settingName == Settings.ACCESS && newValue == AccessRestriction.READ
+                && this.getConfigManager().getSetting(Settings.ACCESS) != newValue) {
             readOncePass = true;
         }
         this.resetCache(true);
@@ -253,7 +254,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
             return change;
         }
 
-        if (this.handler != null && this.handler.isExtractFilter()
+        if (this.handler != null && this.handler.isExtractFilterActive()
                 && !this.handler.getExtractPartitionList().isEmpty()) {
             List<IAEItemStack> filteredChanges = new ArrayList<>();
             for (final IAEItemStack changedItem : change) {
@@ -462,11 +463,16 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
                     this.handler = new MEInventoryHandler<IAEItemStack>(inv, StorageChannel.ITEMS);
 
-                    this.handler.setBaseAccess((AccessRestriction) this.getConfigManager().getSetting(Settings.ACCESS));
+                    AccessRestriction currentAccess = (AccessRestriction) this.getConfigManager()
+                            .getSetting(Settings.ACCESS);
+                    this.handler.setBaseAccess(currentAccess);
                     this.handler.setWhitelist(
                             this.getInstalledUpgrades(Upgrades.INVERTER) > 0 ? IncludeExclude.BLACKLIST
                                     : IncludeExclude.WHITELIST);
                     this.handler.setPriority(this.priority);
+                    // only READ since READ_WRITE would break compat of existing storage buses
+                    // could use a new setting that is applied via button or a card too
+                    this.handler.setIsExtractFilterActive(currentAccess == AccessRestriction.READ);
 
                     if (this.oreFilterString.isEmpty()) {
                         final IItemList<IAEItemStack> priorityList = AEApi.instance().storage().createItemList();
