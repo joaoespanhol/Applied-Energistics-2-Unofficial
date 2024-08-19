@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -98,7 +100,10 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     private boolean wasActive = false;
     private byte resetCacheLogic = 0;
     private String oreFilterString = "";
-    private boolean postUnfilteredChangesOnce = false;
+    /**
+     * used when changing from extract-only to inject-only to read the changes once
+     */
+    private boolean readOncePass = false;
 
     @Reflected
     public PartStorageBus(final ItemStack is) {
@@ -142,7 +147,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     @Override
     public void updateSetting(final IConfigManager manager, final Enum settingName, final Enum newValue) {
         if (settingName == Settings.ACCESS && newValue == AccessRestriction.READ) {
-            postUnfilteredChangesOnce = true;
+            readOncePass = true;
         }
         this.resetCache(true);
         this.getHost().markForSave();
@@ -220,22 +225,31 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
             final BaseActionSource source) {
         try {
             if (this.getProxy().isActive()) {
-                Iterable<IAEItemStack> filteredChanges = filterChanges(change);
+                if (!this.readOncePass) {
+                    AccessRestriction currentAccess = (AccessRestriction) this.getConfigManager()
+                            .getSetting(Settings.ACCESS);
+                    if (!currentAccess.hasPermission(AccessRestriction.READ)) {
+                        return;
+                    }
+                }
+                Iterable<IAEItemStack> filteredChanges = this.filterChanges(change, this.readOncePass);
+                if (filteredChanges == null) return;
+                this.readOncePass = false;
                 this.getProxy().getStorage()
                         .postAlterationOfStoredItems(StorageChannel.ITEMS, filteredChanges, this.mySrc);
             }
         } catch (final GridAccessException e) {
             // :(
-        } finally {
-            postUnfilteredChangesOnce = false;
         }
     }
 
     /**
-     * Filters the changes to only include items that pass the handlers extract filter.
+     * Filters the changes to only include items that pass the handlers extract filter. Will return null if none of the
+     * changes match the filter.
      */
-    private Iterable<IAEItemStack> filterChanges(Iterable<IAEItemStack> change) {
-        if (this.postUnfilteredChangesOnce) {
+    @Nullable
+    private Iterable<IAEItemStack> filterChanges(final Iterable<IAEItemStack> change, final boolean readOncePass) {
+        if (readOncePass) {
             return change;
         }
 
@@ -247,7 +261,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                     filteredChanges.add(changedItem);
                 }
             }
-            return Collections.unmodifiableList(filteredChanges);
+            return filteredChanges.isEmpty() ? null : Collections.unmodifiableList(filteredChanges);
         }
         return change;
     }
