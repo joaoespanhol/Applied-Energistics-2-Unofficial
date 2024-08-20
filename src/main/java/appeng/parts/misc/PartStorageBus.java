@@ -101,7 +101,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     private byte resetCacheLogic = 0;
     private String oreFilterString = "";
     /**
-     * used when changing from extract-only to inject-only to read the changes once
+     * used when changing access settings to read the changes once
      */
     private boolean readOncePass = false;
 
@@ -146,9 +146,13 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
     @Override
     public void updateSetting(final IConfigManager manager, final Enum settingName, final Enum newValue) {
-        if (settingName == Settings.ACCESS && newValue == AccessRestriction.READ
-                && this.getConfigManager().getSetting(Settings.ACCESS) != newValue) {
-            readOncePass = true;
+        if (settingName == Settings.ACCESS && this.handler != null) {
+            AccessRestriction currentAccess = this.handler.getAccess();
+            if (newValue != currentAccess && currentAccess.hasPermission(AccessRestriction.READ)) {
+                if (newValue == AccessRestriction.WRITE || newValue == AccessRestriction.READ) {
+                    this.readOncePass = true;
+                }
+            }
         }
         this.resetCache(true);
         this.getHost().markForSave();
@@ -234,8 +238,8 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                     }
                 }
                 Iterable<IAEItemStack> filteredChanges = this.filterChanges(change, this.readOncePass);
-                if (filteredChanges == null) return;
                 this.readOncePass = false;
+                if (filteredChanges == null) return;
                 this.getProxy().getStorage()
                         .postAlterationOfStoredItems(StorageChannel.ITEMS, filteredChanges, this.mySrc);
             }
@@ -452,10 +456,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                 if (inv instanceof MEMonitorIInventory h) {
                     h.setMode((StorageFilter) this.getConfigManager().getSetting(Settings.STORAGE_FILTER));
                     h.setActionSource(new MachineSource(this));
-                }
-
-                if (inv instanceof MEMonitorIInventory) {
-                    this.monitor = (MEMonitorIInventory) inv;
+                    this.monitor = h;
                 }
 
                 if (inv != null) {
