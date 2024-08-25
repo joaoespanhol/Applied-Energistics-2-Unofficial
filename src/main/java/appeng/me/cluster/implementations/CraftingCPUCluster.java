@@ -26,12 +26,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
@@ -416,22 +418,22 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         }
 
         if (!this.playersFollowingCurrentCraft.isEmpty()) {
-
             final String elapsedTimeText = DurationFormatUtils.formatDuration(
                     TimeUnit.MILLISECONDS.convert(this.getElapsedTime(), TimeUnit.NANOSECONDS),
                     GuiText.ETAFormat.getLocal());
 
-            IChatComponent messageWaitToSend = PlayerMessages.FinishCraftingRemind.get(
+            final IChatComponent messageWaitToSend = PlayerMessages.FinishCraftingRemind.get(
                     new ChatComponentText(EnumChatFormatting.GREEN + String.valueOf(this.numsOfOutput)),
                     this.finalOutput.getItemStack().func_151000_E(),
                     new ChatComponentText(EnumChatFormatting.GREEN + elapsedTimeText));
 
             for (String playerName : this.playersFollowingCurrentCraft) {
                 // Get each EntityPlayer
-                EntityPlayer pl = this.getWorld().getPlayerEntityByName(playerName);
-                if (pl != null) {
+                EntityPlayer player = getPlayerByName(playerName);
+                if (player != null) {
                     // Send message to player
-                    pl.addChatMessage(messageWaitToSend);
+                    player.addChatMessage(messageWaitToSend);
+                    player.worldObj.playSoundAtEntity(player, "random.levelup", 1f, 1f);
                 }
             }
         }
@@ -444,6 +446,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.numsOfOutput = 0;
         this.isComplete = true;
         this.playersFollowingCurrentCraft.clear();
+    }
+
+    private EntityPlayerMP getPlayerByName(String playerName) {
+        return MinecraftServer.getServer().getConfigurationManager().func_152612_a(playerName);
     }
 
     private void updateCPU() {
