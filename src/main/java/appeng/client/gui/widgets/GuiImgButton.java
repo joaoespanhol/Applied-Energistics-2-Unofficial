@@ -787,7 +787,11 @@ public class GuiImgButton extends GuiButton implements ITooltip {
 
     @Override
     public void drawButton(final Minecraft par1Minecraft, final int par2, final int par3) {
-        super.drawButton(par1Minecraft, par2, par3);
+
+        // Enable the Blending mode
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
         if (this.visible) {
             final int iconIndex = this.getIconIndex();
 
