@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.util.StatCollector;
 
 import org.lwjgl.opengl.GL11;
@@ -788,37 +789,32 @@ public class GuiImgButton extends GuiButton implements ITooltip {
     @Override
     public void drawButton(final Minecraft mc, final int mouseX, final int mouseY) {
         if (this.visible) {
-            final int iconIndex = this.getIconIndex();
-
-            GL11.glPushMatrix();
-            GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            GL11.glTranslatef(this.xPosition, this.yPosition, 0.0F);
             if (this.halfSize) {
-                GL11.glScalef(0.5f, 0.5f, 0.5f);
                 this.width = 8;
                 this.height = 8;
             }
-
+            this.field_146123_n = mouseX >= this.xPosition && mouseY >= this.yPosition
+                    && mouseX < this.xPosition + this.width
+                    && mouseY < this.yPosition + this.height;
             if (this.enabled) {
                 GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
             } else {
                 GL11.glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
             }
-
             mc.renderEngine.bindTexture(ExtraBlockTextures.GuiTexture("guis/states.png"));
-            this.field_146123_n = mouseX >= this.xPosition && mouseY >= this.yPosition
-                    && mouseX < this.xPosition + this.width
-                    && mouseY < this.yPosition + this.height;
-
+            final int iconIndex = this.getIconIndex();
             final int uv_y = (int) Math.floor(iconIndex / 16);
             final int uv_x = iconIndex - uv_y * 16;
-
+            GL11.glEnable(GL11.GL_BLEND);
+            OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GL11.glTranslatef(this.xPosition, this.yPosition, 0.0F);
+            if (this.halfSize) GL11.glScalef(0.5f, 0.5f, 0.5f);
             this.drawTexturedModalRect(0, 0, 256 - 16, 256 - 16, 16, 16);
             this.drawTexturedModalRect(0, 0, uv_x * 16, uv_y * 16, 16, 16);
+            if (this.halfSize) GL11.glScalef(2f, 2f, 2f);
+            GL11.glTranslatef(-this.xPosition, -this.yPosition, 0.0F);
             this.mouseDragged(mc, mouseX, mouseY);
-
-            GL11.glPopMatrix();
         }
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     }
