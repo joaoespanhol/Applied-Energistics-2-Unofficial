@@ -1,4 +1,5 @@
 package appeng.util;
+// This code is copied from the library https://github.com/metamx/alphanum
 // spotless:off
 /*
  * The Alphanum Algorithm is an improved sorting algorithm for strings
