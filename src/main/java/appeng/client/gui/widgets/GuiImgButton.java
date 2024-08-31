@@ -777,7 +777,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.StringOrder,
                     ButtonToolTips.StringOrderNatural);
             this.registerApp(
-                    65,
+                    16,
                     Settings.INTERFACE_TERMINAL_SECTION_ORDER,
                     StringOrder.ALPHANUM,
                     ButtonToolTips.StringOrder,

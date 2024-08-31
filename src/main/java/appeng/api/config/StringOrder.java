@@ -8,7 +8,7 @@ public enum StringOrder {
 
     NATURAL(Comparator.naturalOrder()),
 
-    ALPHANUM(new AlphanumComparator());
+    ALPHANUM(AlphanumComparator.INSTANCE);
 
     public final Comparator<String> comparator;
 

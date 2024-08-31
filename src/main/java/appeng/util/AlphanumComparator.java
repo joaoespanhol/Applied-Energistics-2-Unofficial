@@ -1,4 +1,5 @@
 package appeng.util;
+// This code is copied from the library https://github.com/metamx/alphanum
 // spotless:off
 /*
  * The Alphanum Algorithm is an improved sorting algorithm for strings
@@ -27,22 +28,12 @@ package appeng.util;
 
 import java.util.Comparator;
 
-// spotless:off
 /**
- * This is an updated version with enhancements made by Daniel Migowski,
- * Andre Bogus, and David Koelle
- * <p/>
- * To convert to use Templates (Java 1.5+):
- * - Change "implements Comparator" to "implements Comparator<String>"
- * - Change "compare(Object o1, Object o2)" to "compare(String s1, String s2)"
- * - Remove the type checking and casting in compare().
- * <p/>
- * To use this class:
- * Use the static "sort" method from the java.util.Collections class:
- * Collections.sort(your list, new AlphanumComparator());
+ * This is an updated version with enhancements made by Daniel Migowski, Andre Bogus, and David Koelle
  */
-// spotless:on
 public class AlphanumComparator implements Comparator<String> {
+
+    public final static AlphanumComparator INSTANCE = new AlphanumComparator();
 
     private final boolean isDigit(char ch) {
         return ch >= 48 && ch <= 57;
