@@ -68,6 +68,7 @@ public class GridStorageCache implements IStorageGrid {
     private long itemTypesTotal;
     private long itemTypesUsed;
     private long itemCellG;
+    private long itemCellB;
     private long itemCellO;
     private long itemCellR;
     private long itemCellCount;
@@ -76,6 +77,7 @@ public class GridStorageCache implements IStorageGrid {
     private long fluidTypesTotal;
     private long fluidTypesUsed;
     private long fluidCellG;
+    private long fluidCellB;
     private long fluidCellO;
     private long fluidCellR;
     private long fluidCellCount;
@@ -84,14 +86,16 @@ public class GridStorageCache implements IStorageGrid {
     private long essentiaTypesTotal;
     private long essentiaTypesUsed;
     private long essentiaCellG;
+    private long essentiaCellB;
     private long essentiaCellO;
     private long essentiaCellR;
     private long essentiaCellCount;
     private int ticksCount;
     private int networkBytesUpdateFrequency;
-    private static final int CELL_RED = 3;
-    private static final int CELL_ORANGE = 2;
     private static final int CELL_GREEN = 1;
+    private static final int CELL_BLUE = 2;
+    private static final int CELL_ORANGE = 3;
+    private static final int CELL_RED = 4;
 
     public GridStorageCache(final IGrid g) {
         this.myGrid = g;
@@ -391,6 +395,7 @@ public class GridStorageCache implements IStorageGrid {
                                 itemBytesUsed += iccr.getUsedBytes();
                                 switch (iccr.getCellStatus()) {
                                     case CELL_GREEN -> itemCellG++;
+                                    case CELL_BLUE -> itemCellB++;
                                     case CELL_ORANGE -> itemCellO++;
                                     case CELL_RED -> itemCellR++;
                                 }
@@ -411,6 +416,7 @@ public class GridStorageCache implements IStorageGrid {
                                     fluidBytesUsed += iccr.getUsedBytes();
                                     switch (iccr.getCellStatus()) {
                                         case CELL_GREEN -> fluidCellG++;
+                                        case CELL_BLUE -> fluidCellB++;
                                         case CELL_ORANGE -> fluidCellO++;
                                         case CELL_RED -> fluidCellR++;
                                     }
@@ -422,6 +428,7 @@ public class GridStorageCache implements IStorageGrid {
                                     essentiaBytesUsed += iccr.getUsedBytes();
                                     switch (iccr.getCellStatus()) {
                                         case CELL_GREEN -> essentiaCellG++;
+                                        case CELL_BLUE -> essentiaCellB++;
                                         case CELL_ORANGE -> essentiaCellO++;
                                         case CELL_RED -> essentiaCellR++;
                                     }
@@ -445,6 +452,7 @@ public class GridStorageCache implements IStorageGrid {
                                 itemBytesUsed += iccr.getUsedBytes();
                                 switch (iccr.getCellStatus()) {
                                     case CELL_GREEN -> itemCellG++;
+                                    case CELL_BLUE -> itemCellB++;
                                     case CELL_ORANGE -> itemCellO++;
                                     case CELL_RED -> itemCellR++;
                                 }
@@ -464,6 +472,7 @@ public class GridStorageCache implements IStorageGrid {
                                     fluidBytesUsed += iccr.getUsedBytes();
                                     switch (iccr.getCellStatus()) {
                                         case CELL_GREEN -> fluidCellG++;
+                                        case CELL_BLUE -> fluidCellB++;
                                         case CELL_ORANGE -> fluidCellO++;
                                         case CELL_RED -> fluidCellR++;
                                     }
@@ -475,6 +484,7 @@ public class GridStorageCache implements IStorageGrid {
                                     essentiaBytesUsed += iccr.getUsedBytes();
                                     switch (iccr.getCellStatus()) {
                                         case CELL_GREEN -> essentiaCellG++;
+                                        case CELL_BLUE -> essentiaCellB++;
                                         case CELL_ORANGE -> essentiaCellO++;
                                         case CELL_RED -> essentiaCellR++;
                                     }
@@ -498,6 +508,7 @@ public class GridStorageCache implements IStorageGrid {
         this.itemTypesTotal = 0;
         this.itemTypesUsed = 0;
         this.itemCellG = 0;
+        this.itemCellB = 0;
         this.itemCellO = 0;
         this.itemCellR = 0;
         this.itemCellCount = 0;
@@ -506,6 +517,7 @@ public class GridStorageCache implements IStorageGrid {
         this.fluidTypesTotal = 0;
         this.fluidTypesUsed = 0;
         this.fluidCellG = 0;
+        this.fluidCellB = 0;
         this.fluidCellO = 0;
         this.fluidCellR = 0;
         this.fluidCellCount = 0;
@@ -514,6 +526,7 @@ public class GridStorageCache implements IStorageGrid {
         this.essentiaTypesTotal = 0;
         this.essentiaTypesUsed = 0;
         this.essentiaCellG = 0;
+        this.essentiaCellB = 0;
         this.essentiaCellO = 0;
         this.essentiaCellR = 0;
         this.essentiaCellCount = 0;
@@ -537,6 +550,10 @@ public class GridStorageCache implements IStorageGrid {
 
     public long getItemCellG() {
         return itemCellG;
+    }
+
+    public long getItemCellB() {
+        return itemCellB;
     }
 
     public long getItemCellO() {
@@ -571,6 +588,10 @@ public class GridStorageCache implements IStorageGrid {
         return fluidCellG;
     }
 
+    public long getFluidCellB() {
+        return fluidCellB;
+    }
+
     public long getFluidCellO() {
         return fluidCellO;
     }
@@ -601,6 +622,10 @@ public class GridStorageCache implements IStorageGrid {
 
     public long getEssentiaCellG() {
         return essentiaCellG;
+    }
+
+    public long getEssentiaCellB() {
+        return essentiaCellB;
     }
 
     public long getEssentiaCellO() {

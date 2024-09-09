@@ -67,60 +67,69 @@ public class ContainerNetworkStatus extends AEBaseContainer {
     public long itemCellG;
 
     @GuiSync(9)
-    public long itemCellO;
+    public long itemCellB;
 
     @GuiSync(10)
-    public long itemCellR;
+    public long itemCellO;
 
     @GuiSync(11)
-    public long fluidBytesTotal;
+    public long itemCellR;
 
     @GuiSync(12)
-    public long fluidBytesUsed;
+    public long fluidBytesTotal;
 
     @GuiSync(13)
-    public long fluidTypesTotal;
+    public long fluidBytesUsed;
 
     @GuiSync(14)
-    public long fluidTypesUsed;
+    public long fluidTypesTotal;
 
     @GuiSync(15)
-    public long fluidCellG;
+    public long fluidTypesUsed;
 
     @GuiSync(16)
-    public long fluidCellO;
+    public long fluidCellG;
 
     @GuiSync(17)
-    public long fluidCellR;
+    public long fluidCellB;
 
     @GuiSync(18)
-    public long essentiaBytesTotal;
+    public long fluidCellO;
 
     @GuiSync(19)
-    public long essentiaBytesUsed;
+    public long fluidCellR;
 
     @GuiSync(20)
-    public long essentiaTypesTotal;
+    public long essentiaBytesTotal;
 
     @GuiSync(21)
-    public long essentiaTypesUsed;
+    public long essentiaBytesUsed;
 
     @GuiSync(22)
-    public long essentiaCellG;
+    public long essentiaTypesTotal;
 
     @GuiSync(23)
-    public long essentiaCellO;
+    public long essentiaTypesUsed;
 
     @GuiSync(24)
-    public long essentiaCellR;
+    public long essentiaCellG;
 
     @GuiSync(25)
-    public long itemCellCount;
+    public long essentiaCellB;
 
     @GuiSync(26)
-    public long fluidCellCount;
+    public long essentiaCellO;
 
     @GuiSync(27)
+    public long essentiaCellR;
+
+    @GuiSync(28)
+    public long itemCellCount;
+
+    @GuiSync(29)
+    public long fluidCellCount;
+
+    @GuiSync(30)
     public long essentiaCellCount;
 
     private IGrid network;
@@ -200,6 +209,7 @@ public class ContainerNetworkStatus extends AEBaseContainer {
                 this.itemBytesUsed = Double.doubleToLongBits(sg.getItemBytesUsed());
                 this.itemBytesTotal = Double.doubleToLongBits(sg.getItemBytesTotal());
                 this.itemCellG = sg.getItemCellG();
+                this.itemCellB = sg.getItemCellB();
                 this.itemCellO = sg.getItemCellO();
                 this.itemCellR = sg.getItemCellR();
                 this.itemCellCount = sg.getItemCellCount();
@@ -209,6 +219,7 @@ public class ContainerNetworkStatus extends AEBaseContainer {
                 this.fluidBytesUsed = Double.doubleToLongBits(sg.getFluidBytesUsed());
                 this.fluidBytesTotal = Double.doubleToLongBits(sg.getFluidBytesTotal());
                 this.fluidCellG = sg.getFluidCellG();
+                this.fluidCellB = sg.getFluidCellB();
                 this.fluidCellO = sg.getFluidCellO();
                 this.fluidCellR = sg.getFluidCellR();
                 this.fluidCellCount = sg.getFluidCellCount();
@@ -218,6 +229,7 @@ public class ContainerNetworkStatus extends AEBaseContainer {
                 this.essentiaBytesUsed = Double.doubleToLongBits(sg.getEssentiaBytesUsed());
                 this.essentiaBytesTotal = Double.doubleToLongBits(sg.getEssentiaBytesTotal());
                 this.essentiaCellG = sg.getEssentiaCellG();
+                this.essentiaCellB = sg.getEssentiaCellB();
                 this.essentiaCellO = sg.getEssentiaCellO();
                 this.essentiaCellR = sg.getEssentiaCellR();
                 this.essentiaCellCount = sg.getEssentiaCellCount();
@@ -280,6 +292,10 @@ public class ContainerNetworkStatus extends AEBaseContainer {
         return itemCellG;
     }
 
+    public long getItemCellB() {
+        return itemCellB;
+    }
+
     public long getItemCellO() {
         return itemCellO;
     }
@@ -308,6 +324,10 @@ public class ContainerNetworkStatus extends AEBaseContainer {
         return fluidCellG;
     }
 
+    public long getFluidCellB() {
+        return fluidCellB;
+    }
+
     public long getFluidCellO() {
         return fluidCellO;
     }
@@ -334,6 +354,10 @@ public class ContainerNetworkStatus extends AEBaseContainer {
 
     public long getEssentiaCellG() {
         return essentiaCellG;
+    }
+
+    public long getEssentiaCellB() {
+        return essentiaCellB;
     }
 
     public long getEssentiaCellO() {

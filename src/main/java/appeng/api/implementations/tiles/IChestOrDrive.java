@@ -31,6 +31,8 @@ public interface IChestOrDrive extends ICellContainer, IGridHost, IOrientable {
      * <p>
      * 1 - green,
      * <p>
+     * 2 - blue,
+     * <p>
      * 2 - orange,
      * <p>
      * 3 - red
