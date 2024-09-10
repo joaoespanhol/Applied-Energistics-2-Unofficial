@@ -36,6 +36,7 @@ import appeng.api.networking.storage.IStorageGrid;
 import appeng.api.networking.ticking.IGridTickable;
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
+import appeng.api.storage.ICellCacheRegistry;
 import appeng.api.storage.ICellHandler;
 import appeng.api.storage.ICellInventory;
 import appeng.api.storage.ICellInventoryHandler;
@@ -85,6 +86,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
      * drive.
      */
     private int state = 0;
+    private int type = 0;
     private int priority = 0;
     private boolean wasActive = false;
 
@@ -96,6 +98,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     @TileEvent(TileEventType.NETWORK_WRITE)
     public void writeToStream_TileDrive(final ByteBuf data) {
         data.writeInt(this.state);
+        data.writeInt(this.type);
     }
 
     @Override
@@ -133,6 +136,29 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     }
 
     @Override
+    public int getCellType(final int slot) {
+        if (Platform.isClient()) {
+            return (this.type >> (slot * 3)) & 0b111;
+        }
+
+        final MEInventoryHandler<IAEItemStack> handler = this.invBySlot[slot];
+        if (handler == null) {
+            return 0;
+        }
+        if (handler.getInternal() instanceof ICellCacheRegistry iccr) {
+            switch (iccr.getCellType()) {
+                case ITEM:
+                    return 0;
+                case FLUID:
+                    return 1;
+                case ESSENTIA:
+                    return 2;
+            }
+        }
+        return 0;
+    }
+
+    @Override
     public TickingRequest getTickingRequest(IGridNode node) {
         return new TickingRequest(15, 15, false, false);
     }
@@ -156,6 +182,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     public boolean readFromStream_TileDrive(final ByteBuf data) {
         final int oldState = this.state;
         this.state = data.readInt() & STATE_MASK;
+        this.type = data.readInt();
         return this.state != oldState;
     }
 
@@ -177,6 +204,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
 
     private void recalculateDisplay() {
         int newState = 0;
+        int newType = 0;
         final boolean currentActive = this.getProxy().isActive();
         if (currentActive) {
             newState |= STATE_ACTIVE_MASK;
@@ -193,11 +221,13 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
 
         for (int x = 0; x < this.getCellCount(); x++) {
             newState |= ((this.getCellStatus(x) & 0b111) << (3 * x));
+            newType |= ((this.getCellType(x) & 0b111) << (3 * x));
         }
 
-        if (this.state != newState) {
+        if (this.state != newState || this.type != newType) {
             this.markForUpdate();
             this.state = newState;
+            this.type = newType;
         }
     }
 
