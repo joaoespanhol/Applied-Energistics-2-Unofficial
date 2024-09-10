@@ -238,6 +238,7 @@ public enum GuiText {
     NetworkFluidCellCount,
     NetworkEssentiaCellCount,
     Green,
+    Blue,
     Orange,
     Red,
     NetworkBytesDetails,

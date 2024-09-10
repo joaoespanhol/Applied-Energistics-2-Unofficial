@@ -430,14 +430,18 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                 16,
                 GuiColors.DefaultBlack.getColor());
         this.fontRendererObj.drawString(
-                GuiText.Green.getLocal() + " : "
+                GuiText.Green.getLocal().charAt(0) + " : "
                         + ns.getItemCellG()
                         + " "
-                        + GuiText.Orange.getLocal()
+                        + GuiText.Blue.getLocal().charAt(0)
+                        + " : "
+                        + ns.getItemCellB()
+                        + " "
+                        + GuiText.Orange.getLocal().charAt(0)
                         + " : "
                         + ns.getItemCellO()
                         + " "
-                        + GuiText.Red.getLocal()
+                        + GuiText.Red.getLocal().charAt(0)
                         + " : "
                         + ns.getItemCellR(),
                 13,
@@ -490,14 +494,18 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                 16,
                 GuiColors.DefaultBlack.getColor());
         this.fontRendererObj.drawString(
-                GuiText.Green.getLocal() + " : "
+                GuiText.Green.getLocal().charAt(0) + " : "
                         + ns.getFluidCellG()
                         + " "
-                        + GuiText.Orange.getLocal()
+                        + GuiText.Blue.getLocal().charAt(0)
+                        + " : "
+                        + ns.getFluidCellB()
+                        + " "
+                        + GuiText.Orange.getLocal().charAt(0)
                         + " : "
                         + ns.getFluidCellO()
                         + " "
-                        + GuiText.Red.getLocal()
+                        + GuiText.Red.getLocal().charAt(0)
                         + " : "
                         + ns.getFluidCellR(),
                 13,
@@ -550,14 +558,18 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                 16,
                 GuiColors.DefaultBlack.getColor());
         this.fontRendererObj.drawString(
-                GuiText.Green.getLocal() + " : "
+                GuiText.Green.getLocal().charAt(0) + " : "
                         + ns.getEssentiaCellG()
                         + " "
-                        + GuiText.Orange.getLocal()
+                        + GuiText.Blue.getLocal().charAt(0)
+                        + " : "
+                        + ns.getEssentiaCellB()
+                        + " "
+                        + GuiText.Orange.getLocal().charAt(0)
                         + " : "
                         + ns.getEssentiaCellO()
                         + " "
-                        + GuiText.Red.getLocal()
+                        + GuiText.Red.getLocal().charAt(0)
                         + " : "
                         + ns.getEssentiaCellR(),
                 13,
