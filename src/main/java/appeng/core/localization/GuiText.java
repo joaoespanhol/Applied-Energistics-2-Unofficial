@@ -234,6 +234,7 @@ public enum GuiText {
     Deprecated,
 
     // Network bytes status
+    NetworkCellStatus,
     NetworkItemCellCount,
     NetworkFluidCellCount,
     NetworkEssentiaCellCount,
