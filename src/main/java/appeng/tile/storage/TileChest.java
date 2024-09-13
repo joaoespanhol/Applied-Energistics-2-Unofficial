@@ -148,7 +148,7 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, IFluidHan
 
         for (int x = 0; x < this.getCellCount(); x++) {
             newState |= (this.getCellStatus(x) << (3 * x));
-            newType |= (this.getCellType(x) << (3 * x));
+            newType |= (this.getCellType(x) << (2 * x));
         }
 
         if (this.isPowered()) {
@@ -291,7 +291,7 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, IFluidHan
     @Override
     public int getCellType(final int slot) {
         if (Platform.isClient()) {
-            return (this.type >> (slot * 3)) & 0b111;
+            return (this.type >> (slot * 2)) & 0b11;
         }
 
         final ItemStack cell = this.inv.getStackInSlot(1);
@@ -410,7 +410,7 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, IFluidHan
         final ItemStack oldType = this.storageType;
 
         this.state = data.readByte() & 0b1111;
-        this.type = data.readByte() & 0b111;
+        this.type = data.readByte() & 0b11;
         final AEColor oldPaintedColor = this.paintedColor;
         this.paintedColor = AEColor.values()[data.readByte()];
 

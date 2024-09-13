@@ -40,9 +40,7 @@ public interface IChestOrDrive extends ICellContainer, IGridHost, IOrientable {
      * @param slot slot index
      * @return status of the slot, one of the above indices.
      */
-    default int getCellStatus(int slot) {
-        return 0;
-    }
+    int getCellStatus(int slot);
 
     /**
      * 0 - item cell,
@@ -54,7 +52,9 @@ public interface IChestOrDrive extends ICellContainer, IGridHost, IOrientable {
      * @param slot slot index
      * @return cell type of the slot, one of the above indices.
      */
-    int getCellType(int slot);
+    default int getCellType(int slot) {
+        return 0;
+    }
 
     /**
      * @return if the device is online you should check this before providing any other information.
