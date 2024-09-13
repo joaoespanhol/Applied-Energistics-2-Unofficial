@@ -138,7 +138,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     @Override
     public int getCellType(final int slot) {
         if (Platform.isClient()) {
-            return (this.type >> (slot * 3)) & 0b111;
+            return (this.type >> (slot * 2)) & 0b11;
         }
 
         final MEInventoryHandler<IAEItemStack> handler = this.invBySlot[slot];
@@ -221,7 +221,7 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
 
         for (int x = 0; x < this.getCellCount(); x++) {
             newState |= ((this.getCellStatus(x) & 0b111) << (3 * x));
-            newType |= ((this.getCellType(x) & 0b111) << (3 * x));
+            newType |= ((this.getCellType(x) & 0b11) << (2 * x));
         }
 
         if (this.state != newState || this.type != newType) {
