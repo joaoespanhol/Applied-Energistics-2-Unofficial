@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.minecraft.item.ItemStack;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
@@ -92,6 +94,10 @@ public class GridStorageCache implements IStorageGrid {
     private long essentiaCellCount;
     private int ticksCount;
     private int networkBytesUpdateFrequency;
+    private final HashMap<ItemStack, Integer> itemCells = new HashMap<>();
+    private final HashMap<ItemStack, Integer> fluidCells = new HashMap<>();
+    private final HashMap<ItemStack, Integer> essentiaCells = new HashMap<>();
+
     private static final int CELL_GREEN = 1;
     private static final int CELL_BLUE = 2;
     private static final int CELL_ORANGE = 3;
@@ -384,9 +390,9 @@ public class GridStorageCache implements IStorageGrid {
         this.resetCellInfo();
         try {
             for (ICellProvider icp : this.activeCellProviders) {
-                if (icp instanceof TileDrive) {
+                if (icp instanceof TileDrive td) {
                     // Item cells
-                    for (IMEInventoryHandler<?> meih : icp.getCellArray(StorageChannel.ITEMS)) {
+                    for (IMEInventoryHandler<?> meih : td.getCellArray(StorageChannel.ITEMS)) {
                         // exclude void cell
                         if (((MEInventoryHandler<?>) meih).getInternal() instanceof ICellCacheRegistry iccr) {
                             // exclude creative cell
@@ -406,7 +412,7 @@ public class GridStorageCache implements IStorageGrid {
                         }
                     }
                     // Essentia and Fluid cells
-                    for (IMEInventoryHandler<?> meih : icp.getCellArray(StorageChannel.FLUIDS)) {
+                    for (IMEInventoryHandler<?> meih : td.getCellArray(StorageChannel.FLUIDS)) {
                         // exclude void cell
                         if (((MEInventoryHandler<?>) meih).getInternal() instanceof ICellCacheRegistry iccr) {
                             // exclude creative cell
@@ -438,11 +444,23 @@ public class GridStorageCache implements IStorageGrid {
                                 }
                             }
                         }
-
                     }
+
+                    for (int i = 0; i < td.getSizeInventory(); i++) {
+                        ItemStack stack = td.getStackInSlot(i);
+                        if (stack != null) {
+                            switch (td.getCellType(i)) {
+                                case 0 -> this.putItemStackIntoMap(itemCells, stack);
+                                case 1 -> this.putItemStackIntoMap(fluidCells, stack);
+                                case 2 -> this.putEssentiaItemStackIntoMap(essentiaCells, stack);
+                            }
+                        }
+                    }
+
                 } else if (icp instanceof TileChest tc) {
                     // Check if chest is clear
-                    if (tc.getStackInSlot(1) == null) continue;
+                    ItemStack stack = tc.getStackInSlot(1);
+                    if (stack == null) continue;
                     IMEInventoryHandler handler = tc.getInternalHandler(StorageChannel.ITEMS);
                     if (handler != null) {
                         if (handler instanceof ICellCacheRegistry iccr) {
@@ -495,10 +513,35 @@ public class GridStorageCache implements IStorageGrid {
                             }
                         }
                     }
+
+                    switch (tc.getCellType(1)) {
+                        case 0 -> this.putItemStackIntoMap(itemCells, stack);
+                        case 1 -> this.putItemStackIntoMap(fluidCells, stack);
+                        case 2 -> this.putEssentiaItemStackIntoMap(essentiaCells, stack);
+                    }
                 }
             }
         } catch (Exception e) {
             // XD Normally won't be here, just normally..
+        }
+    }
+
+    private void putItemStackIntoMap(final HashMap<ItemStack, Integer> map, final ItemStack stack) {
+        ItemStack newStack = new ItemStack(stack.getItem());
+        if (map.containsKey(newStack)) {
+            map.put(newStack, map.get(newStack) + 1);
+        } else {
+            map.put(newStack, 1);
+        }
+    }
+
+    private void putEssentiaItemStackIntoMap(final HashMap<ItemStack, Integer> map, final ItemStack stack) {
+        ItemStack newStack = new ItemStack(stack.getItem());
+        newStack.setItemDamage(stack.getItemDamage());
+        if (map.containsKey(newStack)) {
+            map.put(newStack, map.get(newStack) + 1);
+        } else {
+            map.put(newStack, 1);
         }
     }
 
@@ -530,6 +573,22 @@ public class GridStorageCache implements IStorageGrid {
         this.essentiaCellO = 0;
         this.essentiaCellR = 0;
         this.essentiaCellCount = 0;
+
+        this.itemCells.clear();
+        this.fluidCells.clear();
+        this.essentiaCells.clear();
+    }
+
+    public HashMap<ItemStack, Integer> getItemCells() {
+        return itemCells;
+    }
+
+    public HashMap<ItemStack, Integer> getFluidCells() {
+        return fluidCells;
+    }
+
+    public HashMap<ItemStack, Integer> getEssentiaCells() {
+        return essentiaCells;
     }
 
     public double getItemBytesTotal() {

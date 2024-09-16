@@ -10,6 +10,7 @@
 
 package appeng.client.gui.implementations;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
@@ -39,6 +40,8 @@ import appeng.container.implementations.ContainerNetworkStatus;
 import appeng.core.AEConfig;
 import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
+import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketNetworkStatusSelected;
 import appeng.util.Platform;
 
 public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
@@ -80,6 +83,7 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
         super.actionPerformed(btn);
 
         final boolean backwards = Mouse.isButtonDown(1);
+        boolean oldConsum = this.isConsume;
 
         if (btn == this.units) {
             if (this.isConsume) {
@@ -95,6 +99,15 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
             } else {
                 this.isConsume = !this.isConsume;
             }
+        }
+        if (oldConsum != this.isConsume) {
+
+            try {
+                NetworkHandler.instance.sendToServer(new PacketNetworkStatusSelected(this.isConsume));
+            } catch (IOException __) {
+                // XD
+            }
+
         }
     }
 
@@ -325,6 +338,10 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                 143 + 20,
                 GuiColors.DefaultBlack.getColor());
 
+        this.drawItemRepo();
+    }
+
+    private void drawItemRepo() {
         final int sectionLength = 30;
 
         int x = 0;
@@ -390,7 +407,6 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
         if (this.tooltip >= 0 && toolTip.length() > 0) {
             this.drawTooltip(toolPosX, toolPosY + 10, 0, toolTip);
         }
-
     }
 
     private GuiColors getCorrespondingColor(final double percentage) {
@@ -465,6 +481,8 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                 13,
                 143 + 10,
                 getCorrespondingColor(tempDouble).getColor());
+
+        this.drawItemRepo();
     }
 
     private void drawFluidInfo() {
@@ -513,6 +531,8 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                 13,
                 143 + 10,
                 getCorrespondingColor(tempDouble).getColor());
+
+        this.drawItemRepo();
     }
 
     private void drawEssentiaInfo() {
@@ -565,6 +585,8 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                 13,
                 143 + 10,
                 getCorrespondingColor(tempDouble).getColor());
+
+        this.drawItemRepo();
     }
 
     private void drawAllCellCount(final long greenCellNum, final long blueCellNum, final long orangeCellNum,

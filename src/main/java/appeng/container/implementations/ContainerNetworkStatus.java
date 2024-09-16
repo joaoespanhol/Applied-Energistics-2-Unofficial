@@ -11,6 +11,8 @@
 package appeng.container.implementations;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -19,6 +21,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import appeng.api.AEApi;
+import appeng.api.config.CellType;
 import appeng.api.config.PowerMultiplier;
 import appeng.api.implementations.guiobjects.INetworkTool;
 import appeng.api.networking.IGrid;
@@ -31,6 +34,7 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.container.AEBaseContainer;
 import appeng.container.guisync.GuiSync;
+import appeng.core.AEConfig;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketMEInventoryUpdate;
 import appeng.me.cache.GridStorageCache;
@@ -134,6 +138,7 @@ public class ContainerNetworkStatus extends AEBaseContainer {
 
     private IGrid network;
     private int delay = 40;
+    private boolean isConsume = true;
 
     public ContainerNetworkStatus(final InventoryPlayer ip, final INetworkTool te) {
         super(ip, null, null);
@@ -176,34 +181,58 @@ public class ContainerNetworkStatus extends AEBaseContainer {
 
             try {
                 final PacketMEInventoryUpdate piu = new PacketMEInventoryUpdate();
+                final IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
 
-                for (final Class<? extends IGridHost> machineClass : this.network.getMachinesClasses()) {
-                    final IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
-                    for (final IGridNode machine : this.network.getMachines(machineClass)) {
-                        final IGridBlock blk = machine.getGridBlock();
-                        final ItemStack is = blk.getMachineRepresentation();
-                        if (is != null && is.getItem() != null) {
-                            final IAEItemStack ais = AEItemStack.create(is);
-                            ais.setStackSize(1);
-                            ais.setCountRequestable(
-                                    (long) PowerMultiplier.CONFIG.multiply(blk.getIdlePowerUsage() * 100.0));
-                            list.add(ais);
+                // Network machine
+                if (this.isConsume) {
+                    for (final Class<? extends IGridHost> machineClass : this.network.getMachinesClasses()) {
+                        for (final IGridNode machine : this.network.getMachines(machineClass)) {
+                            final IGridBlock blk = machine.getGridBlock();
+                            final ItemStack is = blk.getMachineRepresentation();
+                            if (is != null && is.getItem() != null) {
+                                final IAEItemStack ais = AEItemStack.create(is);
+                                ais.setStackSize(1);
+                                ais.setCountRequestable(
+                                        (long) PowerMultiplier.CONFIG.multiply(blk.getIdlePowerUsage() * 100.0));
+                                list.add(ais);
+                            }
                         }
                     }
 
-                    for (final IAEItemStack ais : list) {
-                        piu.appendItem(ais);
+                } else {
+                    // Networ Cells
+                    final GridStorageCache sg = this.network.getCache(IStorageGrid.class);
+                    CellType selectedCellType = AEConfig.instance.selectedCellType();
+                    HashMap<ItemStack, Integer> cells = null;
+                    if (selectedCellType == CellType.ITEM) {
+                        cells = sg.getItemCells();
+                    } else if (selectedCellType == CellType.FLUID) {
+                        cells = sg.getFluidCells();
+                    } else if (selectedCellType == CellType.ESSENTIA) {
+                        cells = sg.getEssentiaCells();
+                    }
+
+                    for (Entry<ItemStack, Integer> set : cells.entrySet()) {
+                        final IAEItemStack ais = AEItemStack.create(set.getKey());
+                        ais.setStackSize(set.getValue());
+                        list.add(ais);
                     }
                 }
 
+                for (final IAEItemStack ais : list) {
+                    piu.appendItem(ais);
+                }
+                // Send packet
                 for (final Object c : this.crafters) {
                     if (c instanceof EntityPlayer) {
                         NetworkHandler.instance.sendTo(piu, (EntityPlayerMP) c);
                     }
                 }
+
             } catch (final IOException e) {
                 // :P
             }
+
             final GridStorageCache sg = this.network.getCache(IStorageGrid.class);
             if (sg != null) {
                 this.itemBytesUsed = Double.doubleToLongBits(sg.getItemBytesUsed());
@@ -238,6 +267,10 @@ public class ContainerNetworkStatus extends AEBaseContainer {
             }
         }
         super.detectAndSendChanges();
+    }
+
+    public void setConsume(boolean isConsume) {
+        this.isConsume = isConsume;
     }
 
     public long getCurrentPower() {
