@@ -10,13 +10,10 @@
 
 package appeng.me.storage;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -31,7 +28,6 @@ import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
-import appeng.core.AELog;
 import appeng.me.cache.NetworkMonitor;
 import appeng.util.prioitylist.DefaultPriorityList;
 import appeng.util.prioitylist.IPartitionList;
@@ -122,7 +118,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
                 return null;
             }
         }
-        // keep extractable items
+        // TODO keep extractable items
         T items = this.internal.extractItems(request, type, src);
         return items;
     }
@@ -136,7 +132,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         if (this.isExtractFilterActive() && !this.myExtractPartitionList.isEmpty()) {
             return this.filterAvailableItems(out, iteration);
         } else {
-            return this.internal.getAvailableItems(out, iteration);
+            return this.getAvailableItems(out, iteration, e -> true);
         }
     }
 
@@ -145,8 +141,13 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     protected IItemList<T> filterAvailableItems(IItemList<T> out, int iteration) {
-        final IItemList<T> allAvailableItems = this.getAllAvailableItems(iteration);
         Predicate<T> filterCondition = this.getExtractFilterCondition();
+        getAvailableItems(out, iteration, filterCondition);
+        return out;
+    }
+
+    private IItemList<T> getAvailableItems(IItemList<T> out, int iteration, Predicate<T> filterCondition) {
+        final IItemList<T> allAvailableItems = this.getAllAvailableItems(iteration);
         Iterator<T> it = allAvailableItems.iterator();
         while(it.hasNext()) {
             T items = it.next();
@@ -156,7 +157,6 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
                 it.remove();
             }
         }
-
         return out;
     }
 
@@ -166,6 +166,10 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>> s = iterationMap.get();
 
         NetworkInventoryHandler<T> networkInventoryHandler = getNetworkInventoryHandler();
+        if(networkInventoryHandler == null) {
+            return this.internal.getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
+        }
+
         if (s != null && s.get(iteration) == null) {
             s = null;
         }
@@ -186,15 +190,15 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         return (NetworkInventoryHandler<T>) findNetworkInventoryHandler(this.getInternal());
     }
 
+    // should give back the NetworkInventoryHandler for storage buses, everything else can be null
     private NetworkInventoryHandler<?> findNetworkInventoryHandler(IMEInventory<?> inventory) {
-        if(inventory instanceof MEMonitorPassThrough<?> passThrough) {
+        if(inventory instanceof MEPassThrough<?> passThrough) {
             return findNetworkInventoryHandler(passThrough.getInternal());
         } else if(inventory instanceof NetworkMonitor<?> networkMonitor) {
             return findNetworkInventoryHandler(networkMonitor.getHandler());
         } else if(inventory instanceof NetworkInventoryHandler<?> networkInventoryHandler) {
             return networkInventoryHandler;
         } else {
-            AELog.error("NetworkInventoryHandler cannot be determined for %s", inventory.getClass());
             return null;
         }
     }
