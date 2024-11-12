@@ -10,6 +10,13 @@
 
 package appeng.me.storage;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -24,10 +31,14 @@ import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
+import appeng.core.AELog;
+import appeng.me.cache.NetworkMonitor;
 import appeng.util.prioitylist.DefaultPriorityList;
 import appeng.util.prioitylist.IPartitionList;
 
 public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHandler<T> {
+
+    private static final ThreadLocal<Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>>> networkItemsForIteration = new ThreadLocal<>();
 
     private final IMEInventoryHandler<T> internal;
     private int myPriority;
@@ -111,8 +122,9 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
                 return null;
             }
         }
-
-        return this.internal.extractItems(request, type, src);
+        // keep extractable items
+        T items = this.internal.extractItems(request, type, src);
+        return items;
     }
 
     @Override
@@ -133,15 +145,58 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     protected IItemList<T> filterAvailableItems(IItemList<T> out, int iteration) {
-        final IItemList<T> allAvailableItems = this.internal
-                .getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
+        final IItemList<T> allAvailableItems = this.getAllAvailableItems(iteration);
         Predicate<T> filterCondition = this.getExtractFilterCondition();
-        for (T item : allAvailableItems) {
-            if (filterCondition.test(item)) {
-                out.add(item);
+        Iterator<T> it = allAvailableItems.iterator();
+        while(it.hasNext()) {
+            T items = it.next();
+            if (filterCondition.test(items)) {
+                out.add(items);
+                // have to remove the item otherwise it could be counted double
+                it.remove();
             }
         }
+
         return out;
+    }
+
+    private IItemList<T> getAllAvailableItems(int iteration) {
+        final ThreadLocal<Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>>> iterationMap = networkItemsForIteration;
+
+        Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>> s = iterationMap.get();
+
+        NetworkInventoryHandler<T> networkInventoryHandler = getNetworkInventoryHandler();
+        if (s != null && s.get(iteration) == null) {
+            s = null;
+        }
+        if (s == null) {
+            s = Collections.singletonMap(iteration, new HashMap<>());
+            iterationMap.set(s);
+        }
+        Map<NetworkInventoryHandler<?>, IItemList<?>> networkInventoryItems = s.get(iteration);
+        if (networkInventoryItems.get(networkInventoryHandler) == null) {
+            IItemList<T> allAvailableItems = this.internal.getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
+            networkInventoryItems.put(networkInventoryHandler, allAvailableItems);
+        }
+
+        return (IItemList<T>) networkInventoryItems.get(networkInventoryHandler);
+    }
+
+    private NetworkInventoryHandler<T> getNetworkInventoryHandler() {
+        return (NetworkInventoryHandler<T>) findNetworkInventoryHandler(this.getInternal());
+    }
+
+    private NetworkInventoryHandler<?> findNetworkInventoryHandler(IMEInventory<?> inventory) {
+        if(inventory instanceof MEMonitorPassThrough<?> passThrough) {
+            return findNetworkInventoryHandler(passThrough.getInternal());
+        } else if(inventory instanceof NetworkMonitor<?> networkMonitor) {
+            return findNetworkInventoryHandler(networkMonitor.getHandler());
+        } else if(inventory instanceof NetworkInventoryHandler<?> networkInventoryHandler) {
+            return networkInventoryHandler;
+        } else {
+            AELog.error("NetworkInventoryHandler cannot be determined for %s", inventory.getClass());
+            return null;
+        }
     }
 
     @Override
