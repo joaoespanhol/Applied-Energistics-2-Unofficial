@@ -11,7 +11,7 @@
 package appeng.me.storage;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -118,9 +118,8 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
                 return null;
             }
         }
-        // TODO keep extractable items
-        T items = this.internal.extractItems(request, type, src);
-        return items;
+
+        return this.internal.extractItems(request, type, src);
     }
 
     @Override
@@ -149,7 +148,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     private IItemList<T> getAvailableItems(IItemList<T> out, int iteration, Predicate<T> filterCondition) {
         final IItemList<T> allAvailableItems = this.getAllAvailableItems(iteration);
         Iterator<T> it = allAvailableItems.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             T items = it.next();
             if (filterCondition.test(items)) {
                 out.add(items);
@@ -161,25 +160,23 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     private IItemList<T> getAllAvailableItems(int iteration) {
-        final ThreadLocal<Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>>> iterationMap = networkItemsForIteration;
-
-        Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>> s = iterationMap.get();
-
         NetworkInventoryHandler<T> networkInventoryHandler = getNetworkInventoryHandler();
-        if(networkInventoryHandler == null) {
+        if (networkInventoryHandler == null) {
             return this.internal.getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
         }
 
-        if (s != null && s.get(iteration) == null) {
+        Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>> s = networkItemsForIteration.get();
+        if (s != null && !s.containsKey(iteration)) {
             s = null;
         }
         if (s == null) {
-            s = Collections.singletonMap(iteration, new HashMap<>());
-            iterationMap.set(s);
+            s = Collections.singletonMap(iteration, new IdentityHashMap<>());
+            networkItemsForIteration.set(s);
         }
         Map<NetworkInventoryHandler<?>, IItemList<?>> networkInventoryItems = s.get(iteration);
-        if (networkInventoryItems.get(networkInventoryHandler) == null) {
-            IItemList<T> allAvailableItems = this.internal.getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
+        if (!networkInventoryItems.containsKey(networkInventoryHandler)) {
+            IItemList<T> allAvailableItems = this.internal
+                    .getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
             networkInventoryItems.put(networkInventoryHandler, allAvailableItems);
         }
 
@@ -192,11 +189,11 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
 
     // should give back the NetworkInventoryHandler for storage buses, everything else can be null
     private NetworkInventoryHandler<?> findNetworkInventoryHandler(IMEInventory<?> inventory) {
-        if(inventory instanceof MEPassThrough<?> passThrough) {
+        if (inventory instanceof MEPassThrough<?>passThrough) {
             return findNetworkInventoryHandler(passThrough.getInternal());
-        } else if(inventory instanceof NetworkMonitor<?> networkMonitor) {
+        } else if (inventory instanceof NetworkMonitor<?>networkMonitor) {
             return findNetworkInventoryHandler(networkMonitor.getHandler());
-        } else if(inventory instanceof NetworkInventoryHandler<?> networkInventoryHandler) {
+        } else if (inventory instanceof NetworkInventoryHandler<?>networkInventoryHandler) {
             return networkInventoryHandler;
         } else {
             return null;
