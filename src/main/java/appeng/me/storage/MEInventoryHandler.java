@@ -10,10 +10,6 @@
 
 package appeng.me.storage;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -28,13 +24,10 @@ import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
-import appeng.me.cache.NetworkMonitor;
 import appeng.util.prioitylist.DefaultPriorityList;
 import appeng.util.prioitylist.IPartitionList;
 
 public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHandler<T> {
-
-    private static final ThreadLocal<Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>>> networkItemsForIteration = new ThreadLocal<>();
 
     private final IMEInventoryHandler<T> internal;
     private int myPriority;
@@ -44,7 +37,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     private IPartitionList<T> myExtractPartitionList;
 
     private AccessRestriction cachedAccessRestriction;
-    private boolean hasReadAccess;
+    protected boolean hasReadAccess;
     protected boolean hasWriteAccess;
     protected boolean isSticky;
     protected boolean isExtractFilterActive;
@@ -131,7 +124,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
         if (this.isExtractFilterActive() && !this.myExtractPartitionList.isEmpty()) {
             return this.filterAvailableItems(out, iteration);
         } else {
-            return this.getAvailableItems(out, iteration, e -> true);
+            return this.internal.getAvailableItems(out, iteration);
         }
     }
 
@@ -140,64 +133,15 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     protected IItemList<T> filterAvailableItems(IItemList<T> out, int iteration) {
+        final IItemList<T> allAvailableItems = this.internal
+                .getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
         Predicate<T> filterCondition = this.getExtractFilterCondition();
-        getAvailableItems(out, iteration, filterCondition);
-        return out;
-    }
-
-    private IItemList<T> getAvailableItems(IItemList<T> out, int iteration, Predicate<T> filterCondition) {
-        final IItemList<T> allAvailableItems = this.getAllAvailableItems(iteration);
-        Iterator<T> it = allAvailableItems.iterator();
-        while (it.hasNext()) {
-            T items = it.next();
-            if (filterCondition.test(items)) {
-                out.add(items);
-                // have to remove the item otherwise it could be counted double
-                it.remove();
+        for (T item : allAvailableItems) {
+            if (filterCondition.test(item)) {
+                out.add(item);
             }
         }
         return out;
-    }
-
-    private IItemList<T> getAllAvailableItems(int iteration) {
-        NetworkInventoryHandler<T> networkInventoryHandler = getNetworkInventoryHandler();
-        if (networkInventoryHandler == null) {
-            return this.internal.getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
-        }
-
-        Map<Integer, Map<NetworkInventoryHandler<?>, IItemList<?>>> s = networkItemsForIteration.get();
-        if (s != null && !s.containsKey(iteration)) {
-            s = null;
-        }
-        if (s == null) {
-            s = Collections.singletonMap(iteration, new IdentityHashMap<>());
-            networkItemsForIteration.set(s);
-        }
-        Map<NetworkInventoryHandler<?>, IItemList<?>> networkInventoryItems = s.get(iteration);
-        if (!networkInventoryItems.containsKey(networkInventoryHandler)) {
-            IItemList<T> allAvailableItems = this.internal
-                    .getAvailableItems((IItemList<T>) this.internal.getChannel().createList(), iteration);
-            networkInventoryItems.put(networkInventoryHandler, allAvailableItems);
-        }
-
-        return (IItemList<T>) networkInventoryItems.get(networkInventoryHandler);
-    }
-
-    private NetworkInventoryHandler<T> getNetworkInventoryHandler() {
-        return (NetworkInventoryHandler<T>) findNetworkInventoryHandler(this.getInternal());
-    }
-
-    // should give back the NetworkInventoryHandler for storage buses, everything else can be null
-    private NetworkInventoryHandler<?> findNetworkInventoryHandler(IMEInventory<?> inventory) {
-        if (inventory instanceof MEPassThrough<?>passThrough) {
-            return findNetworkInventoryHandler(passThrough.getInternal());
-        } else if (inventory instanceof NetworkMonitor<?>networkMonitor) {
-            return findNetworkInventoryHandler(networkMonitor.getHandler());
-        } else if (inventory instanceof NetworkInventoryHandler<?>networkInventoryHandler) {
-            return networkInventoryHandler;
-        } else {
-            return null;
-        }
     }
 
     @Override
