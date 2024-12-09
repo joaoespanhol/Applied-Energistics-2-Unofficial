@@ -66,7 +66,7 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
     public LockCraftingMode lockCraftingMode = LockCraftingMode.NONE;
 
     @GuiSync(16)
-    public FakeCraftingMode fakeCraftingMode = FakeCraftingMode.NONE;
+    public FakeCraftingMode fakeCraftingMode = FakeCraftingMode.FAKE;
 
     @GuiSync(8)
     public InsertionMode insertionMode = InsertionMode.DEFAULT;

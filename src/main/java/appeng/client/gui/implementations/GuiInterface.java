@@ -181,8 +181,7 @@ public class GuiInterface extends GuiUpgradeable {
         }
 
         if (this.fakeCraftingMode != null) {
-            // TODO 1
-            // this.fakeCraftingMode.set(((ContainerInterface) this.cvb)
+            this.fakeCraftingMode.set(((ContainerInterface) this.cvb).getFakeCraftingMode());
         }
 
         this.fontRendererObj.drawString(
@@ -253,7 +252,7 @@ public class GuiInterface extends GuiUpgradeable {
         }
 
         if (btn == this.fakeCraftingMode) {
-            // TODO 2
+            NetworkHandler.instance.sendToServer(new PacketConfigButton(this.fakeCraftingMode.getSetting(), backwards));
         }
     }
 
