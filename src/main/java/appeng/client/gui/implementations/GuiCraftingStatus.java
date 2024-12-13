@@ -307,7 +307,12 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
     }
 
     private void setScrollBar() {
-        final int size = this.visual.size();
+        int size;
+        if (this.hideStored) {
+            size = this.visualHiddenStored.size();
+        } else {
+            size = this.visual.size();
+        }
 
         this.getScrollBar().setTop(SCROLLBAR_TOP).setLeft(SCROLLBAR_LEFT).setHeight(ySize - 47);
         this.getScrollBar().setRange(0, (size + 2) / 3 - this.rows, 1);

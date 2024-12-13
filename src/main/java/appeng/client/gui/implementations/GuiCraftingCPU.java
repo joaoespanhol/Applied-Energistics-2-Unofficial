@@ -37,6 +37,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.api.util.DimensionalCoord;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.IGuiTooltipHandler;
+import appeng.client.gui.widgets.GuiAeButton;
 import appeng.client.gui.widgets.GuiScrollbar;
 import appeng.client.gui.widgets.ISortSource;
 import appeng.client.gui.widgets.ITooltip;
@@ -158,6 +159,9 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
 
     protected List<IAEItemStack> visual = new ArrayList<>();
     private GuiButton cancel;
+    protected List<IAEItemStack> visualHiddenStored = new ArrayList<>();
+    private GuiButton toggleHideStored;
+    protected boolean hideStored;
     private int tooltip = -1;
     private final RemainingOperations remainingOperations = new RemainingOperations();
     private ItemStack hoveredStack;
@@ -182,6 +186,7 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
         this.active = AEApi.instance().storage().createItemList();
         this.pending = AEApi.instance().storage().createItemList();
         this.visual = new ArrayList<>();
+        this.visualHiddenStored = new ArrayList<>();
     }
 
     @Override
@@ -195,6 +200,11 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
                 AELog.debug(e);
             }
         }
+        if (this.toggleHideStored == btn) {
+            this.hideStored ^= true;
+            hideStoredSorting();
+        }
+
     }
 
     @Override
@@ -224,12 +234,25 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
                 CANCEL_WIDTH,
                 CANCEL_HEIGHT,
                 GuiText.Cancel.getLocal());
+        this.toggleHideStored = new GuiAeButton(
+                0,
+                this.guiLeft + 221,
+                this.guiTop + this.ySize - 19,
+                17,
+                17,
+                "HS",
+                GuiText.HideStored.getLocal());
+        this.buttonList.add(this.toggleHideStored);
         this.buttonList.add(this.cancel);
     }
 
     private void setScrollBar() {
-        final int size = this.visual.size();
-
+        int size;
+        if (this.hideStored) {
+            size = this.visualHiddenStored.size();
+        } else {
+            size = this.visual.size();
+        }
         this.getScrollBar().setTop(SCROLLBAR_TOP).setLeft(SCROLLBAR_LEFT).setHeight(SCROLLBAR_HEIGHT);
         this.getScrollBar().setRange(0, (size + 2) / ITEMS_PER_ROW - rows, 1);
     }
@@ -323,8 +346,14 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
         final int offY = 23;
 
         final ReadableNumberConverter converter = ReadableNumberConverter.INSTANCE;
-        for (int z = viewStart; z < Math.min(viewEnd, this.visual.size()); z++) {
-            final IAEItemStack refStack = this.visual.get(z); // repo.getReferenceItem( z );
+        List<IAEItemStack> visualTemp;
+        if (this.hideStored) {
+            visualTemp = this.visualHiddenStored;
+        } else {
+            visualTemp = this.visual;
+        }
+        for (int z = viewStart; z < Math.min(viewEnd, visualTemp.size()); z++) {
+            final IAEItemStack refStack = visualTemp.get(z); // repo.getReferenceItem( z );
             if (refStack != null) {
                 GL11.glPushMatrix();
                 GL11.glScaled(0.5, 0.5, 0.5);
@@ -533,6 +562,7 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
             }
         }
 
+        if (this.hideStored) this.hideStoredSorting();
         this.setScrollBar();
     }
 
@@ -620,5 +650,19 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
     @Override
     public ItemStack getHoveredStack() {
         return hoveredStack;
+    }
+
+    private void hideStoredSorting() {
+        this.visualHiddenStored = new ArrayList<>();
+        for (final IAEItemStack refStack : this.visual) {
+            if (refStack != null) {
+                final IAEItemStack stored = this.storage.findPrecise(refStack);
+                final IAEItemStack activeStack = this.active.findPrecise(refStack);
+                final IAEItemStack pendingStack = this.pending.findPrecise(refStack);
+                if (stored == null && activeStack != null || pendingStack != null) {
+                    this.visualHiddenStored.add(refStack);
+                }
+            }
+        }
     }
 }
