@@ -1043,7 +1043,8 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     }
 
     public boolean isFakeCraftingMode() {
-        return cm.getSetting(Settings.FAKE_CRAFTING_MOED) == FakeCraftingMode.FAKE;
+        return this.getInstalledUpgrades(Upgrades.FAKE_FRAFTING) != 0
+                && cm.getSetting(Settings.FAKE_CRAFTING_MOED) == FakeCraftingMode.FAKE;
     }
 
     private static boolean acceptsItems(final InventoryAdaptor ad, final InventoryCrafting table,
