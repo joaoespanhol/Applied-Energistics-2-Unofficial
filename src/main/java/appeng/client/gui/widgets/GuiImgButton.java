@@ -303,7 +303,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.HideStored,
                     ButtonToolTips.Disabled);
             this.registerApp(
-                    16 * 13 +5,
+                    16 * 13 + 5,
                     Settings.HIDE_STORED,
                     YesNo.YES,
                     ButtonToolTips.HideStored,
