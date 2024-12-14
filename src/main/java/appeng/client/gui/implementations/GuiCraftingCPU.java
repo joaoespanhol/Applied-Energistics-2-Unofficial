@@ -202,6 +202,11 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
         }
         if (this.toggleHideStored == btn) {
             this.hideStored ^= true;
+            if (hideStored) {
+                this.toggleHideStored.displayString = "HS";
+            } else {
+                this.toggleHideStored.displayString = "S";
+            }
             hideStoredSorting();
         }
 
@@ -240,7 +245,7 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
                 this.guiTop + this.ySize - 19,
                 17,
                 17,
-                "HS",
+                "S",
                 GuiText.HideStored.getLocal());
         this.buttonList.add(this.toggleHideStored);
         this.buttonList.add(this.cancel);
