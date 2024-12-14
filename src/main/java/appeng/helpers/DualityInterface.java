@@ -151,7 +151,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         this.cm.registerSetting(Settings.ADVANCED_BLOCKING_MODE, AdvancedBlockingMode.DEFAULT);
         this.cm.registerSetting(Settings.LOCK_CRAFTING_MODE, LockCraftingMode.NONE);
         this.cm.registerSetting(Settings.PATTERN_OPTIMIZATION, YesNo.YES);
-        this.cm.registerSetting(Settings.FAKE_CRAFTING_MOED, FakeCraftingMode.NONE);
+        this.cm.registerSetting(Settings.FAKE_CRAFTING_MOED, FakeCraftingMode.FAKE);
 
         this.iHost = ih;
         this.craftingTracker = new MultiCraftingTracker(this.iHost, 9);
@@ -1040,6 +1040,10 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
     private InsertionMode getInsertionMode() {
         return (InsertionMode) cm.getSetting(Settings.INSERTION_MODE);
+    }
+
+    public boolean isFakeCraftingMode() {
+        return cm.getSetting(Settings.FAKE_CRAFTING_MOED) == FakeCraftingMode.FAKE;
     }
 
     private static boolean acceptsItems(final InventoryAdaptor ad, final InventoryCrafting table,
