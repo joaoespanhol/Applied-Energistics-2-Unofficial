@@ -249,8 +249,7 @@ public enum GuiText {
     TypesInfo,
     BytesInfo,
     ToFollow,
-    ToUnfollow,
-    HideStored;
+    ToUnfollow;
 
     private final String root;
 

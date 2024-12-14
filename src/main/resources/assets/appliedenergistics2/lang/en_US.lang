@@ -322,7 +322,6 @@ gui.appliedenergistics2.TypesInfo=Types
 gui.appliedenergistics2.BytesInfo=Bytes
 gui.appliedenergistics2.ToFollow=Follow
 gui.appliedenergistics2.ToUnfollow=Unfollow
-gui.appliedenergistics2.HideStored=Hide Stored Items
 
 # GUI Colors - ARGB
 gui.color.appliedenergistics2.SearchboxFocused=6E000000
@@ -426,6 +425,7 @@ gui.tooltips.appliedenergistics2.TerminalStyle_Full=Full Screen Terminal
 gui.tooltips.appliedenergistics2.TerminalStyle_Tall=Tall Centered Terminal
 gui.tooltips.appliedenergistics2.TerminalStyle_Small=Small Centered Terminal
 gui.tooltips.appliedenergistics2.SaveAsImage=Save as image
+gui.tooltips.appliedenergistics2.HideStored=Hide Stored Items
 
 gui.tooltips.appliedenergistics2.DoesntDespawn=This item won't de-spawn.
 gui.tooltips.appliedenergistics2.EmitterMode=Crafting Emitter Mode

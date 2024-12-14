@@ -18,6 +18,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import appeng.api.config.Settings;
+import appeng.api.config.TerminalStyle;
+import appeng.api.config.YesNo;
+import appeng.client.gui.widgets.GuiImgButton;
+import appeng.client.gui.widgets.GuiSimpleImgButton;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -160,7 +165,7 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
     protected List<IAEItemStack> visual = new ArrayList<>();
     private GuiButton cancel;
     protected List<IAEItemStack> visualHiddenStored = new ArrayList<>();
-    private GuiButton toggleHideStored;
+    private GuiImgButton toggleHideStored;
     protected boolean hideStored;
     private int tooltip = -1;
     private final RemainingOperations remainingOperations = new RemainingOperations();
@@ -202,11 +207,7 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
         }
         if (this.toggleHideStored == btn) {
             this.hideStored ^= true;
-            if (hideStored) {
-                this.toggleHideStored.displayString = "HS";
-            } else {
-                this.toggleHideStored.displayString = "S";
-            }
+            this.toggleHideStored.set(hideStored ? YesNo.YES : YesNo.NO);
             hideStoredSorting();
         }
 
@@ -239,14 +240,11 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
                 CANCEL_WIDTH,
                 CANCEL_HEIGHT,
                 GuiText.Cancel.getLocal());
-        this.toggleHideStored = new GuiAeButton(
-                0,
+        this.toggleHideStored = new GuiImgButton(
                 this.guiLeft + 221,
                 this.guiTop + this.ySize - 19,
-                17,
-                17,
-                "S",
-                GuiText.HideStored.getLocal());
+                Settings.HIDE_STORED,
+                YesNo.NO);
         this.buttonList.add(this.toggleHideStored);
         this.buttonList.add(this.cancel);
     }
