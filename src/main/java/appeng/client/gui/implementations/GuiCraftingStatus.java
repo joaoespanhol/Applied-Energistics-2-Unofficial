@@ -140,6 +140,8 @@ public class GuiCraftingStatus extends GuiCraftingCPU implements ICraftingCPUTab
             NetworkHandler.instance.sendToServer(new PacketSwitchGuis(this.originalGui));
         } else if (btn == this.switchTallMode) {
             tallMode = !tallMode;
+            AEConfig.instance.getConfigManager()
+                    .putSetting(Settings.TERMINAL_STYLE, tallMode ? TerminalStyle.TALL : TerminalStyle.SMALL);
             switchTallMode.set(tallMode ? TerminalStyle.TALL : TerminalStyle.SMALL);
             recalculateScreenSize();
             this.setWorldAndResolution(mc, width, height);
