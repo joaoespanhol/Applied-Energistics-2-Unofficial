@@ -41,7 +41,7 @@ public class PartCreativeEnergy extends AEBasePart implements IAEPowerStorage {
                 this.getItemStack().getIconIndex(),
                 CableBusTextures.PartTunnelSides.getIcon(),
                 CableBusTextures.PartTunnelSides.getIcon());
-        rh.setBounds(4.0f, 4.0f, 12.0f, 12.0f, 12.0f, 13.0f);
+        rh.setBounds(4.0f, 4.0f, 8.0f, 12.0f, 12.0f, 9.0f);
         rh.renderInventoryBox(renderer);
     }
 
