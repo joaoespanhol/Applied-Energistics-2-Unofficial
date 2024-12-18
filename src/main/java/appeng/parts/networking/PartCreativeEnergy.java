@@ -21,6 +21,7 @@ public class PartCreativeEnergy extends AEBasePart implements IAEPowerStorage {
 
     public PartCreativeEnergy(final ItemStack is) {
         super(is);
+        this.getProxy().setIdlePowerUsage(0);
     }
 
     @Override
