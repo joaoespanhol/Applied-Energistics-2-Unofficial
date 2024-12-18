@@ -2,7 +2,6 @@ package appeng.parts.networking;
 
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
 
 import org.lwjgl.opengl.GL11;
 
@@ -12,7 +11,7 @@ import appeng.api.config.PowerMultiplier;
 import appeng.api.networking.energy.IAEPowerStorage;
 import appeng.api.parts.IPartCollisionHelper;
 import appeng.api.parts.IPartRenderHelper;
-import appeng.client.texture.TextureUtils;
+import appeng.client.texture.CableBusTextures;
 import appeng.parts.AEBasePart;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -26,7 +25,8 @@ public class PartCreativeEnergy extends AEBasePart implements IAEPowerStorage {
 
     @Override
     public void getBoxes(final IPartCollisionHelper bch) {
-        bch.addBox(6, 6, 10, 10, 10, 16);
+        bch.addBox(6, 6, 11, 10, 10, 12);
+        bch.addBox(4, 4, 12, 12, 12, 13);
     }
 
     @Override
@@ -34,21 +34,35 @@ public class PartCreativeEnergy extends AEBasePart implements IAEPowerStorage {
     public void renderInventory(final IPartRenderHelper rh, final RenderBlocks renderer) {
         GL11.glTranslated(-0.2, -0.3, 0.0);
 
-        rh.setTexture(this.getItemStack().getIconIndex());
-        rh.setBounds(6.0f, 6.0f, 5.0f, 10.0f, 10.0f, 11.0f);
+        rh.setTexture(
+                CableBusTextures.PartTunnelSides.getIcon(),
+                CableBusTextures.PartTunnelSides.getIcon(),
+                CableBusTextures.BlockP2PTunnel2.getIcon(),
+                this.getItemStack().getIconIndex(),
+                CableBusTextures.PartTunnelSides.getIcon(),
+                CableBusTextures.PartTunnelSides.getIcon());
+        rh.setBounds(4.0f, 4.0f, 12.0f, 12.0f, 12.0f, 13.0f);
         rh.renderInventoryBox(renderer);
-        rh.setTexture(null);
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void renderStatic(final int x, final int y, final int z, final IPartRenderHelper rh,
             final RenderBlocks renderer) {
-        final IIcon myIcon = TextureUtils.checkTexture(this.getItemStack().getIconIndex());
-        rh.setTexture(myIcon);
-        rh.setBounds(6, 6, 10, 10, 10, 16);
+        rh.setTexture(
+                CableBusTextures.PartTunnelSides.getIcon(),
+                CableBusTextures.PartTunnelSides.getIcon(),
+                CableBusTextures.BlockP2PTunnel2.getIcon(),
+                this.getItemStack().getIconIndex(),
+                CableBusTextures.PartTunnelSides.getIcon(),
+                CableBusTextures.PartTunnelSides.getIcon());
+        rh.setBounds(4, 4, 12, 12, 12, 13);
         rh.renderBlock(x, y, z, renderer);
-        rh.setTexture(null);
+
+        rh.setTexture(CableBusTextures.BlockP2PTunnel2.getIcon());
+
+        rh.setBounds(6, 6, 11, 10, 10, 12);
+        rh.renderBlock(x, y, z, renderer);
     }
 
     @Override
