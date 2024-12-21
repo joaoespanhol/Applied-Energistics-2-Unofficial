@@ -146,6 +146,7 @@ public final class ItemMultiMaterial extends AEBaseItem implements IStorageCompo
             case CardLockCrafting -> Upgrades.LOCK_CRAFTING;
             case CardSticky -> Upgrades.STICKY;
             case CardSuperSpeedGod -> Upgrades.SUPERSPEEDGOD;
+            case CardFakeCrafting -> Upgrades.FAKE_FRAFTING;
             default -> null;
         };
     }
