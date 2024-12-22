@@ -721,13 +721,13 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.LockCraftingUntilResultReturned);
             this.registerApp(
                     16 * 13 + 4,
-                    Settings.FAKE_CRAFTING_MOED,
+                    Settings.FAKE_CRAFTING_MODE,
                     FakeCraftingMode.FAKE,
                     ButtonToolTips.FakeCraftingMode,
                     ButtonToolTips.FakeCraftingOn);
             this.registerApp(
                     16 * 13 + 5,
-                    Settings.FAKE_CRAFTING_MOED,
+                    Settings.FAKE_CRAFTING_MODE,
                     FakeCraftingMode.NONE,
                     ButtonToolTips.FakeCraftingMode,
                     ButtonToolTips.FakeCraftingOff);

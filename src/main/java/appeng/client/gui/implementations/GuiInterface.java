@@ -137,9 +137,9 @@ public class GuiInterface extends GuiUpgradeable {
         this.fakeCraftingMode = new GuiImgButton(
                 this.guiLeft - 18,
                 this.guiTop + offset,
-                Settings.FAKE_CRAFTING_MOED,
+                Settings.FAKE_CRAFTING_MODE,
                 FakeCraftingMode.FAKE);
-        this.fakeCraftingMode.visible = this.bc.getInstalledUpgrades(Upgrades.FAKE_FRAFTING) > 0;
+        this.fakeCraftingMode.visible = this.bc.getInstalledUpgrades(Upgrades.FAKE_CRAFTING) > 0;
         this.buttonList.add(fakeCraftingMode);
     }
 
@@ -266,7 +266,7 @@ public class GuiInterface extends GuiUpgradeable {
             this.lockCraftingMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.LOCK_CRAFTING) > 0);
         }
         if (this.fakeCraftingMode != null) {
-            this.fakeCraftingMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.FAKE_FRAFTING) > 0);
+            this.fakeCraftingMode.setVisibility(this.bc.getInstalledUpgrades(Upgrades.FAKE_CRAFTING) > 0);
         }
     }
 }
