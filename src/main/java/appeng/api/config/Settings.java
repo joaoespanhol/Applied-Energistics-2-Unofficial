@@ -86,7 +86,7 @@ public enum Settings {
 
     INTERFACE_TERMINAL_SECTION_ORDER(EnumSet.allOf(StringOrder.class)),
 
-    FAKE_CRAFTING_MOED(EnumSet.allOf(FakeCraftingMode.class));
+    FAKE_CRAFTING_MODE(EnumSet.allOf(FakeCraftingMode.class));
 
     private final EnumSet<? extends Enum<?>> values;
 

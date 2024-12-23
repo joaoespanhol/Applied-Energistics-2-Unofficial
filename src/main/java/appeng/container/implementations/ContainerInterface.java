@@ -171,7 +171,7 @@ public class ContainerInterface extends ContainerUpgradeable implements IOptiona
         this.setPatternOptimization((YesNo) cm.getSetting(Settings.PATTERN_OPTIMIZATION));
         this.setAdvancedBlockingMode((AdvancedBlockingMode) cm.getSetting(Settings.ADVANCED_BLOCKING_MODE));
         this.setLockCraftingMode((LockCraftingMode) cm.getSetting(Settings.LOCK_CRAFTING_MODE));
-        this.setFakeCraftingMode((FakeCraftingMode) cm.getSetting(Settings.FAKE_CRAFTING_MOED));
+        this.setFakeCraftingMode((FakeCraftingMode) cm.getSetting(Settings.FAKE_CRAFTING_MODE));
     }
 
     public void doublePatterns(int val) {

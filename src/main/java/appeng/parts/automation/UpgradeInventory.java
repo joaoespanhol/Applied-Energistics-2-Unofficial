@@ -92,7 +92,7 @@ public abstract class UpgradeInventory extends AppEngInternalInventory implement
             case LOCK_CRAFTING -> this.lockCraftingUpgrades;
             case STICKY -> this.stickyUpgrades;
             case SUPERSPEEDGOD -> this.superSpeedGodUpgrades;
-            case FAKE_FRAFTING -> this.fakeCraftingUpgrades;
+            case FAKE_CRAFTING -> this.fakeCraftingUpgrades;
             default -> 0;
         };
     }
@@ -123,7 +123,7 @@ public abstract class UpgradeInventory extends AppEngInternalInventory implement
                 case LOCK_CRAFTING -> this.lockCraftingUpgrades++;
                 case STICKY -> this.stickyUpgrades++;
                 case SUPERSPEEDGOD -> this.superSpeedGodUpgrades++;
-                case FAKE_FRAFTING -> this.fakeCraftingUpgrades++;
+                case FAKE_CRAFTING -> this.fakeCraftingUpgrades++;
                 default -> {}
             }
         }
@@ -141,7 +141,7 @@ public abstract class UpgradeInventory extends AppEngInternalInventory implement
         this.advancedBlockingUpgrades = Math
                 .min(this.advancedBlockingUpgrades, this.getMaxInstalled(Upgrades.ADVANCED_BLOCKING));
         this.lockCraftingUpgrades = Math.min(this.lockCraftingUpgrades, this.getMaxInstalled(Upgrades.LOCK_CRAFTING));
-        this.fakeCraftingUpgrades = Math.min(this.fakeCraftingUpgrades, this.getMaxInstalled(Upgrades.FAKE_FRAFTING));
+        this.fakeCraftingUpgrades = Math.min(this.fakeCraftingUpgrades, this.getMaxInstalled(Upgrades.FAKE_CRAFTING));
         this.stickyUpgrades = Math.min(this.stickyUpgrades, this.getMaxInstalled(Upgrades.STICKY));
         this.superSpeedGodUpgrades = Math.min(this.superSpeedGodUpgrades, this.getMaxInstalled(Upgrades.SUPERSPEEDGOD));
     }

@@ -854,15 +854,6 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
 
                     if (this.remainingOperations == 0) {
-                        // if (m instanceof DualityInterface di && di.isFakeCraftingMode()) {
-                        // final IAEItemStack is = this.waitingFor.findPrecise(this.finalOutput);
-                        // long stackSize = is.getStackSize();
-                        // is.decStackSize(stackSize);
-                        // this.markDirty();
-                        // this.postCraftingStatusChange(is);
-                        // this.finalOutput.decStackSize(stackSize);
-                        // this.updateCPU();
-                        // }
                         return;
                     }
                 }
