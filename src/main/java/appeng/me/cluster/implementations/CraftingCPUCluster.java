@@ -139,6 +139,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private IAEItemStack finalOutput;
     private boolean waiting = false;
     private IItemList<IAEItemStack> waitingFor = AEApi.instance().storage().createItemList();
+    private IItemList<IAEItemStack> waitingForMissing = AEApi.instance().storage().createItemList();
     private long availableStorage = 0;
     private long usedStorage = 0;
     private MachineSource machineSrc = null;
@@ -1166,6 +1167,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
     public void addEmitable(final IAEItemStack i) {
         this.waitingFor.add(i);
+        this.waitingForMissing.add(i);
         this.postCraftingStatusChange(i);
     }
 
@@ -1288,6 +1290,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         data.setTag("tasks", list);
 
         data.setTag("waitingFor", this.writeList(this.waitingFor));
+        data.setTag("waitingForMissing", this.writeList(this.waitingForMissing));
 
         data.setLong("elapsedTime", this.getElapsedTime());
         data.setLong("startItemCount", this.getStartItemCount());
@@ -1388,6 +1391,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         for (final IAEItemStack is : this.waitingFor) {
             this.postCraftingStatusChange(is.copy());
         }
+        this.waitingForMissing = this.readList((NBTTagList) data.getTag("waitingForMissing"));
 
         this.lastTime = System.nanoTime();
         this.elapsedTime = data.getLong("elapsedTime");
@@ -1577,10 +1581,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     }
 
     public void tryExtractItems() {
-        if (!isMissingMode || this.waitingFor.isEmpty()) return;
+        if (!isMissingMode || this.waitingForMissing.isEmpty()) return;
         if (countToTryExtractItems > 1200) {
             countToTryExtractItems = 0;
-            for (IAEItemStack waitingForItem : this.waitingFor) {
+            for (IAEItemStack waitingForItem : this.waitingForMissing) {
                 final IGrid grid = this.getGrid();
                 if (grid != null) {
                     final IStorageGrid pg = grid.getCache(IStorageGrid.class);
@@ -1588,7 +1592,13 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         IAEItemStack extractedItems = pg.getItemInventory()
                                 .extractItems(waitingForItem, Actionable.MODULATE, this.machineSrc);
                         if (extractedItems != null) {
-                            injectItems(extractedItems, Actionable.MODULATE, this.machineSrc);
+                            waitingForItem.setStackSize(waitingForItem.getStackSize() - extractedItems.getStackSize());
+                            IAEStack<?> notInjected = injectItems(extractedItems, Actionable.MODULATE, this.machineSrc);
+                            if (notInjected != null) { // not sure if this even need, but still
+                                waitingForItem.setStackSize(waitingForItem.getStackSize() + notInjected.getStackSize());
+                                pg.getItemInventory()
+                                        .injectItems((IAEItemStack) notInjected, Actionable.MODULATE, this.machineSrc);
+                            }
                         }
                     }
                 }
