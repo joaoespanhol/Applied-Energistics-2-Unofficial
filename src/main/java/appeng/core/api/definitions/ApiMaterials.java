@@ -557,7 +557,7 @@ public final class ApiMaterials implements IMaterials {
     public IItemDefinition cardFakeCrafting() {
         return this.cardFakeCrafting;
     }
-  
+
     @Override
     public IItemDefinition cardSuperSpeedGod() {
         return this.cardSuperSpeedGod;
