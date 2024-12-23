@@ -338,6 +338,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
         final IAEItemStack what = (IAEItemStack) input.copy();
         final IAEItemStack is = this.waitingFor.findPrecise(what);
+        final IAEItemStack ism = this.waitingForMissing.findPrecise(what);
 
         if (type == Actionable.SIMULATE) // causes crafting to lock up?
         {
@@ -378,6 +379,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
                 if (is.getStackSize() >= what.getStackSize()) {
                     is.decStackSize(what.getStackSize());
+                    if (ism != null) ism.decStackSize(what.getStackSize());
 
                     this.updateElapsedTime(what);
                     this.markDirty();
@@ -414,6 +416,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 what.decStackSize(is.getStackSize());
 
                 is.setStackSize(0);
+                if (ism != null) ism.setStackSize(0);
 
                 if (Objects.equals(finalOutput, insert)) {
                     IAEStack leftover = input;
@@ -1592,10 +1595,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         IAEItemStack extractedItems = pg.getItemInventory()
                                 .extractItems(waitingForItem, Actionable.MODULATE, this.machineSrc);
                         if (extractedItems != null) {
-                            waitingForItem.setStackSize(waitingForItem.getStackSize() - extractedItems.getStackSize());
-                            IAEStack<?> notInjected = injectItems(extractedItems, Actionable.MODULATE, this.machineSrc);
+                            IAEStack notInjected = injectItems(extractedItems, Actionable.MODULATE, this.machineSrc);
                             if (notInjected != null) { // not sure if this even need, but still
-                                waitingForItem.setStackSize(waitingForItem.getStackSize() + notInjected.getStackSize());
                                 pg.getItemInventory()
                                         .injectItems((IAEItemStack) notInjected, Actionable.MODULATE, this.machineSrc);
                             }
