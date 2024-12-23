@@ -44,6 +44,7 @@ public enum Upgrades {
     ORE_FILTER(1),
     ADVANCED_BLOCKING(1),
     LOCK_CRAFTING(1),
+    FAKE_CRAFTING(1),
     SUPERSPEEDGOD(1);
 
     /**
