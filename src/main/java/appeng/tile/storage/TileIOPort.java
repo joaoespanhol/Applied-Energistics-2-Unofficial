@@ -242,12 +242,12 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
     @Override
     public void onChangeInventory(final IInventory inv, final int slot, final InvOperation mc, final ItemStack removed,
             final ItemStack added) {
-        if (removed != null &&
-           (slot == INPUT_SLOT_INDEX_TOP_LEFT || slot == INPUT_SLOT_INDEX_TOP_RIGHT ||
-            slot == INPUT_SLOT_INDEX_CENTER_LEFT || slot == INPUT_SLOT_INDEX_CENTER_RIGHT ||
-            slot == INPUT_SLOT_INDEX_BOTTOM_LEFT || slot == INPUT_SLOT_INDEX_BOTTOM_RIGHT))
-        {
-            moveQueue[slot] = 0; 
+        if (removed != null && (slot == INPUT_SLOT_INDEX_TOP_LEFT || slot == INPUT_SLOT_INDEX_TOP_RIGHT
+                || slot == INPUT_SLOT_INDEX_CENTER_LEFT
+                || slot == INPUT_SLOT_INDEX_CENTER_RIGHT
+                || slot == INPUT_SLOT_INDEX_BOTTOM_LEFT
+                || slot == INPUT_SLOT_INDEX_BOTTOM_RIGHT)) {
+            moveQueue[slot] = 0;
         }
         if (this.cells == inv) {
             this.updateTask();
