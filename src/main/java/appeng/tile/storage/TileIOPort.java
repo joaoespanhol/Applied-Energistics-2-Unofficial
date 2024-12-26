@@ -102,6 +102,7 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
     private ItemStack currentCell;
     private IMEInventory<IAEFluidStack> cachedFluid;
     private IMEInventory<IAEItemStack> cachedItem;
+    private boolean[] moveQueue = { false, false, false, false, false, false };
 
     @Reflected
     public TileIOPort() {
@@ -305,6 +306,8 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
             case 3 -> ItemsToMove *= 536_870_912;
         }
 
+        long maxMoved = ItemsToMove;
+
         try {
             final IMEInventory<IAEItemStack> itemNet = this.getProxy().getStorage().getItemInventory();
             final IMEInventory<IAEFluidStack> fluidNet = this.getProxy().getStorage().getFluidInventory();
@@ -312,45 +315,62 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
             for (int x = 0; x < 6; x++) {
                 final ItemStack is = this.cells.getStackInSlot(x);
                 if (is != null) {
-                    if (ItemsToMove > 0) {
-                        final IMEInventory<IAEItemStack> itemInv = this.getInv(is, StorageChannel.ITEMS);
-                        final IMEInventory<IAEFluidStack> fluidInv = this.getInv(is, StorageChannel.FLUIDS);
-
-                        if (this.manager.getSetting(Settings.OPERATION_MODE) == OperationMode.EMPTY) {
-                            if (itemInv != null) {
-                                ItemsToMove = this
-                                        .transferContents(energy, itemInv, itemNet, ItemsToMove, StorageChannel.ITEMS);
-                            }
-                            if (fluidInv != null) {
-                                ItemsToMove = this.transferContents(
-                                        energy,
-                                        fluidInv,
-                                        fluidNet,
-                                        ItemsToMove * FLUID_MULTIPLIER,
-                                        StorageChannel.FLUIDS);
-                            }
-                        } else {
-                            if (itemInv != null) {
-                                ItemsToMove = this
-                                        .transferContents(energy, itemNet, itemInv, ItemsToMove, StorageChannel.ITEMS);
-                            }
-                            if (fluidInv != null) {
-                                ItemsToMove = this.transferContents(
-                                        energy,
-                                        fluidNet,
-                                        fluidInv,
-                                        ItemsToMove * FLUID_MULTIPLIER,
-                                        StorageChannel.FLUIDS);
-                            }
-                        }
-
-                        if (ItemsToMove > 0 && this.shouldMove(itemInv, fluidInv) && !this.moveSlot(x)) {
-                            return TickRateModulation.IDLE;
-                        }
-
-                        return TickRateModulation.URGENT;
+                    if (moveQueue[x]) {
+                        moveQueue[x] = !this.moveSlot(x);
                     } else {
-                        return TickRateModulation.URGENT;
+                        if (ItemsToMove > 0) {
+                            final IMEInventory<IAEItemStack> itemInv = this.getInv(is, StorageChannel.ITEMS);
+                            final IMEInventory<IAEFluidStack> fluidInv = this.getInv(is, StorageChannel.FLUIDS);
+
+                            if (this.manager.getSetting(Settings.OPERATION_MODE) == OperationMode.EMPTY) {
+                                if (itemInv != null) {
+                                    ItemsToMove = this.transferContents(
+                                            energy,
+                                            itemInv,
+                                            itemNet,
+                                            ItemsToMove,
+                                            StorageChannel.ITEMS);
+                                }
+                                if (fluidInv != null) {
+                                    ItemsToMove = this.transferContents(
+                                            energy,
+                                            fluidInv,
+                                            fluidNet,
+                                            ItemsToMove * FLUID_MULTIPLIER,
+                                            StorageChannel.FLUIDS);
+                                }
+                            } else {
+                                if (itemInv != null) {
+                                    ItemsToMove = this.transferContents(
+                                            energy,
+                                            itemNet,
+                                            itemInv,
+                                            ItemsToMove,
+                                            StorageChannel.ITEMS);
+                                }
+                                if (fluidInv != null) {
+                                    ItemsToMove = this.transferContents(
+                                            energy,
+                                            fluidNet,
+                                            fluidInv,
+                                            ItemsToMove * FLUID_MULTIPLIER,
+                                            StorageChannel.FLUIDS);
+                                }
+                            }
+
+                            // If work is done, check if the cell should be moved and try to move it to the output
+                            // If the cell failed to move, queue moving the cell before doing any further work on it
+                            if (ItemsToMove > 0 && this.shouldMove(itemInv, fluidInv, ItemsToMove != maxMoved)) {
+                                moveQueue[x] = !this.moveSlot(x);
+                                if (moveQueue[x]) {
+                                    return TickRateModulation.IDLE;
+                                }
+                            }
+
+                            return TickRateModulation.URGENT;
+                        } else {
+                            return TickRateModulation.URGENT;
+                        }
                     }
                 }
             }
@@ -436,15 +456,17 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         return itemsToMove;
     }
 
-    private boolean shouldMove(final IMEInventory<IAEItemStack> itemInv, final IMEInventory<IAEFluidStack> fluidInv) {
+    private boolean shouldMove(final IMEInventory<IAEItemStack> itemInv, final IMEInventory<IAEFluidStack> fluidInv,
+            final boolean didWork) {
         final FullnessMode fm = (FullnessMode) this.manager.getSetting(Settings.FULLNESS_MODE);
+        final OperationMode om = (OperationMode) this.manager.getSetting(Settings.OPERATION_MODE);
 
         if (itemInv != null && fluidInv != null) {
-            return this.matches(fm, itemInv) && this.matches(fm, fluidInv);
+            return this.matches(fm, om, itemInv, didWork) && this.matches(fm, om, fluidInv, didWork);
         } else if (itemInv != null) {
-            return this.matches(fm, itemInv);
+            return this.matches(fm, om, itemInv, didWork);
         } else if (fluidInv != null) {
-            return this.matches(fm, fluidInv);
+            return this.matches(fm, om, fluidInv, didWork);
         }
 
         return true;
@@ -463,7 +485,8 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         return false;
     }
 
-    private boolean matches(final FullnessMode fm, final IMEInventory src) {
+    private boolean matches(final FullnessMode fm, final OperationMode om, final IMEInventory src,
+            final boolean didWork) {
         if (fm == FullnessMode.HALF) {
             return true;
         }
@@ -477,13 +500,21 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         }
 
         if (fm == FullnessMode.EMPTY) {
-            return myList.isEmpty();
+            // If filling from network and mode is set to "Move on empty", move when network is empty
+            if (om == OperationMode.FILL) {
+                return didWork;
+            } else {
+                return myList.isEmpty();
+            }
         }
 
         final IAEStack test = myList.getFirstItem();
         if (test != null) {
             test.setStackSize(1);
             return src.injectItems(test, Actionable.SIMULATE, this.mySrc) != null;
+        } else if (om == OperationMode.EMPTY) {
+            // If emptying into network and mode is set to "Move on full", move when network is full
+            return didWork;
         }
         return false;
     }
