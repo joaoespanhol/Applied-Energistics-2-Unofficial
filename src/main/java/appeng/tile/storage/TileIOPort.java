@@ -102,7 +102,7 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
     private ItemStack currentCell;
     private IMEInventory<IAEFluidStack> cachedFluid;
     private IMEInventory<IAEItemStack> cachedItem;
-    private boolean[] moveQueue = {false, false, false, false, false, false};
+    private boolean[] moveQueue = { false, false, false, false, false, false };
 
     @Reflected
     public TileIOPort() {
@@ -318,8 +318,12 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
 
                             if (this.manager.getSetting(Settings.OPERATION_MODE) == OperationMode.EMPTY) {
                                 if (itemInv != null) {
-                                    ItemsToMove = this
-                                            .transferContents(energy, itemInv, itemNet, ItemsToMove, StorageChannel.ITEMS);
+                                    ItemsToMove = this.transferContents(
+                                            energy,
+                                            itemInv,
+                                            itemNet,
+                                            ItemsToMove,
+                                            StorageChannel.ITEMS);
                                 }
                                 if (fluidInv != null) {
                                     ItemsToMove = this.transferContents(
@@ -331,8 +335,12 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
                                 }
                             } else {
                                 if (itemInv != null) {
-                                    ItemsToMove = this
-                                            .transferContents(energy, itemNet, itemInv, ItemsToMove, StorageChannel.ITEMS);
+                                    ItemsToMove = this.transferContents(
+                                            energy,
+                                            itemNet,
+                                            itemInv,
+                                            ItemsToMove,
+                                            StorageChannel.ITEMS);
                                 }
                                 if (fluidInv != null) {
                                     ItemsToMove = this.transferContents(
@@ -343,9 +351,9 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
                                             StorageChannel.FLUIDS);
                                 }
                             }
-                            
+
                             // If work is done, check if the cell should be moved and try to move it to the output
-                            // If the cell failed to move, queue moving the cell before doing any further work on it 
+                            // If the cell failed to move, queue moving the cell before doing any further work on it
                             if (ItemsToMove > 0 && this.shouldMove(itemInv, fluidInv, ItemsToMove != maxMoved)) {
                                 moveQueue[x] = !this.moveSlot(x);
                                 if (moveQueue[x]) {
@@ -442,7 +450,8 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         return itemsToMove;
     }
 
-    private boolean shouldMove(final IMEInventory<IAEItemStack> itemInv, final IMEInventory<IAEFluidStack> fluidInv, final boolean didWork) {
+    private boolean shouldMove(final IMEInventory<IAEItemStack> itemInv, final IMEInventory<IAEFluidStack> fluidInv,
+            final boolean didWork) {
         final FullnessMode fm = (FullnessMode) this.manager.getSetting(Settings.FULLNESS_MODE);
         final OperationMode om = (OperationMode) this.manager.getSetting(Settings.OPERATION_MODE);
 
@@ -470,7 +479,8 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         return false;
     }
 
-    private boolean matches(final FullnessMode fm, final OperationMode om, final IMEInventory src, final boolean didWork) {
+    private boolean matches(final FullnessMode fm, final OperationMode om, final IMEInventory src,
+            final boolean didWork) {
         if (fm == FullnessMode.HALF) {
             return true;
         }
