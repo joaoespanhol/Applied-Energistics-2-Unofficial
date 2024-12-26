@@ -102,7 +102,7 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
     private ItemStack currentCell;
     private IMEInventory<IAEFluidStack> cachedFluid;
     private IMEInventory<IAEItemStack> cachedItem;
-    private boolean[] moveQueue = { false, false, false, false, false, false };
+    private int[] moveQueue = { 0, 0, 0, 0, 0, 0 };
 
     @Reflected
     public TileIOPort() {
@@ -125,6 +125,7 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         this.cells.writeToNBT(data, "cells");
         this.upgrades.writeToNBT(data, "upgrades");
         data.setInteger("lastRedstoneState", this.lastRedstoneState.ordinal());
+        data.setIntArray("moveQueue", moveQueue);
     }
 
     @TileEvent(TileEventType.WORLD_NBT_READ)
@@ -134,6 +135,9 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
         this.upgrades.readFromNBT(data, "upgrades");
         if (data.hasKey("lastRedstoneState")) {
             this.lastRedstoneState = YesNo.values()[data.getInteger("lastRedstoneState")];
+        }
+        if (data.hasKey("moveQueue")) {
+            moveQueue = data.getIntArray("moveQueue");
         }
     }
 
@@ -238,6 +242,13 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
     @Override
     public void onChangeInventory(final IInventory inv, final int slot, final InvOperation mc, final ItemStack removed,
             final ItemStack added) {
+        if (removed != null &&
+           (slot == INPUT_SLOT_INDEX_TOP_LEFT || slot == INPUT_SLOT_INDEX_TOP_RIGHT ||
+            slot == INPUT_SLOT_INDEX_CENTER_LEFT || slot == INPUT_SLOT_INDEX_CENTER_RIGHT ||
+            slot == INPUT_SLOT_INDEX_BOTTOM_LEFT || slot == INPUT_SLOT_INDEX_BOTTOM_RIGHT))
+        {
+            moveQueue[slot] = 0; 
+        }
         if (this.cells == inv) {
             this.updateTask();
         }
@@ -309,8 +320,8 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
             for (int x = 0; x < 6; x++) {
                 final ItemStack is = this.cells.getStackInSlot(x);
                 if (is != null) {
-                    if (moveQueue[x]) {
-                        moveQueue[x] = !this.moveSlot(x);
+                    if (moveQueue[x] == 1) {
+                        moveQueue[x] = !this.moveSlot(x) ? 1 : 0;
                     } else {
                         if (ItemsToMove > 0) {
                             final IMEInventory<IAEItemStack> itemInv = this.getInv(is, StorageChannel.ITEMS);
@@ -355,8 +366,8 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
                             // If work is done, check if the cell should be moved and try to move it to the output
                             // If the cell failed to move, queue moving the cell before doing any further work on it
                             if (ItemsToMove > 0 && this.shouldMove(itemInv, fluidInv, ItemsToMove != maxMoved)) {
-                                moveQueue[x] = !this.moveSlot(x);
-                                if (moveQueue[x]) {
+                                moveQueue[x] = !this.moveSlot(x) ? 1 : 0;
+                                if (moveQueue[x] == 1) {
                                     return TickRateModulation.IDLE;
                                 }
                             }
