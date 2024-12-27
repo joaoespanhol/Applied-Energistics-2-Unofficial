@@ -219,6 +219,9 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
 
     @Override
     public void updateSetting(final IConfigManager manager, final Enum settingName, final Enum newValue) {
+        for (int x = 0; x < 6; x++) {
+            moveQueue[x] = 0;
+        }
         this.updateTask();
     }
 
@@ -326,7 +329,7 @@ public class TileIOPort extends AENetworkInvTile implements IUpgradeableHost, IC
             for (int x = 0; x < 6; x++) {
                 final ItemStack is = this.cells.getStackInSlot(x);
                 if (is != null) {
-                    if (moveQueue[x] == 1) {
+                    if ((FullnessMode) this.manager.getSetting(Settings.FULLNESS_MODE) != FullnessMode.HALF && moveQueue[x] == 1) {
                         moveQueue[x] = !this.moveSlot(x) ? 1 : 0;
                     } else {
                         if (ItemsToMove > 0) {
