@@ -1,5 +1,6 @@
 package appeng.client.gui.implementations;
 
+import cpw.mods.fml.common.Loader;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -43,7 +44,7 @@ public class GuiPatternMulti extends GuiAmount {
                         this.guiTop + 53,
                         Settings.ACTIONS,
                         ActionItems.MULTIPLY));
-
+        this.amountTextField.xPosition = this.guiLeft + 50;
         this.amountTextField.setText(String.valueOf(DEFAULT_VALUE));
         this.amountTextField.setSelectionPos(0);
     }
