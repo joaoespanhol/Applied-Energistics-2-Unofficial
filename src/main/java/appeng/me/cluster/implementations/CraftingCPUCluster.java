@@ -968,6 +968,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     this.usedStorage = job.getByteTotal();
                     this.numsOfOutput = job.getOutput().getStackSize();
                     this.isMissingMode = job.getCraftingMode() == CraftingMode.IGNORE_MISSING;
+                    for (IAEItemStack wfm : this.waitingForMissing) {
+                        this.waitingFor.add(wfm);
+                    }
                     this.markDirty();
 
                     this.updateCPU();
@@ -1000,6 +1003,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     return whatLink;
                 }
             } else {
+                this.waitingForMissing.resetStatus();
                 this.tasks.clear();
                 this.providers.clear();
                 this.inventory.getItemList().resetStatus();
@@ -1191,7 +1195,6 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     }
 
     public void addEmitable(final IAEItemStack i) {
-        this.waitingFor.add(i);
         this.waitingForMissing.add(i);
         this.postCraftingStatusChange(i);
     }
