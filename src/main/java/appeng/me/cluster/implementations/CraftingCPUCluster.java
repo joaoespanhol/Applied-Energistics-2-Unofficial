@@ -1624,7 +1624,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     }
 
     public void tryExtractItems() {
-        if (!isMissingMode || this.waitingForMissing.isEmpty()) return;
+        if (this.waitingForMissing.isEmpty()) return;
         if (countToTryExtractItems > 1200) {
             countToTryExtractItems = 0;
             for (IAEItemStack waitingForItem : this.waitingForMissing) {
