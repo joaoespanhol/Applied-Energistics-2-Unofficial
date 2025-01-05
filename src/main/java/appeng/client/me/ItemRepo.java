@@ -288,14 +288,13 @@ public class ItemRepo implements IDisplayRepo {
     @Override
     public void setPaused(boolean paused) {
         if (this.paused != paused) {
+            this.paused = paused;
             AELog.debug("Pause toggled!");
-        }
 
-        this.paused = paused;
-
-        // Update view when un-paused
-        if (!paused) {
-            updateView();
+            // Update view when un-paused
+            if (!paused) {
+                updateView();
+            }
         }
     }
 }

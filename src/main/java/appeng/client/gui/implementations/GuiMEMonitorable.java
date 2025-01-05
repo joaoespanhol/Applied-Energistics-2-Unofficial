@@ -143,7 +143,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             public void onTextChange(final String oldText) {
                 final String text = getText();
                 repo.setSearchString(text);
-                updateView();
+                this.repo.updateView();
                 setScrollBar();
             }
         };
@@ -156,7 +156,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             this.repo.postUpdate(is);
         }
 
-        updateView();
+        this.repo.updateView();
         this.setScrollBar();
     }
 
@@ -555,7 +555,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             this.typeFilter.set(this.configSrc.getSetting(Settings.TYPE_FILTER));
         }
 
-        updateView();
+        this.repo.updateView();
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -617,6 +617,14 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         super.handleMouseClick(p_146984_1_, p_146984_2_, p_146984_3_, p_146984_4_);
     }
 
+    @Override
+    public void handleKeyboardInput() {
+        super.handleKeyboardInput();
+
+        // Pause the terminal when holding shift
+        this.repo.setPaused(hasShiftDown());
+    }
+
     public boolean hideItemPanelSlot(int tx, int ty, int tw, int th) {
 
         if (this.viewCell) {
@@ -645,13 +653,5 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
 
     private boolean hasShiftDown() {
         return Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
-    }
-
-    /**
-     * Apply pre-update logic, then updates the DisplayRepo.
-     */
-    private void updateView() {
-        this.repo.setPaused(hasShiftDown());
-        this.repo.updateView();
     }
 }
