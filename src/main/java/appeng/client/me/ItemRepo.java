@@ -107,20 +107,26 @@ public class ItemRepo implements IDisplayRepo {
 
     @Override
     public void updateView() {
-        // If paused, special update handling.
         if (this.paused) {
-            // Build view set for fast existence check
-            Set<IAEItemStack> viewSet = new HashSet<>(this.view);
-
-            // If the list entry is already in the view, do not add it.
-            // Otherwise, append to the end of the view.
-            ArrayList<IAEItemStack> entriesToAdd = new ArrayList<>();
-            for (IAEItemStack listEntry : this.list) {
-                if (!viewSet.contains(listEntry)) {
-                    entriesToAdd.add(listEntry);
+            // Update existing view with new data
+            for (int i = 0; i < this.view.size(); i++) {
+                IAEItemStack entry = this.view.get(i);
+                IAEItemStack serverEntry = this.list.findPrecise(entry);
+                if (serverEntry == null) {
+                    entry.setStackSize(0);
+                } else {
+                    this.view.set(i, serverEntry);
                 }
             }
 
+            // Append newly added item stacks to the end of the view
+            Set<IAEItemStack> viewSet = new HashSet<>(this.view);
+            ArrayList<IAEItemStack> entriesToAdd = new ArrayList<>();
+            for (IAEItemStack serverEntry : this.list) {
+                if (!viewSet.contains(serverEntry)) {
+                    entriesToAdd.add(serverEntry);
+                }
+            }
             addEntriesToView(entriesToAdd);
         } else {
             this.view.clear();
