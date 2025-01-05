@@ -37,7 +37,6 @@ import appeng.api.storage.data.IItemList;
 import appeng.client.gui.widgets.IScrollSource;
 import appeng.client.gui.widgets.ISortSource;
 import appeng.core.AEConfig;
-import appeng.core.AELog;
 import appeng.integration.modules.NEI;
 import appeng.items.storage.ItemViewCell;
 import appeng.util.ItemSorters;
@@ -319,7 +318,6 @@ public class ItemRepo implements IDisplayRepo {
     public void setPaused(boolean paused) {
         if (this.paused != paused) {
             this.paused = paused;
-            AELog.debug("Pause toggled!");
 
             // Update view when un-paused
             if (!paused) {
