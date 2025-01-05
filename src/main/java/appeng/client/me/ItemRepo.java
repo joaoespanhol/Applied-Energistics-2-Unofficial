@@ -35,6 +35,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.client.gui.widgets.IScrollSource;
 import appeng.client.gui.widgets.ISortSource;
 import appeng.core.AEConfig;
+import appeng.core.AELog;
 import appeng.integration.modules.NEI;
 import appeng.items.storage.ItemViewCell;
 import appeng.util.ItemSorters;
@@ -57,6 +58,7 @@ public class ItemRepo implements IDisplayRepo {
     private Map<IAEItemStack, Boolean> searchCache = new WeakHashMap<>();
     private IPartitionList<IAEItemStack> myPartitionList;
     private boolean hasPower;
+    private boolean paused = false;
 
     public ItemRepo(final IScrollSource src, final ISortSource sortSrc) {
         this.src = src;
@@ -276,5 +278,24 @@ public class ItemRepo implements IDisplayRepo {
             }
         }
 
+    }
+
+    @Override
+    public boolean isPaused() {
+        return this.paused;
+    }
+
+    @Override
+    public void setPaused(boolean paused) {
+        if (this.paused != paused) {
+            AELog.debug("Pause toggled!");
+        }
+
+        this.paused = paused;
+
+        // Update view when un-paused
+        if (!paused) {
+            updateView();
+        }
     }
 }

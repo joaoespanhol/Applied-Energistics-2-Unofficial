@@ -143,7 +143,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             public void onTextChange(final String oldText) {
                 final String text = getText();
                 repo.setSearchString(text);
-                repo.updateView();
+                updateView();
                 setScrollBar();
             }
         };
@@ -156,7 +156,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             this.repo.postUpdate(is);
         }
 
-        this.repo.updateView();
+        updateView();
         this.setScrollBar();
     }
 
@@ -555,7 +555,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             this.typeFilter.set(this.configSrc.getSetting(Settings.TYPE_FILTER));
         }
 
-        this.repo.updateView();
+        updateView();
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -641,5 +641,17 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         }
 
         return false;
+    }
+
+    private boolean hasShiftDown() {
+        return Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+    }
+
+    /**
+     * Apply pre-update logic, then updates the DisplayRepo.
+     */
+    private void updateView() {
+        this.repo.setPaused(hasShiftDown());
+        this.repo.updateView();
     }
 }
