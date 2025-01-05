@@ -11,7 +11,9 @@
 package appeng.client.me;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -105,12 +107,54 @@ public class ItemRepo implements IDisplayRepo {
 
     @Override
     public void updateView() {
-        this.view.clear();
+        // If paused, special update handling.
+        if (this.paused) {
+            // Build view set for fast existence check
+            Set<IAEItemStack> viewSet = new HashSet<>(this.view);
+
+            // If the list entry is already in the view, do not add it.
+            // Otherwise, append to the end of the view.
+            ArrayList<IAEItemStack> entriesToAdd = new ArrayList<>();
+            for (IAEItemStack listEntry : this.list) {
+                if (!viewSet.contains(listEntry)) {
+                    entriesToAdd.add(listEntry);
+                }
+            }
+
+            addEntriesToView(entriesToAdd);
+        } else {
+            this.view.clear();
+            this.view.ensureCapacity(this.list.size());
+            addEntriesToView(this.list);
+        }
+
+        // Don't sort the view if paused.
+        if (!this.paused) {
+            final Enum SortBy = this.sortSrc.getSortBy();
+            final Enum SortDir = this.sortSrc.getSortDir();
+
+            ItemSorters.setDirection((appeng.api.config.SortDir) SortDir);
+            ItemSorters.init();
+
+            if (SortBy == SortOrder.MOD) {
+                this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_MOD);
+            } else if (SortBy == SortOrder.AMOUNT) {
+                this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_SIZE);
+            } else if (SortBy == SortOrder.INVTWEAKS) {
+                this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_INV_TWEAKS);
+            } else {
+                this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_NAME);
+            }
+        }
+
         this.dsp.clear();
-
-        this.view.ensureCapacity(this.list.size());
         this.dsp.ensureCapacity(this.list.size());
+        for (final IAEItemStack is : this.view) {
+            this.dsp.add(is.getItemStack());
+        }
+    }
 
+    private void addEntriesToView(Iterable<IAEItemStack> entries) {
         final Enum viewMode = this.sortSrc.getSortDisplay();
         final Enum typeFilter = this.sortSrc.getTypeFilter();
         Predicate<IAEItemStack> itemFilter = null;
@@ -126,7 +170,7 @@ public class ItemRepo implements IDisplayRepo {
 
         IItemDisplayRegistry registry = AEApi.instance().registries().itemDisplay();
 
-        out: for (IAEItemStack is : this.list) {
+        out: for (IAEItemStack is : entries) {
             if (viewMode == ViewItems.CRAFTABLE && !is.isCraftable()) {
                 continue;
             }
@@ -156,26 +200,6 @@ public class ItemRepo implements IDisplayRepo {
 
                 this.view.add(is);
             }
-        }
-
-        final Enum SortBy = this.sortSrc.getSortBy();
-        final Enum SortDir = this.sortSrc.getSortDir();
-
-        ItemSorters.setDirection((appeng.api.config.SortDir) SortDir);
-        ItemSorters.init();
-
-        if (SortBy == SortOrder.MOD) {
-            this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_MOD);
-        } else if (SortBy == SortOrder.AMOUNT) {
-            this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_SIZE);
-        } else if (SortBy == SortOrder.INVTWEAKS) {
-            this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_INV_TWEAKS);
-        } else {
-            this.view.sort(ItemSorters.CONFIG_BASED_SORT_BY_NAME);
-        }
-
-        for (final IAEItemStack is : this.view) {
-            this.dsp.add(is.getItemStack());
         }
     }
 

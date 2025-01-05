@@ -143,7 +143,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             public void onTextChange(final String oldText) {
                 final String text = getText();
                 repo.setSearchString(text);
-                this.repo.updateView();
+                repo.updateView();
                 setScrollBar();
             }
         };
