@@ -15,6 +15,8 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import appeng.api.config.Upgrades;
+import appeng.api.implementations.items.IUpgradeModule;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -192,13 +194,38 @@ public class CellInventory implements ICellInventory {
                     "FATAL: DETECTED ILLEGAL ITEM TO BE INSERTED ON STORAGE CELL, PLEASE REPORT ON GITHUB! STACKTRACE:");
             input.setCraftable(false);
         }
+        boolean cardVoid = false;
+        boolean cardDistribution = false;
+        final IInventory upgrades = this.getUpgradesInventory();
+        for (int x = 0; x < upgrades.getSizeInventory(); x++) {
+            final ItemStack is = upgrades.getStackInSlot(x);
+            if (is != null && is.getItem() instanceof IUpgradeModule) {
+                final Upgrades u = ((IUpgradeModule) is.getItem()).getType(is);
+                if (u != null) {
+                    switch (u) {
+                        case VOID -> cardVoid = true;
+                        case DISTRIBUTION -> cardDistribution = true;
+                        default -> {}
+                    }
+                }
+            }
+        }
 
         final IAEItemStack l = this.getCellItems().findPrecise(input);
 
         if (l != null) {
-            final long remainingItemSlots = this.getRemainingItemCount();
+            long remainingItemSlots;
+            if (cardDistribution) {
+                remainingItemSlots = this.getRemainingItemsCountDist(l);
+            } else {
+                remainingItemSlots = this.getRemainingItemCount();
+            }
 
-            if (remainingItemSlots < 0) {
+
+            if (remainingItemSlots <= 0) {
+                if (cardVoid) {
+                    return null;
+                }
                 return input;
             }
 
@@ -226,7 +253,12 @@ public class CellInventory implements ICellInventory {
 
         if (this.canHoldNewItem()) // room for new type, and for at least one item!
         {
-            final long remainingItemCount = this.getRemainingItemCount() - this.getBytesPerType() * 8L;
+            long remainingItemCount;
+            if (cardDistribution) {
+                remainingItemCount = ((this.getTotalBytes() / this.getTotalItemTypes()) - this.getBytesPerType()) * 8L;
+            } else {
+                remainingItemCount = this.getRemainingItemCount() - this.getBytesPerType() * 8L;
+            }
 
             if (remainingItemCount > 0) {
                 if (input.getStackSize() > remainingItemCount) {
@@ -518,6 +550,12 @@ public class CellInventory implements ICellInventory {
         final long baseOnTotal = this.getTotalItemTypes() - this.getStoredItemTypes();
 
         return basedOnStorage > baseOnTotal ? baseOnTotal : basedOnStorage;
+    }
+
+    @Override
+    public long getRemainingItemsCountDist(IAEItemStack l) {
+        final long remaining = (this.getTotalBytes() / this.getTotalItemTypes()) - (l.getStackSize() / 8) - getBytesPerType();
+        return  remaining > 0 ? remaining : 0;
     }
 
     @Override
