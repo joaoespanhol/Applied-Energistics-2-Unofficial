@@ -254,7 +254,7 @@ public class CellInventory implements ICellInventory {
         {
             long remainingItemCount;
             if (cardDistribution) {
-                remainingItemCount = ((this.getTotalBytes() / this.getTotalItemTypes()) - this.getBytesPerType()) * 8L;
+                remainingItemCount = this.getRemainingItemsCountDist(null);
             } else {
                 remainingItemCount = this.getRemainingItemCount() - this.getBytesPerType() * 8L;
             }
@@ -553,8 +553,19 @@ public class CellInventory implements ICellInventory {
 
     @Override
     public long getRemainingItemsCountDist(IAEItemStack l) {
-        final long remaining = (this.getTotalBytes() / this.getTotalItemTypes()) - (l.getStackSize() / 8)
-                - getBytesPerType();
+        long remaining;
+        long types = 0;
+        for (int i = 0; i < this.getTotalItemTypes(); i++) {
+            if (this.getConfigInventory().getStackInSlot(i) != null) {
+                types++;
+            }
+        }
+        if (types == 0) types = this.getTotalItemTypes();
+        if (l != null) {
+            remaining = (this.getTotalBytes() / types) - (l.getStackSize() / 8) - getBytesPerType();
+        } else {
+            remaining = ((this.getTotalBytes() / types) - this.getBytesPerType()) * 8L;
+        }
         return remaining > 0 ? remaining : 0;
     }
 
