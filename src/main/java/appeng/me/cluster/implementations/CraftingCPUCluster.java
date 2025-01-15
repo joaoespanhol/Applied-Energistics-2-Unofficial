@@ -123,10 +123,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final WorldCoord min;
     private final WorldCoord max;
     private final int[] usedOps = new int[3];
-    private final Map<ICraftingPatternDetails, TaskProgress> tasks = new TreeMap<>(
-            Comparator.comparing(ICraftingPatternDetails::getPriority));
-    private Map<ICraftingPatternDetails, TaskProgress> workableTasks = new TreeMap<>(
-            Comparator.comparing(ICraftingPatternDetails::getPriority));
+    private final Comparator<ICraftingPatternDetails> priorityComparator = Comparator
+            .comparing(ICraftingPatternDetails::getPriority);
+    private final Map<ICraftingPatternDetails, TaskProgress> tasks = new TreeMap<>(priorityComparator);
+    private Map<ICraftingPatternDetails, TaskProgress> workableTasks;
     private HashSet<ICraftingMedium> knownBusyMediums = new HashSet<>();
     // INSTANCE sate
     private final LinkedList<TileCraftingTile> tiles = new LinkedList<>();
@@ -686,7 +686,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         final int started = this.remainingOperations;
 
         // Shallow copy tasks so we may remove them after visiting
-        this.workableTasks = new TreeMap<>(this.tasks);
+        this.workableTasks = new TreeMap<>(priorityComparator);
+        this.workableTasks.putAll(this.tasks);
         this.knownBusyMediums.clear();
         if (this.remainingOperations > 0) {
             do {
