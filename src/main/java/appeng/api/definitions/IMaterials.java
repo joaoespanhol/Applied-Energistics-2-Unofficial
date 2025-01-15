@@ -153,4 +153,8 @@ public interface IMaterials {
     IItemDefinition cardFakeCrafting();
 
     IItemDefinition cardSuperluminalSpeed();
+
+    IItemDefinition cardVoid();
+
+    IItemDefinition cardDistribution();
 }
