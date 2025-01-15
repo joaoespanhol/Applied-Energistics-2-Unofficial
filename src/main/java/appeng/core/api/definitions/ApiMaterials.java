@@ -189,8 +189,7 @@ public final class ApiMaterials implements IMaterials {
                 itemMultiMaterial.createMaterial(MaterialType.CardLockCrafting));
         this.cardFakeCrafting = new DamagedItemDefinition(
                 itemMultiMaterial.createMaterial(MaterialType.CardFakeCrafting));
-        this.cardVoid = new DamagedItemDefinition(
-                itemMultiMaterial.createMaterial(MaterialType.CardVoid));
+        this.cardVoid = new DamagedItemDefinition(itemMultiMaterial.createMaterial(MaterialType.CardVoid));
         this.cardDistribution = new DamagedItemDefinition(
                 itemMultiMaterial.createMaterial(MaterialType.CardDistribution));
 

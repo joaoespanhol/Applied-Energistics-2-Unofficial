@@ -15,8 +15,6 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import appeng.api.config.Upgrades;
-import appeng.api.implementations.items.IUpgradeModule;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -27,8 +25,10 @@ import net.minecraftforge.oredict.OreDictionary;
 import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.config.FuzzyMode;
+import appeng.api.config.Upgrades;
 import appeng.api.exceptions.AppEngException;
 import appeng.api.implementations.items.IStorageCell;
+import appeng.api.implementations.items.IUpgradeModule;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.storage.ICellInventory;
 import appeng.api.storage.IMEInventory;
@@ -220,7 +220,6 @@ public class CellInventory implements ICellInventory {
             } else {
                 remainingItemSlots = this.getRemainingItemCount();
             }
-
 
             if (remainingItemSlots <= 0) {
                 if (cardVoid) {
@@ -554,8 +553,9 @@ public class CellInventory implements ICellInventory {
 
     @Override
     public long getRemainingItemsCountDist(IAEItemStack l) {
-        final long remaining = (this.getTotalBytes() / this.getTotalItemTypes()) - (l.getStackSize() / 8) - getBytesPerType();
-        return  remaining > 0 ? remaining : 0;
+        final long remaining = (this.getTotalBytes() / this.getTotalItemTypes()) - (l.getStackSize() / 8)
+                - getBytesPerType();
+        return remaining > 0 ? remaining : 0;
     }
 
     @Override
