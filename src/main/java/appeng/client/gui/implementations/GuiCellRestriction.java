@@ -74,7 +74,7 @@ public class GuiCellRestriction extends AEBaseGui {
             //
         }
         try {
-            restrictionAmount = Math.min(Long.parseLong(amount), cellData.getTotalBytes() * cellData.getPerByte());
+            restrictionAmount = Math.min(Long.parseLong(amount), (cellData.getTotalBytes() - cellData.getPerType()) * cellData.getPerByte());
         } catch (Exception ignored) {
             //
         }
