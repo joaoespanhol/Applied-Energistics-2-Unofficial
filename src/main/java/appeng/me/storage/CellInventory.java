@@ -61,6 +61,8 @@ public class CellInventory implements ICellInventory {
     private IStorageCell cellType;
     private boolean cardVoidOverflow = false;
     private boolean cardDistribution = false;
+    private byte restrictionTypes = 0;
+    private long restrictionLong = 0;
 
     private CellInventory(final ItemStack o, final ISaveProvider container) throws AppEngException {
         if (itemSlots == null) {
@@ -121,6 +123,8 @@ public class CellInventory implements ICellInventory {
         this.tagCompound = Platform.openNbtData(o);
         this.storedItemTypes = this.tagCompound.getShort(ITEM_TYPE_TAG);
         this.storedItemCount = this.tagCompound.getLong(ITEM_COUNT_TAG);
+        this.restrictionTypes = this.tagCompound.getByte("cellRestrictionTypes");
+        this.restrictionLong = this.tagCompound.getLong("cellRestrictionAmount");
         this.cellItems = null;
     }
 
@@ -257,7 +261,11 @@ public class CellInventory implements ICellInventory {
             if (cardDistribution) {
                 remainingItemCount = this.getRemainingItemsCountDist(null);
             } else {
-                remainingItemCount = this.getRemainingItemCount() - this.getBytesPerType() * 8L;
+                if (restrictionLong > 0) {
+                    remainingItemCount = restrictionLong;
+                } else {
+                    remainingItemCount = this.getRemainingItemCount() - this.getBytesPerType() * 8L;
+                }
             }
 
             if (remainingItemCount > 0) {
@@ -531,6 +539,7 @@ public class CellInventory implements ICellInventory {
 
     @Override
     public long getTotalItemTypes() {
+        if (restrictionTypes > 0) return restrictionTypes;
         return this.maxItemTypes;
     }
 
@@ -563,16 +572,30 @@ public class CellInventory implements ICellInventory {
         }
         if (types == 0) types = this.getTotalItemTypes();
         if (l != null) {
-            remaining = (((this.getTotalBytes() / types) - (int) Math.ceil((double) l.getStackSize() / 8)
-                    - getBytesPerType()) * 8) + (8 - l.getStackSize() % 8);
+            if (restrictionLong > 0) {
+                remaining = Math.min((restrictionLong / types) - l.getStackSize(), this.getUnusedItemCount());
+            } else {
+                remaining = (((this.getTotalBytes() / types) - (int) Math.ceil((double) l.getStackSize() / 8)
+                        - getBytesPerType()) * 8) + (8 - l.getStackSize() % 8);
+            }
         } else {
-            remaining = ((this.getTotalBytes() / types) - this.getBytesPerType()) * 8L;
+            if (restrictionLong > 0) {
+                remaining = Math
+                        .min(restrictionLong / types, ((this.getTotalBytes() / types) - this.getBytesPerType()) * 8L);
+            } else {
+                remaining = ((this.getTotalBytes() / types) - this.getBytesPerType()) * 8L;
+            }
         }
         return remaining > 0 ? remaining : 0;
     }
 
     @Override
     public long getRemainingItemCount() {
+        if (restrictionLong > 0) {
+            return Math.min(
+                    restrictionLong - this.getStoredItemCount(),
+                    this.getFreeBytes() * 8 + this.getUnusedItemCount());
+        }
         final long remaining = this.getFreeBytes() * 8 + this.getUnusedItemCount();
 
         return remaining > 0 ? remaining : 0;

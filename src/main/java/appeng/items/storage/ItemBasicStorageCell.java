@@ -11,6 +11,7 @@
 package appeng.items.storage;
 
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +44,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.core.AEConfig;
 import appeng.core.features.AEFeature;
 import appeng.core.localization.GuiText;
+import appeng.helpers.ICellRestriction;
 import appeng.items.AEBaseItem;
 import appeng.items.contents.CellConfig;
 import appeng.items.contents.CellUpgrades;
@@ -53,7 +55,7 @@ import appeng.util.Platform;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, IItemGroup {
+public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, IItemGroup, ICellRestriction {
 
     protected MaterialType component;
     protected long totalBytes;
@@ -323,5 +325,26 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
     @Override
     public boolean hasContainerItem(final ItemStack stack) {
         return AEConfig.instance.isFeatureEnabled(AEFeature.EnableDisassemblyCrafting);
+    }
+
+    @Override
+    public String getCellData(ItemStack is) {
+        return totalBytes + ","
+                + this.getTotalTypes(null)
+                + ","
+                + perType
+                + ","
+                + 8
+                + ","
+                + Platform.openNbtData(is).getByte("cellRestrictionTypes")
+                + ","
+                + Platform.openNbtData(is).getLong("cellRestrictionAmount");
+    }
+
+    @Override
+    public void setCellRestriction(ItemStack is, String newData) {
+        List<String> data = Arrays.asList(newData.split(",", 2));
+        Platform.openNbtData(is).setByte("cellRestrictionTypes", Byte.parseByte(data.get(0)));
+        Platform.openNbtData(is).setLong("cellRestrictionAmount", Long.parseLong(data.get(1)));
     }
 }
