@@ -1,10 +1,10 @@
 package appeng.helpers;
 
-import java.util.List;
+import net.minecraft.item.ItemStack;
 
 public interface ICellRestriction {
 
-    String getCellData();
+    String getCellData(ItemStack is);
 
-    void setCellRestriction(String newData);
+    void setCellRestriction(ItemStack is, String newData);
 }

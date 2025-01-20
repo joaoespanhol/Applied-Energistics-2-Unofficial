@@ -10,6 +10,7 @@ import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.widgets.MEGuiTextField;
 import appeng.container.AEBaseContainer;
 import appeng.container.implementations.ContainerCellRestriction;
+import appeng.container.implementations.ContainerCellRestriction.cellData;
 import appeng.core.AELog;
 import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
@@ -25,9 +26,7 @@ public class GuiCellRestriction extends AEBaseGui {
 
     private MEGuiTextField amountField;
     private MEGuiTextField typesField;
-    private Long totalBytes;
-    private Integer totalTypes;
-    private Integer perType;
+    private cellData cellData;
 
     public GuiCellRestriction(InventoryPlayer ip, ICellRestriction obj) {
         super(new ContainerCellRestriction(ip, obj));
@@ -35,6 +34,8 @@ public class GuiCellRestriction extends AEBaseGui {
 
         this.amountField = new MEGuiTextField(75, 12);
         this.typesField = new MEGuiTextField(40, 12);
+        this.cellData = new cellData();
+
     }
 
     @Override
@@ -50,7 +51,7 @@ public class GuiCellRestriction extends AEBaseGui {
         if (this.inventorySlots instanceof ContainerCellRestriction ccr) {
             ccr.setAmountField(this.amountField);
             ccr.setTypesField(this.typesField);
-            ccr.setCellData(totalBytes, totalTypes, perType);
+            ccr.setCellData(cellData);
         }
     }
 
@@ -59,51 +60,39 @@ public class GuiCellRestriction extends AEBaseGui {
         super.onGuiClosed();
     }
 
-    public String filterCellRestriction(final String amount, final String ticks) {
-        String s = "1000:20";
-        if (amount != "" && ticks != "") {
-            try {
-                if (Integer.parseInt(amount) == 0) {
-                    s = "1:";
-                } else {
-                    s = amount + ":";
-                }
-            } catch (Exception ignored) {
-                s = Integer.MAX_VALUE + ":";
-            }
-            try {
-                final int m = Integer.parseInt(ticks);
-                if (m > 72000) {
-                    s += "72000";
-                } else if (m == 0) {
-                    s += "1";
-                } else {
-                    s += ticks;
-                }
-            } catch (Exception ignored) {
-                s += "72000";
-            }
-        } else if (amount == "" && ticks != "") {
-            s = "1000:" + ticks;
-        } else if (ticks == "") {
-            s = amount + ":20";
+    public String filterCellRestriction() {
+
+        String types = this.typesField.getText();
+        String amount = this.amountField.getText();
+
+        int restrictionTypes = 0;
+        long restrictionAmount = 0;
+
+        try {
+            restrictionTypes = Math.min(Integer.parseInt(types), cellData.getTotalTypes());
+        } catch (Exception ignored) {
+            //
         }
-        return s;
+        try {
+            restrictionAmount = Math.min(Long.parseLong(amount), cellData.getTotalBytes() * 8);
+        } catch (Exception ignored) {
+            //
+        }
+        this.typesField.setText(String.valueOf(restrictionTypes));
+        this.amountField.setText(String.valueOf(restrictionAmount));
+        return restrictionTypes + "," + restrictionAmount;
     }
 
     @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
-        this.fontRendererObj
-                .drawString(GuiText.RegulatorCardLabel.getLocal(), 58, 6, GuiColors.RegulatorCardLabel.getColor());
-        this.fontRendererObj
-                .drawString(GuiText.RegulatorCardAmount.getLocal(), 64, 23, GuiColors.RegulatorCardAmount.getColor());
-        this.fontRendererObj
-                .drawString(GuiText.RegulatorCardTicks.getLocal(), 152, 23, GuiColors.RegulatorCardTicks.getColor());
+        this.fontRendererObj.drawString(GuiText.CellRestriction.getLocal(), 58, 6, GuiColors.DefaultBlack.getColor());
+        this.fontRendererObj.drawString(GuiText.SelectAmount.getLocal(), 64, 23, GuiColors.DefaultBlack.getColor());
+        this.fontRendererObj.drawString(GuiText.Types.getLocal(), 152, 23, GuiColors.DefaultBlack.getColor());
     }
 
     @Override
     public void drawBG(int offsetX, int offsetY, int mouseX, int mouseY) {
-        this.bindTexture("guis/regulator.png");
+        this.bindTexture("guis/cellRestriction.png");
         this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
         this.amountField.drawTextBox();
         this.typesField.drawTextBox();
@@ -120,10 +109,7 @@ public class GuiCellRestriction extends AEBaseGui {
     protected void keyTyped(final char character, final int key) {
         if (key == Keyboard.KEY_RETURN || key == Keyboard.KEY_NUMPADENTER) {
             try {
-                NetworkHandler.instance.sendToServer(
-                        new PacketValueConfig(
-                                "CellWorkbench.cellRestriction",
-                                filterCellRestriction(this.amountField.getText(), this.typesField.getText())));
+                NetworkHandler.instance.sendToServer(new PacketValueConfig("cellRestriction", filterCellRestriction()));
             } catch (IOException e) {
                 AELog.debug(e);
             }
@@ -137,7 +123,8 @@ public class GuiCellRestriction extends AEBaseGui {
 
         } else if (!(this.amountField.textboxKeyTyped(character, key)
                 || this.typesField.textboxKeyTyped(character, key))) {
-            super.keyTyped(character, key);
-        }
+                    super.keyTyped(character, key);
+                    this.filterCellRestriction();
+                }
     }
 }

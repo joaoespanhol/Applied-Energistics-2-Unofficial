@@ -808,17 +808,11 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.StringOrderAlphanum);
 
             this.registerApp(
-                    16 * 15 + 3,
+                    16 * 6 + 8,
                     Settings.ACTIONS,
-                    ActionItems.REGULATOR_CARD,
-                    ButtonToolTips.RegulatorCardLabel,
-                    ButtonToolTips.RegulatorCardHint);
-            this.registerApp(
-                    16 * 15 + 4,
-                    Settings.ACTIONS,
-                    ActionItems.REGULATOR_CARD_STOCK,
-                    ButtonToolTips.RegulatorCardStockLabel,
-                    ButtonToolTips.RegulatorCardStockHint);
+                    ActionItems.CELL_RESTRICTION,
+                    ButtonToolTips.CellRestrictionLabel,
+                    ButtonToolTips.CellRestrictionHint);
 
         }
     }

@@ -12,8 +12,6 @@ package appeng.client.gui.implementations;
 
 import java.io.IOException;
 
-import appeng.core.sync.GuiBridge;
-import appeng.core.sync.packets.PacketSwitchGuis;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
@@ -31,7 +29,9 @@ import appeng.client.gui.widgets.GuiImgButton;
 import appeng.client.gui.widgets.GuiToggleButton;
 import appeng.container.implementations.ContainerCellWorkbench;
 import appeng.core.localization.GuiText;
+import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.tile.misc.TileCellWorkbench;
 import appeng.util.Platform;
@@ -73,8 +73,8 @@ public class GuiCellWorkbench extends GuiUpgradeable {
                 Settings.ACTIONS,
                 ActionItems.ORE_FILTER);
         this.cellRestriction = new GuiImgButton(
-                this.guiLeft - 18,
-                this.guiTop + 68,
+                this.guiLeft + 134,
+                this.guiTop + 8,
                 Settings.ACTIONS,
                 ActionItems.CELL_RESTRICTION);
 
@@ -183,7 +183,7 @@ public class GuiCellWorkbench extends GuiUpgradeable {
         }
         this.fuzzyMode.setVisibility(!hasOreFilter && hasFuzzy);
         this.oreFilter.setVisibility(hasOreFilter);
-        this.cellRestriction.setVisibility(this.workbench.getCellInventory() != null);
+        this.cellRestriction.setVisibility(this.workbench.haveCell());
     }
 
     @Override

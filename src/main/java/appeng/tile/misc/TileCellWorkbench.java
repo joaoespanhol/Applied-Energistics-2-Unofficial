@@ -12,7 +12,6 @@ package appeng.tile.misc;
 
 import java.util.List;
 
-import appeng.helpers.ICellRestriction;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,6 +24,7 @@ import appeng.api.implementations.IUpgradeableHost;
 import appeng.api.implementations.items.IUpgradeModule;
 import appeng.api.storage.ICellWorkbenchItem;
 import appeng.api.util.IConfigManager;
+import appeng.helpers.ICellRestriction;
 import appeng.helpers.IOreFilterable;
 import appeng.tile.AEBaseTile;
 import appeng.tile.TileEvent;
@@ -237,15 +237,15 @@ public class TileCellWorkbench extends AEBaseTile
     }
 
     @Override
-    public String getCellData() {
+    public String getCellData(ItemStack n) {
         ItemStack is = this.cell.getStackInSlot(0);
-        if (is != null && is.getItem() instanceof ICellRestriction icr) return icr.getCellData();
+        if (is != null && is.getItem() instanceof ICellRestriction icr) return icr.getCellData(is);
         return null;
     }
 
     @Override
-    public void setCellRestriction(String newData) {
+    public void setCellRestriction(ItemStack n, String newData) {
         ItemStack is = this.cell.getStackInSlot(0);
-        if (is != null && is.getItem() instanceof ICellRestriction icr) icr.setCellRestriction(newData);
+        if (is != null && is.getItem() instanceof ICellRestriction icr) icr.setCellRestriction(is, newData);
     }
 }

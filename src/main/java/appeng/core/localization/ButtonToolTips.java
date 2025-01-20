@@ -224,10 +224,8 @@ public enum ButtonToolTips {
     StringOrderNatural,
     StringOrderAlphanum,
 
-    RegulatorCardLabel,
-    RegulatorCardHint,
-    RegulatorCardStockLabel,
-    RegulatorCardStockHint;
+    CellRestrictionLabel,
+    CellRestrictionHint;
 
     private final String root;
 

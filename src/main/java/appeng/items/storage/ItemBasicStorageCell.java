@@ -11,13 +11,11 @@
 package appeng.items.storage;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import appeng.helpers.ICellRestriction;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -46,6 +44,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.core.AEConfig;
 import appeng.core.features.AEFeature;
 import appeng.core.localization.GuiText;
+import appeng.helpers.ICellRestriction;
 import appeng.items.AEBaseItem;
 import appeng.items.contents.CellConfig;
 import appeng.items.contents.CellUpgrades;
@@ -62,8 +61,6 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
     protected long totalBytes;
     protected int perType;
     protected double idleDrain;
-    protected byte restrictionTypes;
-    protected long restrictionAmount;
 
     @SuppressWarnings("Guava")
     public ItemBasicStorageCell(final MaterialType whichCell, final long kilobytes) {
@@ -331,20 +328,21 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
     }
 
     @Override
-    public String getCellData() {
-        List<Object> data = new ArrayList<>();
-        data.add(0, totalBytes);
-        data.add(1, this.getTotalTypes(null));
-        data.add(2, perType);
-        data.add(3, restrictionTypes);
-        data.add(4, restrictionAmount);
-        return data.toString();
+    public String getCellData(ItemStack is) {
+        return totalBytes + ","
+                + this.getTotalTypes(null)
+                + ","
+                + perType
+                + ","
+                + Platform.openNbtData(is).getByte("cellRestrictionTypes")
+                + ","
+                + Platform.openNbtData(is).getLong("cellRestrictionAmount");
     }
 
     @Override
-    public void setCellRestriction(String newData) {
-        List<Object> data = Arrays.asList(newData.split(",", 4));
-        restrictionTypes = (byte) data.get(3);
-        restrictionAmount = (long) data.get(4);
+    public void setCellRestriction(ItemStack is, String newData) {
+        List<String> data = Arrays.asList(newData.split(",", 2));
+        Platform.openNbtData(is).setByte("cellRestrictionTypes", Byte.parseByte(data.get(0)));
+        Platform.openNbtData(is).setLong("cellRestrictionAmount", Long.parseLong(data.get(1)));
     }
 }

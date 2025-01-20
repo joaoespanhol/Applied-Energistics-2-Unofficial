@@ -178,6 +178,10 @@ public class ContainerCellWorkbench extends ContainerUpgradeable {
         return upgradeInventory == null ? this.nullInventory : upgradeInventory;
     }
 
+    public boolean haveCell() {
+        return this.workBench.getCell() != null;
+    }
+
     @Override
     public void onUpdate(final String field, final Object oldValue, final Object newValue) {
         if (field.equals("copyMode")) {
