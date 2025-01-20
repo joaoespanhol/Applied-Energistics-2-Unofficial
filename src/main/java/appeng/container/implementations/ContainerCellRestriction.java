@@ -96,7 +96,6 @@ public class ContainerCellRestriction extends AEBaseContainer {
     @Override
     public void onUpdate(final String field, final Object oldValue, final Object newValue) {
         if (field.equals("cellRestriction") && (this.amountField != null && this.typesField != null)) {
-            ;
             List<String> newData = Arrays.asList(cellRestriction.split(",", 5));
             this.cellData.setTotalBytes(Long.parseLong(newData.get(0)));
             this.cellData.setTotalTypes(Integer.parseInt(newData.get(1)));
