@@ -334,6 +334,8 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
                 + ","
                 + perType
                 + ","
+                + 8
+                + ","
                 + Platform.openNbtData(is).getByte("cellRestrictionTypes")
                 + ","
                 + Platform.openNbtData(is).getLong("cellRestrictionAmount");

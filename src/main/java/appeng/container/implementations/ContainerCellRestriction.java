@@ -22,6 +22,7 @@ public class ContainerCellRestriction extends AEBaseContainer {
         private Long totalBytes;
         private Integer totalTypes;
         private Integer perType;
+        private Integer perByte;
 
         public void setPerType(Integer perType) {
             this.perType = perType;
@@ -35,6 +36,10 @@ public class ContainerCellRestriction extends AEBaseContainer {
             this.totalTypes = totalTypes;
         }
 
+        public void setPerByte(Integer perByte) {
+            this.perByte = perByte;
+        }
+
         public Integer getPerType() {
             return perType;
         }
@@ -45,6 +50,10 @@ public class ContainerCellRestriction extends AEBaseContainer {
 
         public Long getTotalBytes() {
             return totalBytes;
+        }
+
+        public Integer getPerByte() {
+            return perByte;
         }
     }
 
@@ -96,12 +105,13 @@ public class ContainerCellRestriction extends AEBaseContainer {
     @Override
     public void onUpdate(final String field, final Object oldValue, final Object newValue) {
         if (field.equals("cellRestriction") && (this.amountField != null && this.typesField != null)) {
-            List<String> newData = Arrays.asList(cellRestriction.split(",", 5));
+            List<String> newData = Arrays.asList(cellRestriction.split(",", 6));
             this.cellData.setTotalBytes(Long.parseLong(newData.get(0)));
             this.cellData.setTotalTypes(Integer.parseInt(newData.get(1)));
             this.cellData.setPerType(Integer.parseInt(newData.get(2)));
-            this.typesField.setText(newData.get(3));
-            this.amountField.setText(newData.get(4));
+            this.cellData.setPerByte(Integer.parseInt(newData.get(3)));
+            this.typesField.setText(newData.get(4));
+            this.amountField.setText(newData.get(5));
         }
         super.onUpdate(field, oldValue, newValue);
     }
