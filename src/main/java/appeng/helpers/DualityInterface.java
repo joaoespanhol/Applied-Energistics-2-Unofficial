@@ -490,7 +490,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
                     this.craftingList = new LinkedList<>();
                 }
 
-                details.setPriority(36 * this.getPriority() - slot);
+                details.setPriority(36 * this.getPriority() + slot);
                 this.craftingList.add(details);
             }
         }

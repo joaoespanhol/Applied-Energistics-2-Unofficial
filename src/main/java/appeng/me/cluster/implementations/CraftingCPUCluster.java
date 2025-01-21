@@ -126,7 +126,6 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final Comparator<ICraftingPatternDetails> priorityComparator = Comparator
             .comparing(ICraftingPatternDetails::getPriority);
     private final Map<ICraftingPatternDetails, TaskProgress> tasks = new TreeMap<>(priorityComparator);
-    private Map<ICraftingPatternDetails, TaskProgress> workableTasks;
     private HashSet<ICraftingMedium> knownBusyMediums = new HashSet<>();
     // INSTANCE sate
     private final LinkedList<TileCraftingTile> tiles = new LinkedList<>();
@@ -686,20 +685,19 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         final int started = this.remainingOperations;
 
         // Shallow copy tasks so we may remove them after visiting
-        this.workableTasks = new TreeMap<>(priorityComparator);
-        this.workableTasks.putAll(this.tasks);
+        ArrayList<Entry<ICraftingPatternDetails, TaskProgress>> sortedTasks = new ArrayList<>(this.tasks.entrySet());
+        sortedTasks.sort(Map.Entry.comparingByKey(priorityComparator));
         this.knownBusyMediums.clear();
         if (this.remainingOperations > 0) {
             do {
                 this.somethingChanged = false;
-                this.executeCrafting(eg, cc);
+                this.executeCrafting(eg, cc, sortedTasks);
             } while (this.somethingChanged && this.remainingOperations > 0);
         }
         this.usedOps[2] = this.usedOps[1];
         this.usedOps[1] = this.usedOps[0];
         this.usedOps[0] = started - this.remainingOperations;
 
-        this.workableTasks.clear();
         this.knownBusyMediums.clear();
 
         if (this.remainingOperations > 0 && !this.somethingChanged) {
@@ -722,8 +720,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         }
     }
 
-    private void executeCrafting(final IEnergyGrid eg, final CraftingGridCache cc) {
-        final Iterator<Entry<ICraftingPatternDetails, TaskProgress>> i = this.workableTasks.entrySet().iterator();
+    private void executeCrafting(final IEnergyGrid eg, final CraftingGridCache cc,
+            ArrayList<Entry<ICraftingPatternDetails, TaskProgress>> sortedTasks) {
+        final Iterator<Entry<ICraftingPatternDetails, TaskProgress>> i = sortedTasks.iterator();
 
         int executedTasks = 0;
         while (i.hasNext()) {
