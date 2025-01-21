@@ -183,9 +183,6 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         if (inv == this.config) {
             this.readConfig();
         } else if (inv == this.patterns) {
-            if (!this.gridProxy.isReady()) {
-                return;
-            }
             if (removed != null || added != null) {
                 this.updateCraftingList();
             }
