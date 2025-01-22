@@ -8,7 +8,6 @@ import org.lwjgl.input.Keyboard;
 
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.widgets.MEGuiTextField;
-import appeng.container.AEBaseContainer;
 import appeng.container.implementations.ContainerCellRestriction;
 import appeng.container.implementations.ContainerCellRestriction.cellData;
 import appeng.core.AELog;
@@ -19,8 +18,6 @@ import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.ICellRestriction;
-import appeng.parts.automation.PartSharedItemBus;
-import appeng.parts.misc.PartStorageBus;
 
 public class GuiCellRestriction extends AEBaseGui {
 
@@ -32,8 +29,8 @@ public class GuiCellRestriction extends AEBaseGui {
         super(new ContainerCellRestriction(ip, obj));
         this.xSize = 256;
 
-        this.amountField = new MEGuiTextField(75, 12);
-        this.typesField = new MEGuiTextField(40, 12);
+        this.amountField = new MEGuiTextField(85, 12);
+        this.typesField = new MEGuiTextField(30, 12);
         this.cellData = new cellData();
 
     }
@@ -45,7 +42,7 @@ public class GuiCellRestriction extends AEBaseGui {
         this.amountField.x = this.guiLeft + 64;
         this.amountField.y = this.guiTop + 32;
 
-        this.typesField.x = this.guiLeft + 152;
+        this.typesField.x = this.guiLeft + 162;
         this.typesField.y = this.guiTop + 32;
 
         if (this.inventorySlots instanceof ContainerCellRestriction ccr) {
@@ -74,12 +71,12 @@ public class GuiCellRestriction extends AEBaseGui {
             //
         }
         try {
-            restrictionAmount = Math.min(Long.parseLong(amount), (cellData.getTotalBytes() - cellData.getPerType()) * cellData.getPerByte());
+            restrictionAmount = Math.min(
+                    Long.parseLong(amount),
+                    (cellData.getTotalBytes() - cellData.getPerType()) * cellData.getPerByte());
         } catch (Exception ignored) {
             //
         }
-        this.typesField.setText(String.valueOf(restrictionTypes));
-        this.amountField.setText(String.valueOf(restrictionAmount));
         return restrictionTypes + "," + restrictionAmount;
     }
 
@@ -87,7 +84,9 @@ public class GuiCellRestriction extends AEBaseGui {
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
         this.fontRendererObj.drawString(GuiText.CellRestriction.getLocal(), 58, 6, GuiColors.DefaultBlack.getColor());
         this.fontRendererObj.drawString(GuiText.SelectAmount.getLocal(), 64, 23, GuiColors.DefaultBlack.getColor());
-        this.fontRendererObj.drawString(GuiText.Types.getLocal(), 152, 23, GuiColors.DefaultBlack.getColor());
+        this.fontRendererObj.drawString(GuiText.Types.getLocal(), 162, 23, GuiColors.DefaultBlack.getColor());
+        this.fontRendererObj
+                .drawString(GuiText.CellRestrictionTips.getLocal(), 64, 50, GuiColors.DefaultBlack.getColor());
     }
 
     @Override
@@ -113,18 +112,10 @@ public class GuiCellRestriction extends AEBaseGui {
             } catch (IOException e) {
                 AELog.debug(e);
             }
-            final Object target = ((AEBaseContainer) this.inventorySlots).getTarget();
-            GuiBridge OriginalGui = null;
-            if (target instanceof PartStorageBus) OriginalGui = GuiBridge.GUI_STORAGEBUS;
-            else if (target instanceof PartSharedItemBus) OriginalGui = GuiBridge.GUI_BUS;
-
-            if (OriginalGui != null) NetworkHandler.instance.sendToServer(new PacketSwitchGuis(OriginalGui));
-            else this.mc.thePlayer.closeScreen();
-
+            NetworkHandler.instance.sendToServer(new PacketSwitchGuis(GuiBridge.GUI_CELL_WORKBENCH));
         } else if (!(this.amountField.textboxKeyTyped(character, key)
                 || this.typesField.textboxKeyTyped(character, key))) {
                     super.keyTyped(character, key);
-                    this.filterCellRestriction();
                 }
     }
 }
