@@ -110,6 +110,10 @@ public class ContainerCellRestriction extends AEBaseContainer {
             this.cellData.setTotalTypes(Integer.parseInt(newData.get(1)));
             this.cellData.setPerType(Integer.parseInt(newData.get(2)));
             this.cellData.setPerByte(Integer.parseInt(newData.get(3)));
+            this.typesField.setMaxStringLength(cellData.getTotalTypes().toString().length());
+            this.amountField.setMaxStringLength(
+                    String.valueOf((cellData.getTotalBytes() - cellData.getPerType()) * cellData.getPerByte())
+                            .length());
             this.typesField.setText(newData.get(4));
             this.amountField.setText(newData.get(5));
         }

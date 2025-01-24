@@ -250,7 +250,8 @@ public enum GuiText {
     BytesInfo,
     ToFollow,
     ToUnfollow,
-    CellRestriction;
+    CellRestriction,
+    CellRestrictionTips;
 
     private final String root;
 

@@ -32,6 +32,7 @@ import appeng.container.guisync.GuiSync;
 import appeng.container.slot.OptionalSlotRestrictedInput;
 import appeng.container.slot.SlotFakeTypeOnly;
 import appeng.container.slot.SlotRestrictedInput;
+import appeng.helpers.ICellRestriction;
 import appeng.tile.inventory.AppEngNullInventory;
 import appeng.tile.misc.TileCellWorkbench;
 import appeng.util.IterationCounter;
@@ -180,6 +181,10 @@ public class ContainerCellWorkbench extends ContainerUpgradeable {
 
     public boolean haveCell() {
         return this.workBench.getCell() != null;
+    }
+
+    public boolean haveCellRestrictAble() {
+        return haveCell() && this.workBench.getCell() instanceof ICellRestriction;
     }
 
     @Override
