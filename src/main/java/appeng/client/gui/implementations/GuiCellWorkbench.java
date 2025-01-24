@@ -183,7 +183,7 @@ public class GuiCellWorkbench extends GuiUpgradeable {
         }
         this.fuzzyMode.setVisibility(!hasOreFilter && hasFuzzy);
         this.oreFilter.setVisibility(hasOreFilter);
-        this.cellRestriction.setVisibility(this.workbench.haveCell());
+        this.cellRestriction.setVisibility(this.workbench.haveCellRestrictAble());
     }
 
     @Override
