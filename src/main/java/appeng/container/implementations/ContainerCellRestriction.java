@@ -17,7 +17,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class ContainerCellRestriction extends AEBaseContainer {
 
-    public static class cellData {
+    public static class CellData {
 
         private Long totalBytes;
         private Integer totalTypes;
@@ -66,7 +66,7 @@ public class ContainerCellRestriction extends AEBaseContainer {
     private MEGuiTextField amountField;
 
     @SideOnly(Side.CLIENT)
-    private cellData cellData;
+    private CellData cellData;
 
     @GuiSync(69)
     public String cellRestriction;
@@ -87,7 +87,7 @@ public class ContainerCellRestriction extends AEBaseContainer {
     }
 
     @SideOnly(Side.CLIENT)
-    public void setCellData(cellData newCellData) {
+    public void setCellData(CellData newCellData) {
         this.cellData = newCellData;
     }
 

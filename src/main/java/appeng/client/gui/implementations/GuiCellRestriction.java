@@ -9,7 +9,7 @@ import org.lwjgl.input.Keyboard;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.widgets.MEGuiTextField;
 import appeng.container.implementations.ContainerCellRestriction;
-import appeng.container.implementations.ContainerCellRestriction.cellData;
+import appeng.container.implementations.ContainerCellRestriction.CellData;
 import appeng.core.AELog;
 import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
@@ -23,7 +23,7 @@ public class GuiCellRestriction extends AEBaseGui {
 
     private MEGuiTextField amountField;
     private MEGuiTextField typesField;
-    private cellData cellData;
+    private CellData cellData;
 
     public GuiCellRestriction(InventoryPlayer ip, ICellRestriction obj) {
         super(new ContainerCellRestriction(ip, obj));
@@ -31,7 +31,7 @@ public class GuiCellRestriction extends AEBaseGui {
 
         this.amountField = new MEGuiTextField(85, 12);
         this.typesField = new MEGuiTextField(30, 12);
-        this.cellData = new cellData();
+        this.cellData = new CellData();
 
     }
 
