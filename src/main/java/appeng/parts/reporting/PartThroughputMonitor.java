@@ -3,6 +3,13 @@ package appeng.parts.reporting;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.Vec3;
+
 import org.lwjgl.opengl.GL11;
 
 import appeng.api.storage.data.IAEItemStack;
@@ -12,12 +19,6 @@ import appeng.util.IWideReadableNumberConverter;
 import appeng.util.Platform;
 import appeng.util.ReadableNumberConverter;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.Vec3;
 
 /**
  * @author MCTBL
@@ -128,14 +129,15 @@ public class PartThroughputMonitor extends AbstractPartMonitor {
 
         final long stackSize = ais.getStackSize();
         final String renderedStackSize = NUMBER_CONVERTER.toWideReadableForm(stackSize);
-        
+
         String renderedStackSizeChange = "";
-        if(this.itemNumsChange >= 1000) {
-        	renderedStackSizeChange = Platform.formatNumberLong((long)stackSize);
-        }else {
-        	renderedStackSizeChange = DF.format(this.itemNumsChange);
+        if (this.itemNumsChange >= 1000) {
+            renderedStackSizeChange = Platform.formatNumberLong((long) stackSize);
+        } else {
+            renderedStackSizeChange = DF.format(this.itemNumsChange);
         }
-        renderedStackSizeChange = (this.itemNumsChange > 0 ? "+" : "") + renderedStackSizeChange + (this.timeMode == 0 ? "/s" : "/t");
+        renderedStackSizeChange = (this.itemNumsChange > 0 ? "+" : "") + renderedStackSizeChange
+                + (this.timeMode == 0 ? "/s" : "/t");
 
         final FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
         int width = fr.getStringWidth(renderedStackSize);
