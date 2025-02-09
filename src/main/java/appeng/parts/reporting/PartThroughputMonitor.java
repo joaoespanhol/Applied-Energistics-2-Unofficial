@@ -1,7 +1,6 @@
 package appeng.parts.reporting;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -28,7 +27,6 @@ import io.netty.buffer.ByteBuf;
 public class PartThroughputMonitor extends AbstractPartMonitor {
 
     private static final IWideReadableNumberConverter NUMBER_CONVERTER = ReadableNumberConverter.INSTANCE;
-    private static final DecimalFormat DF = new DecimalFormat("0.#");
 
     private static final CableBusTextures FRONT_BRIGHT_ICON = CableBusTextures.PartThroughputMonitor_Bright;
     private static final CableBusTextures FRONT_DARK_ICON = CableBusTextures.PartThroughputMonitor_Dark;
@@ -36,7 +34,7 @@ public class PartThroughputMonitor extends AbstractPartMonitor {
     private static final CableBusTextures FRONT_COLORED_ICON_LOCKED = CableBusTextures.PartThroughputMonitor_Dark_Locked;
 
     private long lastitemNums;
-    private double itemNumsChange;
+    private long itemNumsChange;
     private int timeMode;
 
     @Reflected
@@ -130,13 +128,8 @@ public class PartThroughputMonitor extends AbstractPartMonitor {
         final long stackSize = ais.getStackSize();
         final String renderedStackSize = NUMBER_CONVERTER.toWideReadableForm(stackSize);
 
-        String renderedStackSizeChange = "";
-        if (this.itemNumsChange >= 1000) {
-            renderedStackSizeChange = Platform.formatNumberLong((long) stackSize);
-        } else {
-            renderedStackSizeChange = DF.format(this.itemNumsChange);
-        }
-        renderedStackSizeChange = (this.itemNumsChange > 0 ? "+" : "") + renderedStackSizeChange
+        final String renderedStackSizeChange = (this.itemNumsChange > 0 ? "+" : "")
+                + Platform.formatNumberLong(this.itemNumsChange)
                 + (this.timeMode == 0 ? "/s" : "/t");
 
         final FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
