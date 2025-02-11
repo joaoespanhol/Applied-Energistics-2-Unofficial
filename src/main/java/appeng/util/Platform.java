@@ -1924,14 +1924,14 @@ public class Platform {
             postFix = String.valueOf(NUM_UNIT[exponent]);
         }
 
-        final String withPrecision = df.format(last / DIVISION_BASE) + postFix;
-        final String withoutPrecision = Long.toString((long) base) + postFix;
+        final String withPrecision = df.format(last / DIVISION_BASE);
+        final String withoutPrecision = Long.toString((long) base);
 
         final String slimResult = (withPrecision.length() <= width) ? withPrecision : withoutPrecision;
 
         // post condition
         assert slimResult.length() <= width;
 
-        return slimResult;
+        return slimResult + postFix;
     }
 }

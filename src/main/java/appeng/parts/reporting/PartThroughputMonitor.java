@@ -18,6 +18,7 @@ import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.client.texture.CableBusTextures;
+import appeng.core.settings.TickRates;
 import appeng.helpers.Reflected;
 import appeng.util.IWideReadableNumberConverter;
 import appeng.util.Platform;
@@ -109,15 +110,10 @@ public class PartThroughputMonitor extends AbstractPartMonitor implements IGridT
             return false;
         }
 
-        final TileEntity te = this.getTile();
-        final ItemStack eq = player.getCurrentEquippedItem();
+        this.timeMode = (this.timeMode + TIME_UNIT.length - 1) % TIME_UNIT.length;
+        this.host.markForUpdate();
 
-        if (!Platform.isWrench(player, eq, te.xCoord, te.yCoord, te.zCoord) && this.isLocked()) {
-            this.timeMode = (this.timeMode + TIME_UNIT.length - 1) % TIME_UNIT.length;
-            return true;
-        } else {
-            return super.onPartShiftActivate(player, pos);
-        }
+        return true;
     }
 
     @Override
@@ -139,29 +135,10 @@ public class PartThroughputMonitor extends AbstractPartMonitor implements IGridT
 
         if (!Platform.isWrench(player, eq, te.xCoord, te.yCoord, te.zCoord) && this.isLocked()) {
             this.timeMode = (this.timeMode + 1) % TIME_UNIT.length;
+            this.host.markForUpdate();
             return true;
         } else {
             return super.onPartActivate(player, pos);
-        }
-    }
-
-    public void updateThroughput(int tick) {
-        if (Platform.isClient()) {
-            return;
-        }
-
-        if (this.getDisplayed() == null) {
-            this.lastStackSize = -1;
-            this.host.markForUpdate();
-            return;
-        } else {
-            long nowStackSize = this.getDisplayed().getStackSize();
-            if (this.lastStackSize != -1) {
-                long changeStackSize = nowStackSize - this.lastStackSize;
-                this.itemNumsChange = (changeStackSize * NUMBER_MULTIPLIER[this.timeMode]) / tick;
-                this.host.markForUpdate();
-            }
-            this.lastStackSize = nowStackSize;
         }
     }
 
@@ -196,13 +173,33 @@ public class PartThroughputMonitor extends AbstractPartMonitor implements IGridT
 
     @Override
     public TickingRequest getTickingRequest(IGridNode node) {
-        return new TickingRequest(20, 100, false, false);
+        return new TickingRequest(
+                TickRates.ThroughputMonitor.getMin(),
+                TickRates.ThroughputMonitor.getMax(),
+                false,
+                false);
     }
 
     @Override
     public TickRateModulation tickingRequest(IGridNode node, int TicksSinceLastCall) {
-        this.updateThroughput(TicksSinceLastCall);
-        return TickRateModulation.SAME;
+        if (Platform.isClient()) {
+            return TickRateModulation.SAME;
+        }
+
+        if (this.getDisplayed() == null) {
+            this.lastStackSize = -1;
+            this.host.markForUpdate();
+            return TickRateModulation.IDLE;
+        } else {
+            long nowStackSize = this.getDisplayed().getStackSize();
+            if (this.lastStackSize != -1) {
+                long changeStackSize = nowStackSize - this.lastStackSize;
+                this.itemNumsChange = (changeStackSize * NUMBER_MULTIPLIER[this.timeMode]) / TicksSinceLastCall;
+                this.host.markForUpdate();
+            }
+            this.lastStackSize = nowStackSize;
+        }
+        return TickRateModulation.FASTER;
     }
 
 }
