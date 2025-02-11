@@ -7,10 +7,15 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Vec3;
 
 import org.lwjgl.opengl.GL11;
 
+import appeng.api.networking.IGridNode;
+import appeng.api.networking.ticking.IGridTickable;
+import appeng.api.networking.ticking.TickRateModulation;
+import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.client.texture.CableBusTextures;
 import appeng.helpers.Reflected;
@@ -24,7 +29,7 @@ import io.netty.buffer.ByteBuf;
  * @version rv3-beta-538-GTNH
  * @since rv3-beta-538-GTNH
  */
-public class PartThroughputMonitor extends AbstractPartMonitor {
+public class PartThroughputMonitor extends AbstractPartMonitor implements IGridTickable {
 
     private static final IWideReadableNumberConverter NUMBER_CONVERTER = ReadableNumberConverter.INSTANCE;
 
@@ -33,16 +38,19 @@ public class PartThroughputMonitor extends AbstractPartMonitor {
     private static final CableBusTextures FRONT_COLORED_ICON = CableBusTextures.PartThroughputMonitor_Colored;
     private static final CableBusTextures FRONT_COLORED_ICON_LOCKED = CableBusTextures.PartThroughputMonitor_Dark_Locked;
 
-    private long lastitemNums;
-    private long itemNumsChange;
+    private static final String[] TIME_UNIT = { "/t", "/s", "/m", "/h" };
+    private static final float[] NUMBER_MULTIPLIER = { 1, 20, 1_200, 72_000 };
+
+    private double itemNumsChange;
     private int timeMode;
+    private long lastStackSize;
 
     @Reflected
     public PartThroughputMonitor(final ItemStack is) {
         super(is);
-        this.lastitemNums = 0;
         this.itemNumsChange = 0;
         this.timeMode = 0;
+        this.lastStackSize = -1;
     }
 
     @Override
@@ -76,12 +84,14 @@ public class PartThroughputMonitor extends AbstractPartMonitor {
     public void writeToStream(final ByteBuf data) throws IOException {
         super.writeToStream(data);
         data.writeInt(this.timeMode);
+        data.writeDouble(this.itemNumsChange);
     }
 
     @Override
     public boolean readFromStream(final ByteBuf data) throws IOException {
         boolean needRedraw = super.readFromStream(data);
         this.timeMode = data.readInt();
+        this.itemNumsChange = data.readDouble();
         return needRedraw;
     }
 
@@ -99,25 +109,60 @@ public class PartThroughputMonitor extends AbstractPartMonitor {
             return false;
         }
 
-        this.timeMode = this.timeMode == 0 ? 1 : 0;
+        final TileEntity te = this.getTile();
+        final ItemStack eq = player.getCurrentEquippedItem();
 
-        return true;
+        if (!Platform.isWrench(player, eq, te.xCoord, te.yCoord, te.zCoord) && this.isLocked()) {
+            this.timeMode = (this.timeMode + TIME_UNIT.length - 1) % TIME_UNIT.length;
+            return true;
+        } else {
+            return super.onPartShiftActivate(player, pos);
+        }
     }
 
-    public void updateThroughput() {
-        if (this.getDisplayed() != null) {
-            long nowNums = ((IAEItemStack) this.getDisplayed()).getStackSize();
-            this.itemNumsChange = (nowNums - lastitemNums);
-            // If is tick mode
-            if (this.timeMode == 1) {
-                this.itemNumsChange *= 20;
-            }
-            this.lastitemNums = nowNums;
-        } else {
-            this.itemNumsChange = 0;
-            this.lastitemNums = 0;
+    @Override
+    public boolean onPartActivate(final EntityPlayer player, final Vec3 pos) {
+        if (Platform.isClient()) {
+            return true;
         }
-        this.getHost().markForUpdate();
+
+        if (!this.getProxy().isActive()) {
+            return false;
+        }
+
+        if (!Platform.hasPermissions(this.getLocation(), player)) {
+            return false;
+        }
+
+        final TileEntity te = this.getTile();
+        final ItemStack eq = player.getCurrentEquippedItem();
+
+        if (!Platform.isWrench(player, eq, te.xCoord, te.yCoord, te.zCoord) && this.isLocked()) {
+            this.timeMode = (this.timeMode + 1) % TIME_UNIT.length;
+            return true;
+        } else {
+            return super.onPartActivate(player, pos);
+        }
+    }
+
+    public void updateThroughput(int tick) {
+        if (Platform.isClient()) {
+            return;
+        }
+
+        if (this.getDisplayed() == null) {
+            this.lastStackSize = -1;
+            this.host.markForUpdate();
+            return;
+        } else {
+            long nowStackSize = this.getDisplayed().getStackSize();
+            if (this.lastStackSize != -1) {
+                long changeStackSize = nowStackSize - this.lastStackSize;
+                this.itemNumsChange = (changeStackSize * NUMBER_MULTIPLIER[this.timeMode]) / tick;
+                this.host.markForUpdate();
+            }
+            this.lastStackSize = nowStackSize;
+        }
     }
 
     @Override
@@ -129,8 +174,8 @@ public class PartThroughputMonitor extends AbstractPartMonitor {
         final String renderedStackSize = NUMBER_CONVERTER.toWideReadableForm(stackSize);
 
         final String renderedStackSizeChange = (this.itemNumsChange > 0 ? "+" : "")
-                + Platform.formatNumberLong(this.itemNumsChange)
-                + (this.timeMode == 0 ? "/s" : "/t");
+                + (Platform.formatNumberLongRestrictedByWidth(this.itemNumsChange, 3))
+                + (TIME_UNIT[this.timeMode]);
 
         final FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
         int width = fr.getStringWidth(renderedStackSize);
@@ -147,6 +192,17 @@ public class PartThroughputMonitor extends AbstractPartMonitor {
             color = 0x17B66C;
         }
         fr.drawString(renderedStackSizeChange, 0, 0, color);
+    }
+
+    @Override
+    public TickingRequest getTickingRequest(IGridNode node) {
+        return new TickingRequest(20, 100, false, false);
+    }
+
+    @Override
+    public TickRateModulation tickingRequest(IGridNode node, int TicksSinceLastCall) {
+        this.updateThroughput(TicksSinceLastCall);
+        return TickRateModulation.SAME;
     }
 
 }

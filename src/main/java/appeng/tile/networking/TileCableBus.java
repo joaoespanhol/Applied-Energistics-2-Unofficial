@@ -39,7 +39,6 @@ import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
 import appeng.integration.abstraction.IImmibisMicroblocks;
 import appeng.parts.CableBusContainer;
-import appeng.parts.reporting.PartThroughputMonitor;
 import appeng.tile.AEBaseTile;
 import appeng.tile.TileEvent;
 import appeng.tile.events.TileEventType;
@@ -49,8 +48,6 @@ import io.netty.buffer.ByteBuf;
 public class TileCableBus extends AEBaseTile implements AEMultiTile, ICustomCollision {
 
     private CableBusContainer cb = new CableBusContainer(this);
-
-    private int tickCounter = 1;
 
     /**
      * Immibis MB Support
@@ -323,17 +320,5 @@ public class TileCableBus extends AEBaseTile implements AEMultiTile, ICustomColl
 
     private void setCableBus(final CableBusContainer cb) {
         this.cb = cb;
-    }
-
-    @TileEvent(TileEventType.TICK)
-    public void update() {
-        if (++tickCounter >= 20) {
-            for (ForgeDirection side : ForgeDirection.values()) {
-                if (this.cb.getPart(side) instanceof PartThroughputMonitor ptm) {
-                    ptm.updateThroughput();
-                }
-            }
-            tickCounter = 0;
-        }
     }
 }
