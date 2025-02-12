@@ -1893,8 +1893,8 @@ public class Platform {
      * @param n number wait to format
      * @return String
      */
-    public static String formatNumberLong(final double n) {
-        return formatNumberLongRestrictedByWidth(n, 3);
+    public static String formatNumberDouble(final double n) {
+        return formatNumberDoubleRestrictedByWidth(n, 3);
     }
 
     /**
@@ -1903,7 +1903,7 @@ public class Platform {
      * @param n number wait to format
      * @return String
      */
-    public static String formatNumberLongRestrictedByWidth(final double n, final int width) {
+    public static String formatNumberDoubleRestrictedByWidth(final double n, final int width) {
         final String numberString = df.format(n);
         int numberSize = numberString.length();
         if (numberSize <= width) {
