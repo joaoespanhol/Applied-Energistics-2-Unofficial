@@ -7,7 +7,6 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Vec3;
 
 import org.lwjgl.opengl.GL11;
@@ -32,6 +31,37 @@ import io.netty.buffer.ByteBuf;
  */
 public class PartThroughputMonitor extends AbstractPartMonitor implements IGridTickable {
 
+    private enum TimeUnit {
+
+        Tick("/t", 1),
+        Second("/s", 20),
+        Minute("/m", 1_200),
+        Hour("/h", 72_000);
+
+        String unit_str;
+        int unit_multi;
+
+        TimeUnit(String unit_str, int unit_multi) {
+            this.unit_multi = unit_multi;
+            this.unit_str = unit_str;
+        }
+
+        public TimeUnit getNext() {
+            if (this.ordinal() == TimeUnit.values().length - 1) {
+                return Tick;
+            }
+            return TimeUnit.values()[this.ordinal() + 1];
+        }
+
+        public static TimeUnit fromOrdinal(int ordinal) {
+            if (ordinal < 0 || ordinal >= TimeUnit.values().length) {
+                return Tick;
+            } else {
+                return TimeUnit.values()[ordinal];
+            }
+        }
+    }
+
     private static final IWideReadableNumberConverter NUMBER_CONVERTER = ReadableNumberConverter.INSTANCE;
 
     private static final CableBusTextures FRONT_BRIGHT_ICON = CableBusTextures.PartThroughputMonitor_Bright;
@@ -39,19 +69,16 @@ public class PartThroughputMonitor extends AbstractPartMonitor implements IGridT
     private static final CableBusTextures FRONT_COLORED_ICON = CableBusTextures.PartThroughputMonitor_Colored;
     private static final CableBusTextures FRONT_COLORED_ICON_LOCKED = CableBusTextures.PartThroughputMonitor_Dark_Locked;
 
-    private static final String[] TIME_UNIT = { "/t", "/s", "/m", "/h" };
-    private static final float[] NUMBER_MULTIPLIER = { 1, 20, 1_200, 72_000 };
-
+    private TimeUnit TU;
     private double itemNumsChange;
-    private int timeMode;
     private long lastStackSize;
 
     @Reflected
     public PartThroughputMonitor(final ItemStack is) {
         super(is);
         this.itemNumsChange = 0;
-        this.timeMode = 0;
         this.lastStackSize = -1;
+        this.TU = TimeUnit.Tick;
     }
 
     @Override
@@ -72,26 +99,26 @@ public class PartThroughputMonitor extends AbstractPartMonitor implements IGridT
     @Override
     public void readFromNBT(final NBTTagCompound data) {
         super.readFromNBT(data);
-        this.timeMode = data.getInteger("timeMode");
+        this.TU = TimeUnit.fromOrdinal(data.getInteger("TU"));
     }
 
     @Override
     public void writeToNBT(final NBTTagCompound data) {
         super.writeToNBT(data);
-        data.setInteger("timeMode", this.timeMode);
+        data.setInteger("timeMode", this.TU.ordinal());
     }
 
     @Override
     public void writeToStream(final ByteBuf data) throws IOException {
         super.writeToStream(data);
-        data.writeInt(this.timeMode);
+        data.writeInt(this.TU.ordinal());
         data.writeDouble(this.itemNumsChange);
     }
 
     @Override
     public boolean readFromStream(final ByteBuf data) throws IOException {
         boolean needRedraw = super.readFromStream(data);
-        this.timeMode = data.readInt();
+        this.TU = TimeUnit.fromOrdinal(data.readInt());
         this.itemNumsChange = data.readDouble();
         return needRedraw;
     }
@@ -110,36 +137,10 @@ public class PartThroughputMonitor extends AbstractPartMonitor implements IGridT
             return false;
         }
 
-        this.timeMode = (this.timeMode + TIME_UNIT.length - 1) % TIME_UNIT.length;
+        this.TU = this.TU.getNext();
         this.host.markForUpdate();
 
         return true;
-    }
-
-    @Override
-    public boolean onPartActivate(final EntityPlayer player, final Vec3 pos) {
-        if (Platform.isClient()) {
-            return true;
-        }
-
-        if (!this.getProxy().isActive()) {
-            return false;
-        }
-
-        if (!Platform.hasPermissions(this.getLocation(), player)) {
-            return false;
-        }
-
-        final TileEntity te = this.getTile();
-        final ItemStack eq = player.getCurrentEquippedItem();
-
-        if (!Platform.isWrench(player, eq, te.xCoord, te.yCoord, te.zCoord) && this.isLocked()) {
-            this.timeMode = (this.timeMode + 1) % TIME_UNIT.length;
-            this.host.markForUpdate();
-            return true;
-        } else {
-            return super.onPartActivate(player, pos);
-        }
     }
 
     @Override
@@ -151,8 +152,8 @@ public class PartThroughputMonitor extends AbstractPartMonitor implements IGridT
         final String renderedStackSize = NUMBER_CONVERTER.toWideReadableForm(stackSize);
 
         final String renderedStackSizeChange = (this.itemNumsChange > 0 ? "+" : "")
-                + (Platform.formatNumberLongRestrictedByWidth(this.itemNumsChange, 3))
-                + (TIME_UNIT[this.timeMode]);
+                + (Platform.formatNumberDoubleRestrictedByWidth(this.itemNumsChange, 3))
+                + (this.TU.unit_str);
 
         final FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
         int width = fr.getStringWidth(renderedStackSize);
@@ -194,7 +195,7 @@ public class PartThroughputMonitor extends AbstractPartMonitor implements IGridT
             long nowStackSize = this.getDisplayed().getStackSize();
             if (this.lastStackSize != -1) {
                 long changeStackSize = nowStackSize - this.lastStackSize;
-                this.itemNumsChange = (changeStackSize * NUMBER_MULTIPLIER[this.timeMode]) / TicksSinceLastCall;
+                this.itemNumsChange = (changeStackSize * this.TU.unit_multi) / TicksSinceLastCall;
                 this.host.markForUpdate();
             }
             this.lastStackSize = nowStackSize;
