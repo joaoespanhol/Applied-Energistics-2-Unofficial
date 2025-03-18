@@ -44,6 +44,7 @@ import appeng.core.localization.GuiText;
 import appeng.helpers.PatternHelper;
 import appeng.items.AEBaseItem;
 import appeng.util.Platform;
+import cpw.mods.fml.common.registry.GameRegistry;
 
 public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternItem {
 
@@ -203,13 +204,14 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
     }
 
     private boolean addInformation(final EntityPlayer player, final IAEItemStack[] items, final List<String> lines,
-            final String label, final boolean displayMoreInfo, EnumChatFormatting color) {
+            String label, final boolean displayMoreInfo, EnumChatFormatting color) {
         final ItemStack unknownItem = new ItemStack(Blocks.fire);
         boolean recipeIsBroken = false;
         boolean first = true;
         List<IAEItemStack> itemsList = Arrays.asList(items);
         List<IAEItemStack> sortedItems = itemsList.stream()
                 .sorted(Comparator.comparingLong(IAEItemStack::getStackSize).reversed()).collect(Collectors.toList());
+        boolean isFluid = false;
 
         for (final IAEItemStack item : sortedItems) {
 
@@ -217,19 +219,28 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
                 recipeIsBroken = true;
             }
 
+            if (item.getItemStack().getItem() == GameRegistry.findItem("ae2fc", "fluid_drop")) {
+                label = EnumChatFormatting.YELLOW + label;
+                color = EnumChatFormatting.YELLOW;
+                isFluid = true;
+            }
+
             if (first) {
                 lines.add(label);
                 lines.add(
                         "   " + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
+                                + (isFluid ? "L" : " ")
                                 + color
-                                + " "
-                                + Platform.getItemDisplayName(item));
-            } else {
+                                + (isFluid ? Platform.getItemDisplayName(item).replace("drop of", "")
+                                        : Platform.getItemDisplayName(item)));
+            }
+            if (!first) {
                 lines.add(
                         "   " + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
+                                + (isFluid ? "L" : " ")
                                 + color
-                                + " "
-                                + Platform.getItemDisplayName(item));
+                                + (isFluid ? Platform.getItemDisplayName(item).replace("drop of", "")
+                                        : Platform.getItemDisplayName(item)));
             }
 
             first = false;
