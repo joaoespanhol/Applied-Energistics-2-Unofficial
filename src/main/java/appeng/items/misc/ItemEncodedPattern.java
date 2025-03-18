@@ -131,23 +131,23 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
         final List<String> in = new ArrayList<>();
         final List<String> out = new ArrayList<>();
 
-        final String substitutionLabel = EnumChatFormatting.GOLD + GuiText.Substitute.getLocal()
+        final String substitutionLabel = EnumChatFormatting.YELLOW + GuiText.Substitute.getLocal()
                 + " "
                 + EnumChatFormatting.RESET;
-        final String beSubstitutionLabel = EnumChatFormatting.GOLD + GuiText.BeSubstitute.getLocal()
+        final String beSubstitutionLabel = EnumChatFormatting.YELLOW + GuiText.BeSubstitute.getLocal()
                 + " "
                 + EnumChatFormatting.RESET;
         final String canSubstitute = substitute ? GuiText.Yes.getLocal() : GuiText.No.getLocal();
         final String canBeSubstitute = beSubstitute ? GuiText.Yes.getLocal() : GuiText.No.getLocal();
-        final String result = (outItems.length > 1 ? EnumChatFormatting.DARK_GREEN + GuiText.Results.getLocal()
-                : EnumChatFormatting.DARK_GREEN + GuiText.Result.getLocal()) + ":" + EnumChatFormatting.RESET;
-        final String ingredients = (inItems.length > 1 ? EnumChatFormatting.DARK_AQUA + GuiText.Ingredients.getLocal()
-                : EnumChatFormatting.DARK_AQUA + GuiText.Ingredient.getLocal()) + ": " + EnumChatFormatting.RESET;
+        final String result = (outItems.length > 1 ? EnumChatFormatting.DARK_AQUA + GuiText.Results.getLocal()
+                : EnumChatFormatting.DARK_AQUA + GuiText.Result.getLocal()) + ":" + EnumChatFormatting.RESET;
+        final String ingredients = (inItems.length > 1 ? EnumChatFormatting.DARK_GREEN + GuiText.Ingredients.getLocal()
+                : EnumChatFormatting.DARK_GREEN + GuiText.Ingredient.getLocal()) + ": " + EnumChatFormatting.RESET;
         final String holdShift = EnumChatFormatting.GRAY + GuiText.HoldShift.getLocal() + EnumChatFormatting.RESET;
 
-        recipeIsBroken = addInformation(player, inItems, in, ingredients, displayMoreInfo, EnumChatFormatting.AQUA)
+        recipeIsBroken = addInformation(player, inItems, in, ingredients, displayMoreInfo, EnumChatFormatting.GREEN)
                 || recipeIsBroken;
-        recipeIsBroken = addInformation(player, outItems, out, result, displayMoreInfo, EnumChatFormatting.GREEN)
+        recipeIsBroken = addInformation(player, outItems, out, result, displayMoreInfo, EnumChatFormatting.AQUA)
                 || recipeIsBroken;
 
         if (recipeIsBroken) {
@@ -220,24 +220,30 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
             }
 
             if (item.getItemStack().getItem() == GameRegistry.findItem("ae2fc", "fluid_drop")) {
-                label = EnumChatFormatting.YELLOW + label;
-                color = EnumChatFormatting.YELLOW;
+                label = EnumChatFormatting.GOLD + label;
+                color = EnumChatFormatting.GOLD;
                 isFluid = true;
             }
 
             if (first) {
                 lines.add(label);
                 lines.add(
-                        "   " + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
-                                + (isFluid ? "L" : " ")
+                        "   " + EnumChatFormatting.WHITE
+                                + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
+                                + EnumChatFormatting.RESET
+                                + (isFluid ? EnumChatFormatting.WHITE + "L" : " ")
+                                + EnumChatFormatting.RESET
                                 + color
                                 + (isFluid ? Platform.getItemDisplayName(item).replace("drop of", "")
                                         : Platform.getItemDisplayName(item)));
             }
             if (!first) {
                 lines.add(
-                        "   " + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
-                                + (isFluid ? "L" : " ")
+                        "   " + EnumChatFormatting.WHITE
+                                + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
+                                + EnumChatFormatting.RESET
+                                + (isFluid ? EnumChatFormatting.WHITE + "L" : " ")
+                                + EnumChatFormatting.RESET
                                 + color
                                 + (isFluid ? Platform.getItemDisplayName(item).replace("drop of", "")
                                         : Platform.getItemDisplayName(item)));
