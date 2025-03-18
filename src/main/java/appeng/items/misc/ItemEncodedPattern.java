@@ -130,23 +130,29 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
         final List<String> in = new ArrayList<>();
         final List<String> out = new ArrayList<>();
 
-        final String substitutionLabel = EnumChatFormatting.GOLD + GuiText.Substitute.getLocal() + " " + EnumChatFormatting.RESET;
-        final String beSubstitutionLabel = EnumChatFormatting.GOLD + GuiText.BeSubstitute.getLocal() + " "+ EnumChatFormatting.RESET;
+        final String substitutionLabel = EnumChatFormatting.GOLD + GuiText.Substitute.getLocal()
+                + " "
+                + EnumChatFormatting.RESET;
+        final String beSubstitutionLabel = EnumChatFormatting.GOLD + GuiText.BeSubstitute.getLocal()
+                + " "
+                + EnumChatFormatting.RESET;
         final String canSubstitute = substitute ? GuiText.Yes.getLocal() : GuiText.No.getLocal();
         final String canBeSubstitute = beSubstitute ? GuiText.Yes.getLocal() : GuiText.No.getLocal();
-        final String result = (outItems.length > 1 ?
-                EnumChatFormatting.DARK_GREEN + GuiText.Results.getLocal() : EnumChatFormatting.DARK_GREEN + GuiText.Result.getLocal()) + ":" + EnumChatFormatting.RESET;
-        final String ingredients = (inItems.length > 1 ?
-                EnumChatFormatting.DARK_AQUA + GuiText.Ingredients.getLocal() : EnumChatFormatting.DARK_AQUA + GuiText.Ingredient.getLocal()) + ": " + EnumChatFormatting.RESET;
+        final String result = (outItems.length > 1 ? EnumChatFormatting.DARK_GREEN + GuiText.Results.getLocal()
+                : EnumChatFormatting.DARK_GREEN + GuiText.Result.getLocal()) + ":" + EnumChatFormatting.RESET;
+        final String ingredients = (inItems.length > 1 ? EnumChatFormatting.DARK_AQUA + GuiText.Ingredients.getLocal()
+                : EnumChatFormatting.DARK_AQUA + GuiText.Ingredient.getLocal()) + ": " + EnumChatFormatting.RESET;
 
-        recipeIsBroken = addInformation(player, inItems, in, ingredients, displayMoreInfo, EnumChatFormatting.AQUA) || recipeIsBroken;
-        recipeIsBroken = addInformation(player, outItems, out, result, displayMoreInfo, EnumChatFormatting.GREEN) || recipeIsBroken;
+        recipeIsBroken = addInformation(player, inItems, in, ingredients, displayMoreInfo, EnumChatFormatting.AQUA)
+                || recipeIsBroken;
+        recipeIsBroken = addInformation(player, outItems, out, result, displayMoreInfo, EnumChatFormatting.GREEN)
+                || recipeIsBroken;
 
         if (recipeIsBroken) {
             lines.add(EnumChatFormatting.RED + GuiText.InvalidPattern.getLocal());
         } else {
             lines.addAll(out);
-            if (GuiScreen.isShiftKeyDown()){
+            if (GuiScreen.isShiftKeyDown()) {
                 lines.addAll(in);
             }
 
@@ -154,7 +160,9 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
             lines.add(beSubstitutionLabel + canBeSubstitute);
 
             if (!StringUtils.isNullOrEmpty(author)) {
-                lines.add(EnumChatFormatting.LIGHT_PURPLE + GuiText.EncodedBy.getLocal(author) + EnumChatFormatting.RESET);
+                lines.add(
+                        EnumChatFormatting.LIGHT_PURPLE + GuiText.EncodedBy.getLocal(author)
+                                + EnumChatFormatting.RESET);
             }
         }
     }
@@ -196,8 +204,9 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
         final ItemStack unknownItem = new ItemStack(Blocks.fire);
         boolean recipeIsBroken = false;
         boolean first = true;
-        List<IAEItemStack> itemsList  = Arrays.asList(items);
-        List<IAEItemStack> sortedItems = itemsList.stream().sorted(Comparator.comparingLong(IAEItemStack::getStackSize).reversed()).collect(Collectors.toList());
+        List<IAEItemStack> itemsList = Arrays.asList(items);
+        List<IAEItemStack> sortedItems = itemsList.stream()
+                .sorted(Comparator.comparingLong(IAEItemStack::getStackSize).reversed()).collect(Collectors.toList());
 
         for (final IAEItemStack item : sortedItems) {
 
@@ -207,12 +216,18 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
 
             if (first) {
                 lines.add(label);
-                lines.add("   "  + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize()) + color + " " + Platform.getItemDisplayName(item));
+                lines.add(
+                        "   " + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
+                                + color
+                                + " "
+                                + Platform.getItemDisplayName(item));
             } else {
-                lines.add("   " + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize()) + color + " " + Platform.getItemDisplayName(item));
+                lines.add(
+                        "   " + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
+                                + color
+                                + " "
+                                + Platform.getItemDisplayName(item));
             }
-
-
 
             first = false;
         }
