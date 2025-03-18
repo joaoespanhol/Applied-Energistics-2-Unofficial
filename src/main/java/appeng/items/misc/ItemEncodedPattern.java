@@ -44,6 +44,7 @@ import appeng.core.localization.GuiText;
 import appeng.helpers.PatternHelper;
 import appeng.items.AEBaseItem;
 import appeng.util.Platform;
+import org.luaj.vm2.ast.Str;
 
 public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternItem {
 
@@ -142,6 +143,7 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
                 : EnumChatFormatting.DARK_GREEN + GuiText.Result.getLocal()) + ":" + EnumChatFormatting.RESET;
         final String ingredients = (inItems.length > 1 ? EnumChatFormatting.DARK_AQUA + GuiText.Ingredients.getLocal()
                 : EnumChatFormatting.DARK_AQUA + GuiText.Ingredient.getLocal()) + ": " + EnumChatFormatting.RESET;
+        final String holdShift = EnumChatFormatting.GRAY + GuiText.HoldShift.getLocal() + EnumChatFormatting.RESET;
 
         recipeIsBroken = addInformation(player, inItems, in, ingredients, displayMoreInfo, EnumChatFormatting.AQUA)
                 || recipeIsBroken;
@@ -154,6 +156,8 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
             lines.addAll(out);
             if (GuiScreen.isShiftKeyDown()) {
                 lines.addAll(in);
+            } else {
+                lines.add(holdShift);
             }
 
             lines.add(substitutionLabel + canSubstitute);

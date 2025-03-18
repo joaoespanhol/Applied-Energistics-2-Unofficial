@@ -105,6 +105,7 @@ public enum GuiText {
     CraftingPattern,
     ProcessingPattern,
     Crafts,
+    HoldShift,
     Result,
     Results,
     Ingredients,
