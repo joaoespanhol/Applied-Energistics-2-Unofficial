@@ -144,18 +144,18 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
 
         if (recipeIsBroken) {
             lines.add(EnumChatFormatting.RED + GuiText.InvalidPattern.getLocal());
-        }
+        } else {
+            lines.addAll(out);
+            if (GuiScreen.isShiftKeyDown()){
+                lines.addAll(in);
+            }
 
-        lines.addAll(out);
-        if (GuiScreen.isShiftKeyDown()){
-            lines.addAll(in);
-        }
+            lines.add(substitutionLabel + canSubstitute);
+            lines.add(beSubstitutionLabel + canBeSubstitute);
 
-        lines.add(substitutionLabel + canSubstitute);
-        lines.add(beSubstitutionLabel + canBeSubstitute);
-
-        if (!StringUtils.isNullOrEmpty(author)) {
-            lines.add(EnumChatFormatting.LIGHT_PURPLE + GuiText.EncodedBy.getLocal(author) + EnumChatFormatting.RESET);
+            if (!StringUtils.isNullOrEmpty(author)) {
+                lines.add(EnumChatFormatting.LIGHT_PURPLE + GuiText.EncodedBy.getLocal(author) + EnumChatFormatting.RESET);
+            }
         }
     }
 
