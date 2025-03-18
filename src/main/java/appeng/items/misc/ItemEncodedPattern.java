@@ -44,7 +44,6 @@ import appeng.core.localization.GuiText;
 import appeng.helpers.PatternHelper;
 import appeng.items.AEBaseItem;
 import appeng.util.Platform;
-import org.luaj.vm2.ast.Str;
 
 public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternItem {
 
