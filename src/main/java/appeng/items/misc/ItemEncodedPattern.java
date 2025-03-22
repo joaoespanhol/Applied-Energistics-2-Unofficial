@@ -25,6 +25,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
@@ -137,8 +138,8 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
         final String beSubstitutionLabel = EnumChatFormatting.YELLOW + GuiText.BeSubstitute.getLocal()
                 + " "
                 + EnumChatFormatting.RESET;
-        final String canSubstitute = substitute ? GuiText.Yes.getLocal() : GuiText.No.getLocal();
-        final String canBeSubstitute = beSubstitute ? GuiText.Yes.getLocal() : GuiText.No.getLocal();
+        final String canSubstitute = substitute ? EnumChatFormatting.RED + GuiText.Yes.getLocal() : GuiText.No.getLocal();
+        final String canBeSubstitute = beSubstitute ? EnumChatFormatting.RED + GuiText.Yes.getLocal() : GuiText.No.getLocal();
         final String result = (outItems.length > 1 ? EnumChatFormatting.DARK_AQUA + GuiText.Results.getLocal()
                 : EnumChatFormatting.DARK_AQUA + GuiText.Result.getLocal()) + ":" + EnumChatFormatting.RESET;
         final String ingredients = (inItems.length > 1 ? EnumChatFormatting.DARK_GREEN + GuiText.Ingredients.getLocal()
@@ -208,10 +209,12 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
         final ItemStack unknownItem = new ItemStack(Blocks.fire);
         boolean recipeIsBroken = false;
         boolean first = true;
+        final Item FLUID_DROP_ITEM = GameRegistry.findItem("ae2fc", "fluid_drop");
         List<IAEItemStack> itemsList = Arrays.asList(items);
         List<IAEItemStack> sortedItems = itemsList.stream()
                 .sorted(Comparator.comparingLong(IAEItemStack::getStackSize).reversed()).collect(Collectors.toList());
         boolean isFluid = false;
+        EnumChatFormatting oldColor = color;
 
         for (final IAEItemStack item : sortedItems) {
 
@@ -219,10 +222,14 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
                 recipeIsBroken = true;
             }
 
-            if (item.getItemStack().getItem() == GameRegistry.findItem("ae2fc", "fluid_drop")) {
+            if (item.getItemStack().getItem() == FLUID_DROP_ITEM) {
                 label = EnumChatFormatting.GOLD + label;
                 color = EnumChatFormatting.GOLD;
                 isFluid = true;
+            } else {
+                label = EnumChatFormatting.RESET + label;
+                color = oldColor;
+                isFluid = false;
             }
 
             if (first) {
