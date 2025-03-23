@@ -138,8 +138,10 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
         final String beSubstitutionLabel = EnumChatFormatting.YELLOW + GuiText.BeSubstitute.getLocal()
                 + " "
                 + EnumChatFormatting.RESET;
-        final String canSubstitute = substitute ? EnumChatFormatting.RED + GuiText.Yes.getLocal() : GuiText.No.getLocal();
-        final String canBeSubstitute = beSubstitute ? EnumChatFormatting.RED + GuiText.Yes.getLocal() : GuiText.No.getLocal();
+        final String canSubstitute = substitute ? EnumChatFormatting.RED + GuiText.Yes.getLocal()
+                : GuiText.No.getLocal();
+        final String canBeSubstitute = beSubstitute ? EnumChatFormatting.RED + GuiText.Yes.getLocal()
+                : GuiText.No.getLocal();
         final String result = (outItems.length > 1 ? EnumChatFormatting.DARK_AQUA + GuiText.Results.getLocal()
                 : EnumChatFormatting.DARK_AQUA + GuiText.Result.getLocal()) + ":" + EnumChatFormatting.RESET;
         final String ingredients = (inItems.length > 1 ? EnumChatFormatting.DARK_GREEN + GuiText.Ingredients.getLocal()
