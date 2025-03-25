@@ -157,8 +157,8 @@ public class GuiCraftingCPUTable {
                     parent.drawTexturedModalRect(0, 0, uv_x * 16, uv_y * 16, 16, 16);
                     GL11.glTranslatef(18.0f, 2.0f, 0.0f);
                     String amount = NumberFormat.getInstance().format(craftingStack.getStackSize());
-                    double craftingPercentage = (double) (cpu.getTotalItems() - craftingStack.getStackSize())
-                            / (double) cpu.getTotalItems();
+                    double craftingPercentage = (double) (cpu.getTotalItems()
+                            - Math.max(craftingStack.getStackSize(), 0)) / (double) cpu.getTotalItems();
                     if (amount.length() > 9) {
                         amount = ReadableNumberConverter.INSTANCE.toWideReadableForm(craftingStack.getStackSize());
                     }
