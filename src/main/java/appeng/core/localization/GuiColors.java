@@ -152,7 +152,9 @@ public enum GuiColors {
     CellStatusBlue(0x00AAFF),
     CellStatusGreen(0x00FF00),
     SearchHighlight(0xFFFFFF55),
-    SearchGoToHighlight(0xFFFFAA00);
+    SearchGoToHighlight(0xFFFFAA00),
+
+    ProcessBarColor(0xff0fffaa);
 
     private final String root;
     private final int color;

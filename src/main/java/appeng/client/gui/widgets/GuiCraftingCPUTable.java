@@ -1,6 +1,7 @@
 package appeng.client.gui.widgets;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.function.Predicate;
@@ -41,6 +42,7 @@ public class GuiCraftingCPUTable {
     private final GuiScrollbar cpuScrollbar;
 
     private String selectedCPUName = "";
+    private static final DecimalFormat DF = new DecimalFormat("#.##");
 
     public GuiCraftingCPUTable(AEBaseGui parent, ContainerCPUTable container,
             Predicate<CraftingCPUStatus> jobMergeable) {
@@ -156,15 +158,35 @@ public class GuiCraftingCPUTable {
                     parent.drawTexturedModalRect(0, 0, uv_x * 16, uv_y * 16, 16, 16);
                     GL11.glTranslatef(18.0f, 2.0f, 0.0f);
                     String amount = NumberFormat.getInstance().format(craftingStack.getStackSize());
+                    double craftingPercentage = (double) (cpu.getTotalItems()
+                            - Math.max(craftingStack.getStackSize(), 0)) / (double) cpu.getTotalItems();
                     if (amount.length() > 9) {
                         amount = ReadableNumberConverter.INSTANCE.toWideReadableForm(craftingStack.getStackSize());
                     }
                     GL11.glScalef(1.5f, 1.5f, 1.0f);
                     font.drawString(amount, 0, 0, GuiColors.CraftingStatusCPUAmount.getColor());
+
+                    GL11.glScalef(0.5f, 0.5f, 1.0f);
+                    GL11.glTranslatef(110.0f, 16.0f, 10.0f);
+                    font.drawString(
+                            DF.format(craftingPercentage * 100d) + "%",
+                            0,
+                            0,
+                            GuiColors.CraftingStatusCPUAmount.getColor());
+
                     GL11.glPopMatrix();
                     GL11.glPushMatrix();
                     GL11.glTranslatef(x + CPU_TABLE_SLOT_WIDTH - 19, y + 3, 0);
                     parent.drawItem(0, 0, craftingStack.getItemStack());
+
+                    GL11.glPopMatrix();
+                    GL11.glPushMatrix();
+                    AEBaseGui.drawRect(
+                            x,
+                            y + CPU_TABLE_SLOT_HEIGHT - 3,
+                            x + (int) ((CPU_TABLE_SLOT_WIDTH - 1) * craftingPercentage),
+                            y + CPU_TABLE_SLOT_HEIGHT - 2,
+                            GuiColors.ProcessBarColor.getColor());
                 } else {
                     parent.bindTexture("guis/states.png");
 
