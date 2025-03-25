@@ -63,7 +63,7 @@ public interface IChestOrDrive extends ICellContainer, IGridHost, IOrientable {
      */
     boolean isPowered();
 
-    boolean lockDigitalSingularityCells();
+    boolean toggleItemStorageCellLocking();
 
     int applyStickyToDigitalSingularityCells(ItemStack cards);
 
