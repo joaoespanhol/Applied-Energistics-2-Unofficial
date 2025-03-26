@@ -88,7 +88,7 @@ public enum Settings {
 
     INTERFACE_TERMINAL_SECTION_ORDER(EnumSet.allOf(StringOrder.class)),
 
-CRAFTING_ALLOW(EnumSet.allOf(CraftingAllow.class));
+    CRAFTING_ALLOW(EnumSet.allOf(CraftingAllow.class)),
 
     SUPER_WIRELESS_TOOL(EnumSet.allOf(SuperWirelessTool.class)),
 

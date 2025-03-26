@@ -246,7 +246,6 @@ public enum ButtonToolTips {
     SuperWirelessToolHideBoundedNoName,
     SuperWirelessToolHideBoundedNoDesc;
 
-
     private final String root;
 
     ButtonToolTips() {

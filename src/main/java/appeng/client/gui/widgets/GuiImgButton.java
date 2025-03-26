@@ -851,7 +851,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.SuperWirelessToolHideBoundedNoName,
                     ButtonToolTips.SuperWirelessToolHideBoundedNoDesc);
 
-this.registerApp(
+            this.registerApp(
                     16 * 14 + 3,
                     Settings.CRAFTING_ALLOW,
                     CraftingAllow.ALLOW_ALL,
