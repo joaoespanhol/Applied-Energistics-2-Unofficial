@@ -233,7 +233,19 @@ public enum ButtonToolTips {
     CPUAllowMode,
     CPUAllowAllDesc,
     CPUOnlyAllowPlayerDesc,
-    CPUOnlyAllowNonPlayerDesc;
+    CPUOnlyAllowNonPlayerDesc,
+
+    SuperWirelessToolGroupBySingleName,
+    SuperWirelessToolGroupBySingleDesc,
+    SuperWirelessToolGroupByNetworkName,
+    SuperWirelessToolGroupByNetworkDesc,
+    SuperWirelessToolGroupByColorName,
+    SuperWirelessToolGroupByColorDesc,
+    SuperWirelessToolHideBoundedYesName,
+    SuperWirelessToolHideBoundedYesDesc,
+    SuperWirelessToolHideBoundedNoName,
+    SuperWirelessToolHideBoundedNoDesc;
+
 
     private final String root;
 

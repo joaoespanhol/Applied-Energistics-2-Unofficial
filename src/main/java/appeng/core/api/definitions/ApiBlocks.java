@@ -51,6 +51,8 @@ import appeng.block.networking.BlockDenseEnergyCell;
 import appeng.block.networking.BlockEnergyAcceptor;
 import appeng.block.networking.BlockEnergyCell;
 import appeng.block.networking.BlockWireless;
+import appeng.block.networking.BlockWirelessConnector;
+import appeng.block.networking.BlockWirelessHub;
 import appeng.block.qnb.BlockQuantumLinkChamber;
 import appeng.block.qnb.BlockQuantumRing;
 import appeng.block.solids.BlockFluix;
@@ -173,6 +175,9 @@ public final class ApiBlocks implements IBlocks {
     private final IBlockDefinition cubeGenerator;
 
     private final Set<IOrientableBlock> orientables;
+
+    private final ITileDefinition wirelessConnector;
+    private final ITileDefinition wirelessHub;
 
     public ApiBlocks(final DefinitionConstructor constructor) {
         final BlockLightDetector lightDetector = new BlockLightDetector();
@@ -323,6 +328,8 @@ public final class ApiBlocks implements IBlocks {
         this.chunkLoader = constructor.registerBlockDefinition(new BlockChunkloader());
         this.phantomNode = constructor.registerBlockDefinition(new BlockPhantomNode());
         this.cubeGenerator = constructor.registerBlockDefinition(new BlockCubeGenerator());
+        this.wirelessConnector = constructor.registerTileDefinition(new BlockWirelessConnector());
+        this.wirelessHub = constructor.registerTileDefinition(new BlockWirelessHub());
     }
 
     @Override
@@ -704,6 +711,16 @@ public final class ApiBlocks implements IBlocks {
     @Override
     public ITileDefinition patternsOptimizationMatrix() {
         return this.patternOptimizationMatrix;
+    }
+
+    @Override
+    public ITileDefinition wirelessConnector() {
+        return this.wirelessConnector;
+    }
+
+    @Override
+    public ITileDefinition wirelessHub() {
+        return this.wirelessHub;
     }
 
     public IBlockDefinition chunkLoader() {
