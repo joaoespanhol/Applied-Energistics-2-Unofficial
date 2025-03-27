@@ -232,21 +232,18 @@ public class GuiCraftingCPU extends AEBaseGui implements ISortSource, IGuiToolti
 
     @Override
     protected void mouseClicked(final int xCoord, final int yCoord, final int btn) {
-        if (this.hoveredNbtStack != null) {
-            if (isShiftKeyDown()) {
-                NBTTagCompound data = Platform.openNbtData(this.hoveredNbtStack);
-                // when using the highlight feature in the crafting GUI we want to show all the interfaces
-                // that currently received items so the player can see if the items are processed properly
-                BlockPosHighlighter.highlightBlocks(
-                        mc.thePlayer,
-                        DimensionalCoord.readAsListFromNBT(data),
-                        PlayerMessages.InterfaceHighlighted.getName(),
-                        PlayerMessages.InterfaceInOtherDim.getName());
-                mc.thePlayer.closeScreen();
-            }
-        }
-        if (hoveredAEStack != null && btn == 2) {
-            ((AEBaseContainer) this.inventorySlots).setTargetStack(hoveredAEStack);
+        if (isShiftKeyDown() && this.hoveredNbtStack != null) {
+            NBTTagCompound data = Platform.openNbtData(this.hoveredNbtStack);
+            // when using the highlight feature in the crafting GUI we want to show all the interfaces
+            // that currently received items so the player can see if the items are processed properly
+            BlockPosHighlighter.highlightBlocks(
+                    mc.thePlayer,
+                    DimensionalCoord.readAsListFromNBT(data),
+                    PlayerMessages.InterfaceHighlighted.getName(),
+                    PlayerMessages.InterfaceInOtherDim.getName());
+            mc.thePlayer.closeScreen();
+        } else if (hoveredAEStack != null && btn == 2) {
+            ((AEBaseContainer) inventorySlots).setTargetStack(hoveredAEStack);
             final PacketInventoryAction p = new PacketInventoryAction(
                     InventoryAction.AUTO_CRAFT,
                     inventorySlots.inventorySlots.size(),
