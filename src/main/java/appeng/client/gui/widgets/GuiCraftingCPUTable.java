@@ -165,14 +165,6 @@ public class GuiCraftingCPUTable {
                     GL11.glScalef(1.5f, 1.5f, 1.0f);
                     font.drawString(amount, 0, 0, GuiColors.CraftingStatusCPUAmount.getColor());
 
-                    GL11.glScalef(0.5f, 0.5f, 1.0f);
-                    GL11.glTranslatef(110.0f, 16.0f, 10.0f);
-                    font.drawString(
-                            DF.format(craftingPercentage * 100d) + "%",
-                            0,
-                            0,
-                            GuiColors.CraftingStatusCPUAmount.getColor());
-
                     GL11.glPopMatrix();
                     GL11.glPushMatrix();
                     GL11.glTranslatef(x + CPU_TABLE_SLOT_WIDTH - 19, y + 3, 0);
