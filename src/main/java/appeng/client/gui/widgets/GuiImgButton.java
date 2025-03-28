@@ -51,6 +51,7 @@ import appeng.api.config.SortDir;
 import appeng.api.config.SortOrder;
 import appeng.api.config.StorageFilter;
 import appeng.api.config.StringOrder;
+import appeng.api.config.SuperWirelessToolGroupBy;
 import appeng.api.config.TerminalStyle;
 import appeng.api.config.TypeFilter;
 import appeng.api.config.ViewItems;
@@ -833,6 +834,41 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     CraftingAllow.ONLY_NONPLAYER,
                     ButtonToolTips.CPUAllowMode,
                     ButtonToolTips.CPUOnlyAllowNonPlayerDesc);
+
+ this.registerApp(
+                    16 * 6 + 9,
+                    Settings.SUPER_WIRELESS_TOOL_GROUP_BY,
+                    SuperWirelessToolGroupBy.Single,
+                    ButtonToolTips.SuperWirelessToolGroupBySingleName,
+                    ButtonToolTips.SuperWirelessToolGroupBySingleDesc);
+
+            this.registerApp(
+                    16 * 6 + 10,
+                    Settings.SUPER_WIRELESS_TOOL_GROUP_BY,
+                    SuperWirelessToolGroupBy.Color,
+                    ButtonToolTips.SuperWirelessToolGroupByColorName,
+                    ButtonToolTips.SuperWirelessToolGroupByColorDesc);
+
+            this.registerApp(
+                    16 * 6 + 11,
+                    Settings.SUPER_WIRELESS_TOOL_GROUP_BY,
+                    SuperWirelessToolGroupBy.Network,
+                    ButtonToolTips.SuperWirelessToolGroupByNetworkName,
+                    ButtonToolTips.SuperWirelessToolGroupByNetworkDesc);
+
+            this.registerApp(
+                    16 * 7 + 12,
+                    Settings.SUPER_WIRELESS_TOOL_HIDE_BOUNDED,
+                    YesNo.YES,
+                    ButtonToolTips.SuperWirelessToolHideBoundedYesName,
+                    ButtonToolTips.SuperWirelessToolHideBoundedYesDesc);
+
+            this.registerApp(
+                    16 * 7 + 11,
+                    Settings.SUPER_WIRELESS_TOOL_HIDE_BOUNDED,
+                    YesNo.NO,
+                    ButtonToolTips.SuperWirelessToolHideBoundedNoName,
+                    ButtonToolTips.SuperWirelessToolHideBoundedNoDesc);
 
         }
     }
