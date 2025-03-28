@@ -44,6 +44,20 @@ public class GuiCraftingCPUTable {
     private String selectedCPUName = "";
     private static final DecimalFormat DF = new DecimalFormat("#.##");
 
+    private static int processBarStartColorInt = GuiColors.ProcessBarStartColor.getColor();
+    private static final int[] PROCESS_BAR_START_COLOR_INT_ARR = new int[] { (processBarStartColorInt >> 24) & 0xFF,
+            (processBarStartColorInt >> 16) & 0xFF, (processBarStartColorInt >> 8) & 0xFF,
+            processBarStartColorInt & 0xFF };
+
+    private static int processBarMiddleColorInt = GuiColors.ProcessBarMiddleColor.getColor();
+    private static final int[] PROCESS_BAR_MIDDLE_COLOR_INT_ARR = new int[] { (processBarMiddleColorInt >> 24) & 0xFF,
+            (processBarMiddleColorInt >> 16) & 0xFF, (processBarMiddleColorInt >> 8) & 0xFF,
+            processBarMiddleColorInt & 0xFF };
+
+    private static int processBarEndColorInt = GuiColors.ProcessBarEndColor.getColor();
+    private static final int[] PROCESS_BAR_END_COLOR_INT_ARR = new int[] { (processBarEndColorInt >> 24) & 0xFF,
+            (processBarEndColorInt >> 16) & 0xFF, (processBarEndColorInt >> 8) & 0xFF, processBarEndColorInt & 0xFF };
+
     public GuiCraftingCPUTable(AEBaseGui parent, ContainerCPUTable container,
             Predicate<CraftingCPUStatus> jobMergeable) {
         this.parent = parent;
@@ -177,7 +191,7 @@ public class GuiCraftingCPUTable {
                             y + CPU_TABLE_SLOT_HEIGHT - 3,
                             x + (int) ((CPU_TABLE_SLOT_WIDTH - 1) * craftingPercentage),
                             y + CPU_TABLE_SLOT_HEIGHT - 2,
-                            GuiColors.ProcessBarColor.getColor());
+                            this.calculateGradientColor(craftingPercentage));
                 } else {
 
                     GL11.glScalef(0.5f, 0.5f, 1.0f);
@@ -370,5 +384,25 @@ public class GuiCraftingCPUTable {
         if (next < cpuScrollbar.getCurrentScroll() || next >= cpuScrollbar.getCurrentScroll() + CPU_TABLE_SLOTS) {
             cpuScrollbar.setCurrentScroll(next);
         }
+    }
+
+    private int calculateGradientColor(double percentage) {
+        int start[] = null;
+        int end[] = null;
+        double ratio = 0;
+        if (percentage <= 0.5) {
+            start = PROCESS_BAR_START_COLOR_INT_ARR;
+            end = PROCESS_BAR_MIDDLE_COLOR_INT_ARR;
+            ratio = percentage * 2;
+        } else {
+            start = PROCESS_BAR_MIDDLE_COLOR_INT_ARR;
+            end = PROCESS_BAR_END_COLOR_INT_ARR;
+            ratio = (percentage - 0.5d) * 2;
+        }
+        int a = (int) (start[0] + ratio * (end[0] - start[0]));
+        int r = (int) (start[1] + ratio * (end[1] - start[1]));
+        int g = (int) (start[2] + ratio * (end[2] - start[2]));
+        int b = (int) (start[3] + ratio * (end[3] - start[3]));
+        return (a << 24) | (r << 16) | (g << 8) | (b);
     }
 }
