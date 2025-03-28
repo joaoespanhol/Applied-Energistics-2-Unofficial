@@ -20,6 +20,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -30,16 +31,19 @@ import appeng.api.config.SortOrder;
 import appeng.api.config.ViewItems;
 import appeng.api.implementations.guiobjects.INetworkTool;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.api.util.DimensionalCoord;
 import appeng.client.gui.AEBaseGui;
 import appeng.client.gui.widgets.GuiImgButton;
 import appeng.client.gui.widgets.GuiScrollbar;
 import appeng.client.gui.widgets.ISortSource;
 import appeng.client.me.ItemRepo;
 import appeng.client.me.SlotME;
+import appeng.client.render.BlockPosHighlighter;
 import appeng.container.implementations.ContainerNetworkStatus;
 import appeng.core.AEConfig;
 import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
+import appeng.core.localization.PlayerMessages;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketNetworkStatusSelected;
 import appeng.util.Platform;
@@ -76,6 +80,25 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
         this.isConsume = true;
         this.Equal = "=";
         this.Minus = "-";
+    }
+
+    @Override
+    protected void mouseClicked(int xCoord, int yCoord, int btn) {
+        if (btn == 0 && isShiftKeyDown() && tooltip > -1) {
+            final ItemStack is = repo.getReferenceItem(tooltip).getItemStack();
+            if (is.hasTagCompound()) {
+                NBTTagCompound tag = is.getTagCompound();
+                List<DimensionalCoord> dcl = DimensionalCoord.readAsListFromNBT(tag);
+                BlockPosHighlighter.highlightBlocks(
+                        mc.thePlayer,
+                        dcl,
+                        is.getDisplayName(),
+                        PlayerMessages.MachineHighlighted.getName(),
+                        PlayerMessages.MachineInInOtherDim.getName());
+                mc.thePlayer.closeScreen();
+            }
+        }
+        super.mouseClicked(xCoord, yCoord, btn);
     }
 
     @Override
