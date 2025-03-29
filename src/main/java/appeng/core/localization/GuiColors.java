@@ -154,7 +154,9 @@ public enum GuiColors {
     SearchHighlight(0xFFFFFF55),
     SearchGoToHighlight(0xFFFFAA00),
 
-    ProcessBarColor(0xff0fffaa);
+    ProcessBarStartColor(0XFFE60A00),
+    ProcessBarMiddleColor(0XFFE6E600),
+    ProcessBarEndColor(0XFF0AE600);
 
     private final String root;
     private final int color;
