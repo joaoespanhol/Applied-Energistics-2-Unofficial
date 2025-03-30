@@ -104,6 +104,8 @@ public interface ICraftingCPU extends IBaseMonitor<IAEItemStack> {
      */
     default void addOnCraftingUpdateListener(CraftUpdateListener onCraftingStatusUpdate) {}
 
+    default void resetFinalOutput() {}
+
     /**
      * get this cpu's crafting allow mode
      * 

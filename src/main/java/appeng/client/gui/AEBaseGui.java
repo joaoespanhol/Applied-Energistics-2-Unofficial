@@ -552,21 +552,37 @@ public abstract class AEBaseGui extends GuiContainer {
             return;
         }
 
-        if (slot instanceof SlotME) {
+        if (slot instanceof SlotME sme) {
             InventoryAction action = null;
             IAEItemStack stack = null;
 
             switch (mouseButton) {
                 case 0 -> { // pickup / set-down.
                     action = ctrlDown == 1 ? InventoryAction.SPLIT_OR_PLACE_SINGLE : InventoryAction.PICKUP_OR_SET_DOWN;
-                    stack = ((SlotME) slot).getAEStack();
-                    if (stack != null && action == InventoryAction.PICKUP_OR_SET_DOWN
+                    stack = sme.getAEStack();
+                    if (sme.isPin() && player.inventory.getItemStack() != null) {
+                        final PacketInventoryAction p = new PacketInventoryAction(
+                                InventoryAction.SET_PIN,
+                                sme.getPinIndex(),
+                                0);
+                        NetworkHandler.instance.sendToServer(p);
+                        return;
+
+                    } else if (stack != null && action == InventoryAction.PICKUP_OR_SET_DOWN
                             && stack.getStackSize() == 0
                             && player.inventory.getItemStack() == null) {
-                        action = InventoryAction.AUTO_CRAFT;
-                    }
+                                action = InventoryAction.AUTO_CRAFT;
+                            }
                 }
                 case 1 -> {
+                    if (sme.isPin() && ctrlDown == 1) {
+                        final PacketInventoryAction p = new PacketInventoryAction(
+                                InventoryAction.SET_PIN,
+                                sme.getPinIndex(),
+                                -1);
+                        NetworkHandler.instance.sendToServer(p);
+                        return;
+                    }
                     action = ctrlDown == 1 ? InventoryAction.PICKUP_SINGLE : InventoryAction.SHIFT_CLICK;
                     stack = ((SlotME) slot).getAEStack();
                 }

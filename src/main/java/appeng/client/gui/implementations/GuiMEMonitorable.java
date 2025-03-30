@@ -45,6 +45,7 @@ import appeng.client.gui.widgets.ISortSource;
 import appeng.client.gui.widgets.MEGuiTextField;
 import appeng.client.me.InternalSlotME;
 import appeng.client.me.ItemRepo;
+import appeng.client.me.PinSlotME;
 import appeng.container.implementations.ContainerMEMonitorable;
 import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.SlotCraftingMatrix;
@@ -220,10 +221,13 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         this.rows = calculateRowsCount();
 
         this.getMeSlots().clear();
-        for (int y = 0; y < this.rows; y++) {
+        for (int x = 0; x < this.perRow; x++) {
+            this.getMeSlots().add(new PinSlotME(this.repo, x, this.offsetX + x * 18, 18));
+        }
+        for (int y = 0; y < this.rows - 1; y++) {
             for (int x = 0; x < this.perRow; x++) {
                 this.getMeSlots()
-                        .add(new InternalSlotME(this.repo, x + y * this.perRow, this.offsetX + x * 18, 18 + y * 18));
+                        .add(new InternalSlotME(this.repo, x + y * this.perRow, this.offsetX + x * 18, 36 + y * 18));
             }
         }
 
@@ -653,5 +657,10 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
 
     private boolean hasShiftDown() {
         return Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+    }
+
+    public void setPin(IAEItemStack ais, int idx) {
+        repo.setPin(ais, idx);
+        this.repo.updateView();
     }
 }

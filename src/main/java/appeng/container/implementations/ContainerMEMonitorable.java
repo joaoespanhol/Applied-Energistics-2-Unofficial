@@ -24,6 +24,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.config.PowerMultiplier;
@@ -40,6 +43,8 @@ import appeng.api.implementations.tiles.IViewCellStorage;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
+import appeng.api.networking.crafting.ICraftingCPU;
+import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.energy.IEnergySource;
 import appeng.api.networking.security.BaseActionSource;
@@ -48,6 +53,7 @@ import appeng.api.parts.IPart;
 import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.IMEMonitorHandlerReceiver;
 import appeng.api.storage.ITerminalHost;
+import appeng.api.storage.ITerminalPins;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.api.util.IConfigManager;
@@ -58,10 +64,13 @@ import appeng.container.slot.SlotRestrictedInput;
 import appeng.container.slot.SlotRestrictedInput.PlacableItemType;
 import appeng.core.AELog;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketInventoryAction;
 import appeng.core.sync.packets.PacketMEInventoryUpdate;
 import appeng.core.sync.packets.PacketValueConfig;
+import appeng.helpers.InventoryAction;
 import appeng.helpers.WirelessTerminalGuiObject;
 import appeng.me.helpers.ChannelPowerSrc;
+import appeng.tile.inventory.AppEngInternalAEInventory;
 import appeng.util.ConfigManager;
 import appeng.util.IConfigManagerHost;
 import appeng.util.Platform;
@@ -279,6 +288,38 @@ public class ContainerMEMonitorable extends AEBaseContainer
     private void queueInventory(final ICrafting c) {
         if (Platform.isServer() && c instanceof EntityPlayer && this.monitor != null) {
             try {
+                if (host instanceof ITerminalPins itp) {
+                    AppEngInternalAEInventory api = itp.getPins();
+                    final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
+                    final ImmutableList<ICraftingCPU> cpuSet = cc.getCpus().asList();
+                    int j = 0;
+                    int jj = 0;
+                    for (int i = 0; i < api.getSizeInventory(); i++) {
+                        IAEItemStack ais = api.getAEStackInSlot(i);
+                        if (ais == null) {
+                            while (j < cpuSet.size()) {
+                                ICraftingCPU cpu = cpuSet.get(j);
+                                if (cpu.isBusy() && cpu.getFinalOutput() != null) {
+                                    ais = cpu.getFinalOutput();
+                                }
+                                j++;
+                            }
+                            if (ais == null) {
+                                while (jj < cpuSet.size()) {
+                                    ICraftingCPU cpu = cpuSet.get(jj);
+                                    if (!cpu.isBusy() && cpu.getFinalOutput() != null) {
+                                        ais = cpu.getFinalOutput();
+                                    }
+                                    jj++;
+                                }
+                            }
+                        }
+                        if (ais != null) {
+                            updatePin(ais, i);
+                        }
+                    }
+                }
+
                 PacketMEInventoryUpdate piu = new PacketMEInventoryUpdate();
                 final IItemList<IAEItemStack> monitorCache = this.monitor.getStorageList();
 
@@ -409,6 +450,48 @@ public class ContainerMEMonitorable extends AEBaseContainer
                     blanks = extracted.getItemStack();
                 }
                 slot.putStack(blanks);
+            }
+        }
+    }
+
+    public void setPin(ItemStack is, int idx) {
+        if (host instanceof ITerminalPins itp) {
+            AppEngInternalAEInventory aip = itp.getPins();
+
+            for (int i = 0; i < aip.getSizeInventory(); i++) {
+                if (aip.getAEStackInSlot(i) != null && aip.getAEStackInSlot(i).isSameType(is)) {
+                    return;
+                }
+            }
+
+            IAEItemStack oldStack = aip.getAEStackInSlot(idx);
+            aip.setInventorySlotContents(idx, is);
+            aip.markDirty();
+            updatePin(aip.getAEStackInSlot(idx), idx);
+
+            if (is == null) {
+                final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
+                final ImmutableSet<ICraftingCPU> cpuSet = cc.getCpus();
+                for (ICraftingCPU cpu : cpuSet.asList()) {
+                    if (!cpu.isBusy() && cpu.getFinalOutput() != null && cpu.getFinalOutput().isSameType(oldStack)) {
+                        cpu.resetFinalOutput();
+                    }
+                }
+            }
+        }
+    }
+
+    public void updatePin(IAEItemStack is, int idx) {
+        if (is != null) is.setStackSize(0);
+        for (final Object player : crafters) {
+            if (player instanceof EntityPlayerMP) {
+                try {
+                    NetworkHandler.instance.sendTo(
+                            new PacketInventoryAction(InventoryAction.SET_PIN, idx, is),
+                            (EntityPlayerMP) player);
+                } catch (IOException e) {
+                    AELog.debug(e);
+                }
             }
         }
     }
