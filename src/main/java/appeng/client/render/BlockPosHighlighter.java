@@ -24,7 +24,7 @@ public class BlockPosHighlighter {
     private static long expireHighlightTime;
     private static final int MIN_TIME = 3000;
     private static final int MAX_TIME = MIN_TIME * 10;
-    private static String name;
+    private static String name = "";
 
     public static void highlightBlocks(EntityPlayer player, List<DimensionalCoord> interfaces, String foundMsg,
             String wrongDimMsg) {
