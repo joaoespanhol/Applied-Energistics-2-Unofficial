@@ -171,7 +171,7 @@ public final class AppEng {
             this.startService("AE2 CSV Export", exportProcessThread);
         }
 
-        InvTweakSortingModule.init();
+        if (Platform.isClient()) InvTweakSortingModule.init();
 
         this.registration.initialize(event, this.recipeDirectory, this.customRecipeConfig);
         IntegrationRegistry.INSTANCE.init();
