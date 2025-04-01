@@ -19,6 +19,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Vec3;
 
 import appeng.api.AEApi;
+import appeng.api.config.PinsState;
 import appeng.api.config.Settings;
 import appeng.api.config.SortDir;
 import appeng.api.config.SortOrder;
@@ -68,6 +69,7 @@ public abstract class AbstractPartTerminal extends AbstractPartDisplay
         this.cm.registerSetting(Settings.VIEW_MODE, ViewItems.ALL);
         this.cm.registerSetting(Settings.SORT_DIRECTION, SortDir.ASCENDING);
         this.cm.registerSetting(Settings.TYPE_FILTER, TypeFilter.ALL);
+        this.cm.registerSetting(Settings.PINS_STATE, PinsState.DISABLED);
     }
 
     @Override

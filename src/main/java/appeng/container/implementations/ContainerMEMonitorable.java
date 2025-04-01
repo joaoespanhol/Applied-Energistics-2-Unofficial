@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 
 import appeng.api.AEApi;
 import appeng.api.config.Actionable;
+import appeng.api.config.PinsState;
 import appeng.api.config.PowerMultiplier;
 import appeng.api.config.SecurityPermissions;
 import appeng.api.config.Settings;
@@ -115,6 +116,10 @@ public class ContainerMEMonitorable extends AEBaseContainer
         this.clientCM.registerSetting(Settings.SORT_DIRECTION, SortDir.ASCENDING);
         this.clientCM.registerSetting(Settings.TYPE_FILTER, TypeFilter.ALL);
 
+        if (monitorable instanceof ITerminalPins) {
+            this.clientCM.registerSetting(Settings.PINS_STATE, PinsState.DISABLED);
+        }
+
         if (Platform.isServer()) {
             this.serverCM = monitorable.getConfigManager();
 
@@ -200,6 +205,10 @@ public class ContainerMEMonitorable extends AEBaseContainer
                         } catch (final IOException e) {
                             AELog.debug(e);
                         }
+                    }
+
+                    if (set == Settings.PINS_STATE) {
+                        updatePins();
                     }
                 }
             }
@@ -288,38 +297,6 @@ public class ContainerMEMonitorable extends AEBaseContainer
     private void queueInventory(final ICrafting c) {
         if (Platform.isServer() && c instanceof EntityPlayer && this.monitor != null) {
             try {
-                if (host instanceof ITerminalPins itp) {
-                    AppEngInternalAEInventory api = itp.getPins();
-                    final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
-                    final ImmutableList<ICraftingCPU> cpuSet = cc.getCpus().asList();
-                    int j = 0;
-                    int jj = 0;
-                    for (int i = 0; i < api.getSizeInventory(); i++) {
-                        IAEItemStack ais = api.getAEStackInSlot(i);
-                        if (ais == null) {
-                            while (j < cpuSet.size()) {
-                                ICraftingCPU cpu = cpuSet.get(j);
-                                if (cpu.isBusy() && cpu.getFinalOutput() != null) {
-                                    ais = cpu.getFinalOutput();
-                                }
-                                j++;
-                            }
-                            if (ais == null) {
-                                while (jj < cpuSet.size()) {
-                                    ICraftingCPU cpu = cpuSet.get(jj);
-                                    if (!cpu.isBusy() && cpu.getFinalOutput() != null) {
-                                        ais = cpu.getFinalOutput();
-                                    }
-                                    jj++;
-                                }
-                            }
-                        }
-                        if (ais != null) {
-                            updatePin(ais, i);
-                        }
-                    }
-                }
-
                 PacketMEInventoryUpdate piu = new PacketMEInventoryUpdate();
                 final IItemList<IAEItemStack> monitorCache = this.monitor.getStorageList();
 
@@ -450,6 +427,46 @@ public class ContainerMEMonitorable extends AEBaseContainer
                     blanks = extracted.getItemStack();
                 }
                 slot.putStack(blanks);
+            }
+        }
+    }
+
+    public void updatePins() {
+        if (host instanceof ITerminalPins itp) {
+            AppEngInternalAEInventory api = itp.getPins();
+            if (serverCM.getSetting(Settings.PINS_STATE) == PinsState.ACTIVE) {
+                final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
+                final ImmutableList<ICraftingCPU> cpuSet = cc.getCpus().asList();
+                int j = 0;
+                int jj = 0;
+                for (int i = 0; i < api.getSizeInventory(); i++) {
+                    IAEItemStack ais = api.getAEStackInSlot(i);
+                    if (ais == null) {
+                        while (j < cpuSet.size()) {
+                            ICraftingCPU cpu = cpuSet.get(j);
+                            if (cpu.isBusy() && cpu.getFinalOutput() != null) {
+                                ais = cpu.getFinalOutput();
+                            }
+                            j++;
+                        }
+                        if (ais == null) {
+                            while (jj < cpuSet.size()) {
+                                ICraftingCPU cpu = cpuSet.get(jj);
+                                if (!cpu.isBusy() && cpu.getFinalOutput() != null) {
+                                    ais = cpu.getFinalOutput();
+                                }
+                                jj++;
+                            }
+                        }
+                    }
+                    if (ais != null) {
+                        updatePin(ais, i);
+                    }
+                }
+            } else {
+                for (int i = 0; i < api.getSizeInventory(); i++) {
+                    updatePin(null, i);
+                }
             }
         }
     }

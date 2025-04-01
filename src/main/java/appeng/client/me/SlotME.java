@@ -87,4 +87,12 @@ public class SlotME extends Slot {
     public int getPinIndex() {
         return mySlot.offset;
     }
+
+    public int getPinIcon() {
+        return 5 * 16 + 14;
+    }
+
+    public float getOpacityOfIcon() {
+        return 0.4f;
+    }
 }

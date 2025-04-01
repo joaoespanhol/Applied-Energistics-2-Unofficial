@@ -98,7 +98,10 @@ public enum Settings {
 
     SUPER_WIRELESS_TOOL_HIDE_BOUNDED(EnumSet.of(YesNo.YES, YesNo.NO)),
 
-    NETWORK_VISUALISER(EnumSet.allOf(VisualisationModes.class));
+    NETWORK_VISUALISER(EnumSet.allOf(VisualisationModes.class)),
+
+    PINS_STATE(EnumSet.allOf(PinsState.class));
+
 
     private final EnumSet<? extends Enum<?>> values;
 
