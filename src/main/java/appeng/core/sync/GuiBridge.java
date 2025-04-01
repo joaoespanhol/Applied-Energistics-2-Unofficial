@@ -73,6 +73,7 @@ import appeng.container.implementations.ContainerNetworkStatus;
 import appeng.container.implementations.ContainerNetworkTool;
 import appeng.container.implementations.ContainerOptimizePatterns;
 import appeng.container.implementations.ContainerOreFilter;
+import appeng.container.implementations.ContainerPatternItemRenamer;
 import appeng.container.implementations.ContainerPatternMulti;
 import appeng.container.implementations.ContainerPatternTerm;
 import appeng.container.implementations.ContainerPatternTermEx;
@@ -229,7 +230,9 @@ public enum GuiBridge implements IGuiHandler {
 
     GUI_SUPER_WIRELESS_KIT(ContainerSuperWirelessKit.class, IGuiItemObject.class, GuiHostType.ITEM, null),
 
-    GUI_GROWER(ContainerGrower.class, TileGrower.class, GuiHostType.WORLD, null);
+    GUI_GROWER(ContainerGrower.class, TileGrower.class, GuiHostType.WORLD, null),
+
+ GUI_PATTERN_ITEM_RENAMER(ContainerPatternItemRenamer.class, ITerminalHost.class, GuiHostType.ITEM_OR_WORLD, null);
 
     private final Class tileClass;
     private final Class containerClass;
