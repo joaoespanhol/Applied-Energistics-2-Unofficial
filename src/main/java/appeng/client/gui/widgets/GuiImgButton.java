@@ -871,7 +871,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.SuperWirelessToolHideBoundedNoName,
                     ButtonToolTips.SuperWirelessToolHideBoundedNoDesc);
 
- 			this.registerApp(
+            this.registerApp(
                     16 * 15 + 14,
                     Settings.PINS_STATE,
                     PinsState.ACTIVE,
@@ -884,7 +884,6 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     PinsState.DISABLED,
                     ButtonToolTips.PinsSection,
                     ButtonToolTips.PinsSectionDisabled);
-
 
         }
     }

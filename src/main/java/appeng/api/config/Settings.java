@@ -102,7 +102,6 @@ public enum Settings {
 
     PINS_STATE(EnumSet.allOf(PinsState.class));
 
-
     private final EnumSet<? extends Enum<?>> values;
 
     Settings(@Nonnull final EnumSet<? extends Enum<?>> possibleOptions) {
