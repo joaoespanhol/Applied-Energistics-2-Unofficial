@@ -167,11 +167,11 @@ public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
         for (int i = 0; i < tagList.tagCount(); i++) {
             NBTTagCompound tag = tagList.getCompoundTagAt(i);
             ItemStack uis = ItemStack.loadItemStackFromNBT(tag);
-            if (uis == null) continue;
+            if (uis == null || up.getStackInSlot(i) != null) continue;
             outLoop: for (int j = 0; j < player.inventory.getSizeInventory(); j++) {
                 ItemStack pi = player.inventory.getStackInSlot(j);
                 if (pi != null) {
-                    if (pi.isItemEqual(uis) && up.getStackInSlot(i) == null) {
+                    if (pi.isItemEqual(uis)) {
                         ItemStack temp = pi.copy();
                         temp.stackSize = 1;
                         up.setInventorySlotContents(i, temp);
@@ -181,7 +181,7 @@ public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
                         NetworkToolViewer ntv = new NetworkToolViewer(pi, null, 3);
                         for (int k = 0; k < ntv.getSizeInventory(); k++) {
                             ItemStack upi = ntv.getStackInSlot(k);
-                            if (upi != null && upi.isItemEqual(uis) && up.getStackInSlot(i) == null) {
+                            if (upi != null && upi.isItemEqual(uis)) {
                                 ItemStack temp = upi.copy();
                                 temp.stackSize = 1;
                                 up.setInventorySlotContents(i, temp);
@@ -194,7 +194,7 @@ public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
                         NetworkToolViewer ntv = new NetworkToolViewer(pi, null, 5);
                         for (int k = 0; k < ntv.getSizeInventory(); k++) {
                             ItemStack upi = ntv.getStackInSlot(k);
-                            if (upi != null && upi.isItemEqual(uis) && up.getStackInSlot(i) == null) {
+                            if (upi != null && upi.isItemEqual(uis)) {
                                 ItemStack temp = upi.copy();
                                 temp.stackSize = 1;
                                 up.setInventorySlotContents(i, temp);
