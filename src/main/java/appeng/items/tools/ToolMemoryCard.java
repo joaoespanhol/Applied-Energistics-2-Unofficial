@@ -16,6 +16,7 @@ import java.util.List;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
@@ -27,6 +28,8 @@ import appeng.core.localization.ButtonToolTips;
 import appeng.core.localization.GuiText;
 import appeng.core.localization.PlayerMessages;
 import appeng.items.AEBaseItem;
+import appeng.items.contents.NetworkToolViewer;
+import appeng.parts.automation.UpgradeInventory;
 import appeng.util.Platform;
 
 public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
@@ -142,5 +145,67 @@ public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
     public boolean doesSneakBypassUse(final World world, final int x, final int y, final int z,
             final EntityPlayer player) {
         return true;
+    }
+
+    public static void setUpgradesInfo(NBTTagCompound data, UpgradeInventory ui) {
+        if (ui != null) {
+            NBTTagList tagList = new NBTTagList();
+            for (int i = 0; i < ui.getSizeInventory(); i++) {
+                ItemStack uis = ui.getStackInSlot(i);
+                if (uis != null) {
+                    NBTTagCompound newIs = new NBTTagCompound();
+                    uis.writeToNBT(newIs);
+                    tagList.appendTag(newIs);
+                }
+            }
+            if (tagList.tagCount() > 0) data.setTag("upgradesList", tagList);
+        }
+    }
+
+    public static void insertUpgrades(final NBTTagCompound data, EntityPlayer player, UpgradeInventory up) {
+        NBTTagList tagList = data.getTagList("upgradesList", 10);
+        for (int i = 0; i < tagList.tagCount(); i++) {
+            NBTTagCompound tag = tagList.getCompoundTagAt(i);
+            ItemStack uis = ItemStack.loadItemStackFromNBT(tag);
+            if (uis == null) continue;
+            outLoop: for (int j = 0; j < player.inventory.getSizeInventory(); j++) {
+                ItemStack pi = player.inventory.getStackInSlot(j);
+                if (pi != null) {
+                    if (pi.isItemEqual(uis) && up.getStackInSlot(i) == null) {
+                        ItemStack temp = pi.copy();
+                        temp.stackSize = 1;
+                        up.setInventorySlotContents(i, temp);
+                        player.inventory.decrStackSize(j, 1);
+                        break;
+                    } else if (pi.getItem() instanceof ToolNetworkTool) {
+                        NetworkToolViewer ntv = new NetworkToolViewer(pi, null, 3);
+                        for (int k = 0; k < ntv.getSizeInventory(); k++) {
+                            ItemStack upi = ntv.getStackInSlot(k);
+                            if (upi != null && upi.isItemEqual(uis) && up.getStackInSlot(i) == null) {
+                                ItemStack temp = upi.copy();
+                                temp.stackSize = 1;
+                                up.setInventorySlotContents(i, temp);
+                                ntv.decrStackSize(k, 1);
+                                ntv.markDirty();
+                                break outLoop;
+                            }
+                        }
+                    } else if (pi.getItem() instanceof ToolAdvancedNetworkTool) {
+                        NetworkToolViewer ntv = new NetworkToolViewer(pi, null, 5);
+                        for (int k = 0; k < ntv.getSizeInventory(); k++) {
+                            ItemStack upi = ntv.getStackInSlot(k);
+                            if (upi != null && upi.isItemEqual(uis) && up.getStackInSlot(i) == null) {
+                                ItemStack temp = upi.copy();
+                                temp.stackSize = 1;
+                                up.setInventorySlotContents(i, temp);
+                                ntv.decrStackSize(k, 1);
+                                ntv.markDirty();
+                                break outLoop;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
