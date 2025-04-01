@@ -24,8 +24,8 @@ import appeng.parts.reporting.PartPatternTerminalEx;
 
 public class GuiPatternItemRenamer extends AEBaseGui implements IDropToFillTextField {
 
-    private MEGuiTextField textField;
-    private String oldName;
+    private final MEGuiTextField textField;
+    private final String oldName;
     private final int valueIndex;
     private GuiBridge originalGui;
 
@@ -40,45 +40,47 @@ public class GuiPatternItemRenamer extends AEBaseGui implements IDropToFillTextF
             valueIndex = -1;
             oldName = "";
         }
-        this.xSize = 256;
+        xSize = 256;
 
-        this.textField = new MEGuiTextField(231, 12);
+        textField = new MEGuiTextField(231, 12);
     }
 
     @Override
     public void initGui() {
         super.initGui();
 
-        this.textField.x = this.guiLeft + 12;
-        this.textField.y = this.guiTop + 35;
-        this.textField.setFocused(true);
-        this.textField.setText(oldName);
-        setOriginGUI(((AEBaseContainer) this.inventorySlots).getTarget());
+        textField.x = guiLeft + 12;
+        textField.y = guiTop + 35;
+        textField.setFocused(true);
+        textField.setText(oldName);
+        textField.setCursorPositionEnd();
+        textField.setSelectionPos(0);
+        setOriginGUI(((AEBaseContainer) inventorySlots).getTarget());
     }
 
     @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
-        this.fontRendererObj.drawString(GuiText.Renamer.getLocal(), 12, 8, GuiColors.RenamerTitle.getColor());
+        fontRendererObj.drawString(GuiText.Renamer.getLocal(), 12, 8, GuiColors.RenamerTitle.getColor());
     }
 
     @Override
     public void drawBG(int offsetX, int offsetY, int mouseX, int mouseY) {
-        this.bindTexture("guis/renamer.png");
-        this.drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
-        this.textField.drawTextBox();
+        bindTexture("guis/renamer.png");
+        drawTexturedModalRect(offsetX, offsetY, 0, 0, this.xSize, this.ySize);
+        textField.drawTextBox();
     }
 
     @Override
     protected void mouseClicked(final int xCoord, final int yCoord, final int btn) {
-        this.textField.mouseClicked(xCoord, yCoord, btn);
+        textField.mouseClicked(xCoord, yCoord, btn);
         super.mouseClicked(xCoord, yCoord, btn);
     }
 
     protected void setOriginGUI(Object target) {
         if (target instanceof PartPatternTerminal) {
-            this.originalGui = GuiBridge.GUI_PATTERN_TERMINAL;
+            originalGui = GuiBridge.GUI_PATTERN_TERMINAL;
         } else if (target instanceof PartPatternTerminalEx) {
-            this.originalGui = GuiBridge.GUI_PATTERN_TERMINAL_EX;
+            originalGui = GuiBridge.GUI_PATTERN_TERMINAL_EX;
         }
     }
 
@@ -87,7 +89,7 @@ public class GuiPatternItemRenamer extends AEBaseGui implements IDropToFillTextF
         if (key == Keyboard.KEY_RETURN || key == Keyboard.KEY_NUMPADENTER) {
             NetworkHandler.instance
                     .sendToServer(new PacketPatternItemRenamer(originalGui.ordinal(), textField.getText(), valueIndex));
-        } else if (!this.textField.textboxKeyTyped(character, key)) {
+        } else if (!textField.textboxKeyTyped(character, key)) {
             super.keyTyped(character, key);
         }
     }

@@ -39,10 +39,10 @@ public class PacketPatternItemRenamer extends AppEngPacket {
         } catch (IOException ignored) {}
     }
 
-    public PacketPatternItemRenamer(int originalGui, String name, int valueIndex) {
+    public PacketPatternItemRenamer(int originalGui, String newName, int newValueIndex) {
         originGui = GuiBridge.values()[originalGui];
-        this.name = name;
-        this.valueIndex = valueIndex;
+        name = newName;
+        valueIndex = newValueIndex;
 
         final ByteBuf data = Unpooled.buffer();
 
@@ -59,7 +59,7 @@ public class PacketPatternItemRenamer extends AppEngPacket {
 
         data.writeBytes(bos.toByteArray());
 
-        this.configureWrite(data);
+        configureWrite(data);
     }
 
     @Override

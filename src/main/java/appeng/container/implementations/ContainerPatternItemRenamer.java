@@ -21,12 +21,12 @@ public class ContainerPatternItemRenamer extends AEBaseContainer {
     }
 
     public IGrid getGrid() {
-        final IActionHost h = ((IActionHost) this.getTarget());
+        final IActionHost h = ((IActionHost) getTarget());
         return h.getActionableNode().getGrid();
     }
 
     public World getWorld() {
-        return this.getPlayerInv().player.worldObj;
+        return getPlayerInv().player.worldObj;
     }
 
     public Slot getPatternValue() {
