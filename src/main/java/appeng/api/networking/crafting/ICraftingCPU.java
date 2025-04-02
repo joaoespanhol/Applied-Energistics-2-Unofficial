@@ -114,4 +114,6 @@ public interface ICraftingCPU extends IBaseMonitor<IAEItemStack> {
     }
 
     public default void changeCraftingAllowMode(CraftingAllow mode) {}
+
+    default void resetFinalOutput() {}
 }
