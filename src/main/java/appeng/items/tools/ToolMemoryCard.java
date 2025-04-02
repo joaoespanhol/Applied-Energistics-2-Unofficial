@@ -10,8 +10,11 @@
 
 package appeng.items.tools;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -29,6 +32,7 @@ import appeng.core.localization.GuiText;
 import appeng.core.localization.PlayerMessages;
 import appeng.items.AEBaseItem;
 import appeng.items.contents.NetworkToolViewer;
+import appeng.items.materials.ItemMultiMaterial;
 import appeng.parts.automation.UpgradeInventory;
 import appeng.util.Platform;
 
@@ -152,11 +156,11 @@ public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
             NBTTagList tagList = new NBTTagList();
             for (int i = 0; i < ui.getSizeInventory(); i++) {
                 ItemStack uis = ui.getStackInSlot(i);
+                NBTTagCompound newIs = new NBTTagCompound();
                 if (uis != null) {
-                    NBTTagCompound newIs = new NBTTagCompound();
                     uis.writeToNBT(newIs);
-                    tagList.appendTag(newIs);
                 }
+                tagList.appendTag(newIs);
             }
             if (tagList.tagCount() > 0) data.setTag("upgradesList", tagList);
         }
@@ -164,46 +168,62 @@ public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
 
     public static void insertUpgrades(final NBTTagCompound data, EntityPlayer player, UpgradeInventory up) {
         NBTTagList tagList = data.getTagList("upgradesList", 10);
+        List<ItemStack> memoryList = new ArrayList<>(Collections.nCopies(tagList.tagCount(), null)); // Preserve order
+
         for (int i = 0; i < tagList.tagCount(); i++) {
-            NBTTagCompound tag = tagList.getCompoundTagAt(i);
-            ItemStack uis = ItemStack.loadItemStackFromNBT(tag);
-            if (uis == null || up.getStackInSlot(i) != null) continue;
-            outLoop: for (int j = 0; j < player.inventory.getSizeInventory(); j++) {
+            if (up.getStackInSlot(i) == null) {
+                ItemStack item = ItemStack.loadItemStackFromNBT(tagList.getCompoundTagAt(i));
+                memoryList.set(i, item);
+            }
+        }
+
+        if (!memoryList.stream().allMatch(Objects::isNull)) {
+            int resolved = 0;
+            for (int j = 0; j < player.inventory.getSizeInventory(); j++) {
                 ItemStack pi = player.inventory.getStackInSlot(j);
                 if (pi != null) {
-                    if (pi.isItemEqual(uis)) {
-                        ItemStack temp = pi.copy();
-                        temp.stackSize = 1;
-                        up.setInventorySlotContents(i, temp);
-                        player.inventory.decrStackSize(j, 1);
-                        break;
-                    } else if (pi.getItem() instanceof ToolNetworkTool) {
-                        NetworkToolViewer ntv = new NetworkToolViewer(pi, null, 3);
-                        for (int k = 0; k < ntv.getSizeInventory(); k++) {
-                            ItemStack upi = ntv.getStackInSlot(k);
-                            if (upi != null && upi.isItemEqual(uis)) {
-                                ItemStack temp = upi.copy();
-                                temp.stackSize = 1;
-                                up.setInventorySlotContents(i, temp);
-                                ntv.decrStackSize(k, 1);
-                                ntv.markDirty();
-                                break outLoop;
+                    if (pi.getItem() instanceof ItemMultiMaterial) {
+                        for (ItemStack is : memoryList) {
+                            if (is != null && is.stackSize > 0 && is.isItemEqual(pi)) {
+                                is.stackSize = 0;
+                                player.inventory.decrStackSize(j, 1);
+                                player.onUpdate();
+                                resolved++;
                             }
                         }
-                    } else if (pi.getItem() instanceof ToolAdvancedNetworkTool) {
-                        NetworkToolViewer ntv = new NetworkToolViewer(pi, null, 5);
-                        for (int k = 0; k < ntv.getSizeInventory(); k++) {
-                            ItemStack upi = ntv.getStackInSlot(k);
-                            if (upi != null && upi.isItemEqual(uis)) {
-                                ItemStack temp = upi.copy();
-                                temp.stackSize = 1;
-                                up.setInventorySlotContents(i, temp);
-                                ntv.decrStackSize(k, 1);
-                                ntv.markDirty();
-                                break outLoop;
+
+                        if (resolved == memoryList.size()) break;
+                    } else {
+                        int size = (pi.getItem() instanceof ToolNetworkTool) ? 3
+                                : (pi.getItem() instanceof ToolAdvancedNetworkTool) ? 5 : -1;
+
+                        if (size != -1) {
+                            NetworkToolViewer ntv = new NetworkToolViewer(pi, null, size);
+                            for (int k = 0; k < ntv.getSizeInventory(); k++) {
+                                ItemStack isv = ntv.getStackInSlot(k);
+                                if (isv != null) {
+                                    for (ItemStack is : memoryList) {
+                                        if (is != null && is.stackSize > 0 && is.isItemEqual(isv)) {
+                                            is.stackSize = 0;
+                                            resolved++;
+                                            ntv.decrStackSize(k, 1);
+                                            ntv.markDirty();
+                                        }
+                                    }
+
+                                    if (resolved == memoryList.size()) break;
+                                }
                             }
                         }
                     }
+                }
+            }
+
+            for (int i = 0; i < memoryList.size(); i++) {
+                ItemStack is = memoryList.get(i);
+                if (is != null && is.stackSize == 0) {
+                    is.stackSize = 1;
+                    up.setInventorySlotContents(i, is);
                 }
             }
         }
