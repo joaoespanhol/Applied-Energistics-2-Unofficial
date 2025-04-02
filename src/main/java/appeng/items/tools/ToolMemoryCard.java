@@ -187,6 +187,7 @@ public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
                             if (is != null && is.stackSize > 0 && is.isItemEqual(pi)) {
                                 is.stackSize = 0;
                                 player.inventory.decrStackSize(j, 1);
+                                player.onUpdate();
                                 resolved++;
                             }
                         }
