@@ -219,10 +219,6 @@ public class MEGuiTextField implements ITooltip {
         field.setMaxStringLength(size);
     }
 
-    public void setSelectionPos(int i) {
-        field.setSelectionPos(i);
-    }
-
     public boolean isFocused() {
         return field.isFocused();
     }
