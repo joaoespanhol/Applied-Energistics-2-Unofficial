@@ -25,6 +25,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.ForgeEventFactory;
 
 import appeng.api.implementations.items.IMemoryCard;
+import appeng.api.implementations.items.INetworkToolItem;
 import appeng.api.implementations.items.MemoryCardMessages;
 import appeng.core.features.AEFeature;
 import appeng.core.localization.ButtonToolTips;
@@ -193,26 +194,21 @@ public class ToolMemoryCard extends AEBaseItem implements IMemoryCard {
                         }
 
                         if (resolved == memoryList.size()) break;
-                    } else {
-                        int size = (pi.getItem() instanceof ToolNetworkTool) ? 3
-                                : (pi.getItem() instanceof ToolAdvancedNetworkTool) ? 5 : -1;
-
-                        if (size != -1) {
-                            NetworkToolViewer ntv = new NetworkToolViewer(pi, null, size);
-                            for (int k = 0; k < ntv.getSizeInventory(); k++) {
-                                ItemStack isv = ntv.getStackInSlot(k);
-                                if (isv != null) {
-                                    for (ItemStack is : memoryList) {
-                                        if (is != null && is.stackSize > 0 && is.isItemEqual(isv)) {
-                                            is.stackSize = 0;
-                                            resolved++;
-                                            ntv.decrStackSize(k, 1);
-                                            ntv.markDirty();
-                                        }
+                    } else if (pi.getItem() instanceof INetworkToolItem inti) {
+                        NetworkToolViewer ntv = new NetworkToolViewer(pi, null, inti.getInventorySize());
+                        for (int k = 0; k < ntv.getSizeInventory(); k++) {
+                            ItemStack isv = ntv.getStackInSlot(k);
+                            if (isv != null) {
+                                for (ItemStack is : memoryList) {
+                                    if (is != null && is.stackSize > 0 && is.isItemEqual(isv)) {
+                                        is.stackSize = 0;
+                                        resolved++;
+                                        ntv.decrStackSize(k, 1);
+                                        ntv.markDirty();
                                     }
-
-                                    if (resolved == memoryList.size()) break;
                                 }
+
+                                if (resolved == memoryList.size()) break;
                             }
                         }
                     }
