@@ -52,6 +52,7 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
 
     // rather simple client side caching.
     private static final Map<ItemStack, ItemStack> SIMPLE_CACHE = new WeakHashMap<>();
+    private static Item FLUID_DROP_ITEM;
 
     public ItemEncodedPattern() {
         this.setFeature(EnumSet.of(AEFeature.Patterns));
@@ -213,20 +214,21 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
         final ItemStack unknownItem = new ItemStack(Blocks.fire);
         boolean recipeIsBroken = false;
         boolean first = true;
-        final Item FLUID_DROP_ITEM = GameRegistry.findItem("ae2fc", "fluid_drop");
         List<IAEItemStack> itemsList = Arrays.asList(items);
         List<IAEItemStack> sortedItems = itemsList.stream()
                 .sorted(Comparator.comparingLong(IAEItemStack::getStackSize).reversed()).collect(Collectors.toList());
         boolean isFluid = false;
         EnumChatFormatting oldColor = color;
+        final Item fluidDropItem = getFluidDropItem();
 
         for (final IAEItemStack item : sortedItems) {
+            Long itemCount = item.getStackSize();
 
             if (!recipeIsBroken && item.equals(unknownItem)) {
                 recipeIsBroken = true;
             }
 
-            if (item.getItemStack().getItem() == FLUID_DROP_ITEM) {
+            if (item.getItemStack().getItem() == fluidDropItem) {
                 label = EnumChatFormatting.GOLD + label;
                 color = EnumChatFormatting.GOLD;
                 isFluid = true;
@@ -240,7 +242,7 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
                 lines.add(label);
                 lines.add(
                         "   " + EnumChatFormatting.WHITE
-                                + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
+                                + NumberFormat.getNumberInstance(Locale.US).format(itemCount)
                                 + EnumChatFormatting.RESET
                                 + (isFluid ? EnumChatFormatting.WHITE + "L" : " ")
                                 + EnumChatFormatting.RESET
@@ -251,7 +253,7 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
             if (!first) {
                 lines.add(
                         "   " + EnumChatFormatting.WHITE
-                                + NumberFormat.getNumberInstance(Locale.US).format(item.getStackSize())
+                                + NumberFormat.getNumberInstance(Locale.US).format(itemCount)
                                 + EnumChatFormatting.RESET
                                 + (isFluid ? EnumChatFormatting.WHITE + "L" : " ")
                                 + EnumChatFormatting.RESET
@@ -264,5 +266,12 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
         }
 
         return recipeIsBroken;
+    }
+
+    private static Item getFluidDropItem() {
+        if (FLUID_DROP_ITEM == null) {
+            FLUID_DROP_ITEM = GameRegistry.findItem("ae2fc", "fluid_drop");
+        }
+        return FLUID_DROP_ITEM;
     }
 }
