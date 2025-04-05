@@ -165,9 +165,9 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
                 lines.add(holdShift);
             }
 
-        lines.add(substitutionLabel + canSubstitute);
-        lines.add(beSubstitutionLabel + canBeSubstitute);
-        lines.add(new Date(encodedValue.getLong("lastUsed")).toString()); // pr#692
+            lines.add(substitutionLabel + canSubstitute);
+            lines.add(beSubstitutionLabel + canBeSubstitute);
+            lines.add(new Date(encodedValue.getLong("lastUsed")).toString()); // pr#692
 
             if (!StringUtils.isNullOrEmpty(author)) {
                 lines.add(
