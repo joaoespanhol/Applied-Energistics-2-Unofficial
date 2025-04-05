@@ -14,6 +14,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -163,8 +164,9 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
                 lines.add(holdShift);
             }
 
-            lines.add(substitutionLabel + canSubstitute);
-            lines.add(beSubstitutionLabel + canBeSubstitute);
+        lines.add(substitutionLabel + canSubstitute);
+        lines.add(beSubstitutionLabel + canBeSubstitute);
+        lines.add(new Date(encodedValue.getLong("lastUsed")).toString()); // pr#692
 
             if (!StringUtils.isNullOrEmpty(author)) {
                 lines.add(
