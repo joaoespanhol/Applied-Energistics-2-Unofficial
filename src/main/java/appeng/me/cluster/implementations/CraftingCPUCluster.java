@@ -75,6 +75,7 @@ import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.crafting.ICraftingJob;
 import appeng.api.networking.crafting.ICraftingLink;
 import appeng.api.networking.crafting.ICraftingMedium;
+import appeng.api.networking.crafting.ICraftingMedium.BlockingMode;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.crafting.ICraftingRequester;
@@ -724,7 +725,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     }
 
     private void executeCrafting(final IEnergyGrid eg, final CraftingGridCache cc) {
-        final Iterator<Entry<ICraftingPatternDetails, TaskProgress>> craftingTaskIterator = this.workableTasks.entrySet().iterator();
+        final Iterator<Entry<ICraftingPatternDetails, TaskProgress>> craftingTaskIterator = this.workableTasks
+                .entrySet().iterator();
 
         int executedTasks = 0;
         while (craftingTaskIterator.hasNext()) {
@@ -764,8 +766,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         }
                     }
                     // upgraded interface uses more power
-                    if (medium instanceof DualityInterface)
-                        sum *= Math.pow(4.0, ((DualityInterface) medium).getInstalledUpgrades(Upgrades.PATTERN_CAPACITY));
+                    if (medium instanceof DualityInterface) sum *= Math
+                            .pow(4.0, ((DualityInterface) medium).getInstalledUpgrades(Upgrades.PATTERN_CAPACITY));
 
                     // check if there is enough power
                     if (eg.extractAEPower(sum, Actionable.SIMULATE, PowerMultiplier.CONFIG) < sum - 0.01) continue;
@@ -873,6 +875,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         return;
                     }
                 }
+                // Smart blocking is fine sending the same recipe again.
+                if (medium.getBlockingMode() == BlockingMode.BLOCKING) break;
             }
 
             if (!pushedPattern) {
