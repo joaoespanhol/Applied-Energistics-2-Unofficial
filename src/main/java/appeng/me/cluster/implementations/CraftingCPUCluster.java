@@ -724,33 +724,33 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     }
 
     private void executeCrafting(final IEnergyGrid eg, final CraftingGridCache cc) {
-        final Iterator<Entry<ICraftingPatternDetails, TaskProgress>> i = this.workableTasks.entrySet().iterator();
+        final Iterator<Entry<ICraftingPatternDetails, TaskProgress>> craftingTaskIterator = this.workableTasks.entrySet().iterator();
 
         int executedTasks = 0;
-        while (i.hasNext()) {
-            final Entry<ICraftingPatternDetails, TaskProgress> e = i.next();
+        while (craftingTaskIterator.hasNext()) {
+            final Entry<ICraftingPatternDetails, TaskProgress> craftingEntry = craftingTaskIterator.next();
 
-            if (e.getValue().value <= 0) {
-                this.tasks.remove(e.getKey());
-                i.remove();
+            if (craftingEntry.getValue().value <= 0) {
+                this.tasks.remove(craftingEntry.getKey());
+                craftingTaskIterator.remove();
                 continue;
             }
 
-            final ICraftingPatternDetails details = e.getKey();
+            final ICraftingPatternDetails details = craftingEntry.getKey();
             if (!this.canCraft(details, details.getCondensedInputs())) {
-                i.remove(); // No need to revisit this task on next executeCrafting this tick
+                craftingTaskIterator.remove(); // No need to revisit this task on next executeCrafting this tick
                 continue;
             }
 
             InventoryCrafting ic = null;
             boolean pushedPattern = false;
-            for (final ICraftingMedium m : cc.getMediums(e.getKey())) {
-                if (e.getValue().value <= 0 || knownBusyMediums.contains(m)) {
+            for (final ICraftingMedium medium : cc.getMediums(craftingEntry.getKey())) {
+                if (craftingEntry.getValue().value <= 0 || knownBusyMediums.contains(medium)) {
                     continue;
                 }
 
-                if (m.isBusy()) {
-                    knownBusyMediums.add(m);
+                if (medium.isBusy()) {
+                    knownBusyMediums.add(medium);
                     continue;
                 }
 
@@ -764,8 +764,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         }
                     }
                     // upgraded interface uses more power
-                    if (m instanceof DualityInterface)
-                        sum *= Math.pow(4.0, ((DualityInterface) m).getInstalledUpgrades(Upgrades.PATTERN_CAPACITY));
+                    if (medium instanceof DualityInterface)
+                        sum *= Math.pow(4.0, ((DualityInterface) medium).getInstalledUpgrades(Upgrades.PATTERN_CAPACITY));
 
                     // check if there is enough power
                     if (eg.extractAEPower(sum, Actionable.SIMULATE, PowerMultiplier.CONFIG) < sum - 0.01) continue;
@@ -815,12 +815,12 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
                 }
 
-                if (m.pushPattern(details, ic)) {
+                if (medium.pushPattern(details, ic)) {
                     eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG);
                     this.somethingChanged = true;
                     this.remainingOperations--;
                     pushedPattern = true;
-                    this.isFakeCrafting = (m instanceof DualityInterface di && di.isFakeCraftingMode());
+                    this.isFakeCrafting = (medium instanceof DualityInterface di && di.isFakeCraftingMode());
 
                     for (final IAEItemStack out : details.getCondensedOutputs()) {
                         this.postChange(out, this.machineSrc);
@@ -828,8 +828,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         this.postCraftingStatusChange(out.copy());
                         providers.computeIfAbsent(out, k -> new ArrayList<>());
                         List<DimensionalCoord> list = providers.get(out);
-                        if (m instanceof ICraftingProvider) {
-                            TileEntity tile = this.getTile(m);
+                        if (medium instanceof ICraftingProvider) {
+                            TileEntity tile = this.getTile(medium);
                             if (tile == null) continue;
                             DimensionalCoord tileDimensionalCoord = new DimensionalCoord(tile);
                             boolean isAdded = false;
@@ -864,9 +864,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     ic = null; // hand off complete!
                     this.markDirty();
 
-                    e.getValue().value--;
-                    if (e.getValue().value <= 0) {
-                        continue;
+                    craftingEntry.getValue().value--;
+                    if (craftingEntry.getValue().value <= 0) {
+                        break;
                     }
 
                     if (this.remainingOperations == 0) {
@@ -877,7 +877,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
             if (!pushedPattern) {
                 // No need to revisit this task on next executeCrafting this tick
-                i.remove();
+                craftingTaskIterator.remove();
             } else {
                 executedTasks += 1;
             }
