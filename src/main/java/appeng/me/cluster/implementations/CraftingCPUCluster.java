@@ -815,7 +815,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
                 }
 
-                if (medium.pushPattern(details, ic)) {
+                while (medium.pushPattern(details, ic)) {
                     eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG);
                     this.somethingChanged = true;
                     this.remainingOperations--;
