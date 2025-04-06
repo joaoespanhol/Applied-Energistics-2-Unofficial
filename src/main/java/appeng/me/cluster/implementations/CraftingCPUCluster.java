@@ -874,9 +874,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     if (this.remainingOperations == 0) {
                         return;
                     }
+                    // Smart blocking is fine sending the same recipe again.
+                    if (medium.getBlockingMode() == BlockingMode.BLOCKING) break;
                 }
-                // Smart blocking is fine sending the same recipe again.
-                if (medium.getBlockingMode() == BlockingMode.BLOCKING) break;
             }
 
             if (!pushedPattern) {
