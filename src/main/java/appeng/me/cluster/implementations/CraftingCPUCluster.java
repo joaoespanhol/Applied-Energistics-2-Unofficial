@@ -817,6 +817,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
                 }
 
+
                 while (medium.pushPattern(details, ic)) {
                     eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG);
                     this.somethingChanged = true;
@@ -876,6 +877,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
                     // Smart blocking is fine sending the same recipe again.
                     if (medium.getBlockingMode() == BlockingMode.BLOCKING) break;
+
+                    if (!this.canCraft(details, details.getCondensedInputs())) break;
                 }
             }
 
