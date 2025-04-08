@@ -743,8 +743,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 craftingTaskIterator.remove(); // No need to revisit this task on next executeCrafting this tick
                 continue;
             }
-            boolean pushedPattern = false;
 
+            boolean pushedPattern = false;
             boolean didPatternCraft;
             do {
                 InventoryCrafting craftingInventory = null;
