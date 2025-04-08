@@ -743,149 +743,164 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 craftingTaskIterator.remove(); // No need to revisit this task on next executeCrafting this tick
                 continue;
             }
-
-            InventoryCrafting craftingInventory = null;
             boolean pushedPattern = false;
-            for (final ICraftingMedium medium : cc.getMediums(craftingEntry.getKey())) {
-                if (craftingEntry.getValue().value <= 0 || knownBusyMediums.contains(medium)) {
-                    continue;
-                }
 
-                if (medium.isBusy()) {
-                    knownBusyMediums.add(medium);
-                    continue;
-                }
-
-                // Find a valid craftingInventory for this craft.
-                double sum = 0;
-                if (craftingInventory == null) {
-                    final IAEItemStack[] input = details.getInputs();
-
-                    for (final IAEItemStack anInput : input) {
-                        if (anInput != null) {
-                            sum += anInput.getStackSize();
-                        }
+            boolean didPatternCraft;
+            do {
+                InventoryCrafting craftingInventory = null;
+                didPatternCraft = false;
+                for (final ICraftingMedium medium : cc.getMediums(craftingEntry.getKey())) {
+                    if (craftingEntry.getValue().value <= 0 || knownBusyMediums.contains(medium)) {
+                        continue;
                     }
-                    // upgraded interface uses more power
-                    if (medium instanceof DualityInterface) sum *= Math
-                            .pow(4.0, ((DualityInterface) medium).getInstalledUpgrades(Upgrades.PATTERN_CAPACITY));
 
-                    // check if there is enough power
-                    if (eg.extractAEPower(sum, Actionable.SIMULATE, PowerMultiplier.CONFIG) < sum - 0.01) continue;
+                    if (medium.isBusy()) {
+                        knownBusyMediums.add(medium);
+                        continue;
+                    }
 
-                    craftingInventory = details.isCraftable() ? new InventoryCrafting(new ContainerNull(), 3, 3)
-                            : new InventoryCrafting(new ContainerNull(), details.getInputs().length, 1);
+                    // Find a valid craftingInventory for this craft.
+                    double sum = 0;
+                    if (craftingInventory == null) {
+                        final IAEItemStack[] input = details.getInputs();
 
-                    // Check if all items can be used for crafting.
-                    boolean found = false;
-                    for (int x = 0; x < input.length; x++) {
-                        if (input[x] != null) {
-                            found = false;
-                            for (IAEItemStack ias : getExtractItems(input[x], details)) {
-                                if (details.isCraftable()
-                                        && !details.isValidItemForSlot(x, ias.getItemStack(), this.getWorld())) {
-                                    continue;
+                        for (final IAEItemStack anInput : input) {
+                            if (anInput != null) {
+                                sum += anInput.getStackSize();
+                            }
+                        }
+                        // upgraded interface uses more power
+                        if (medium instanceof DualityInterface) sum *= Math
+                                .pow(4.0, ((DualityInterface) medium).getInstalledUpgrades(Upgrades.PATTERN_CAPACITY));
+
+                        // check if there is enough power
+                        if (eg.extractAEPower(sum, Actionable.SIMULATE, PowerMultiplier.CONFIG) < sum - 0.01) continue;
+
+                        craftingInventory = details.isCraftable() ? new InventoryCrafting(new ContainerNull(), 3, 3)
+                                : new InventoryCrafting(new ContainerNull(), details.getInputs().length, 1);
+
+                        // Check if all items can be used for crafting.
+                        boolean found = false;
+                        for (int x = 0; x < input.length; x++) {
+                            if (input[x] != null) {
+                                found = false;
+                                for (IAEItemStack ias : getExtractItems(input[x], details)) {
+                                    if (details.isCraftable()
+                                            && !details.isValidItemForSlot(x, ias.getItemStack(), this.getWorld())) {
+                                        continue;
+                                    }
+                                    final IAEItemStack ais = this.inventory
+                                            .extractItems(ias, Actionable.MODULATE, this.machineSrc);
+                                    final ItemStack is = ais == null ? null : ais.getItemStack();
+                                    if (is == null) continue;
+                                    found = true;
+                                    craftingInventory.setInventorySlotContents(x, is);
+                                    if (!details.canBeSubstitute() && is.stackSize == input[x].getStackSize()) {
+                                        this.postChange(input[x], this.machineSrc);
+                                        break;
+                                    } else {
+                                        this.postChange(AEItemStack.create(is), this.machineSrc);
+                                    }
                                 }
-                                final IAEItemStack ais = this.inventory
-                                        .extractItems(ias, Actionable.MODULATE, this.machineSrc);
-                                final ItemStack is = ais == null ? null : ais.getItemStack();
-                                if (is == null) continue;
-                                found = true;
-                                craftingInventory.setInventorySlotContents(x, is);
-                                if (!details.canBeSubstitute() && is.stackSize == input[x].getStackSize()) {
-                                    this.postChange(input[x], this.machineSrc);
-                                    break;
-                                } else {
-                                    this.postChange(AEItemStack.create(is), this.machineSrc);
-                                }
-                            }
-                            if (!found) {
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!found) {
-                        // put stuff back.
-                        for (int x = 0; x < craftingInventory.getSizeInventory(); x++) {
-                            final ItemStack is = craftingInventory.getStackInSlot(x);
-                            if (is != null) {
-                                this.inventory
-                                        .injectItems(AEItemStack.create(is), Actionable.MODULATE, this.machineSrc);
-                            }
-                        }
-                        craftingInventory = null;
-                        break;
-                    }
-                }
-
-                while (medium.pushPattern(details, craftingInventory)) {
-                    eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG);
-                    this.somethingChanged = true;
-                    this.remainingOperations--;
-                    pushedPattern = true;
-                    this.isFakeCrafting = (medium instanceof DualityInterface di && di.isFakeCraftingMode());
-
-                    // Process output items.
-                    for (final IAEItemStack outputItemStack : details.getCondensedOutputs()) {
-                        this.postChange(outputItemStack, this.machineSrc);
-                        this.waitingFor.add(outputItemStack.copy());
-                        this.postCraftingStatusChange(outputItemStack.copy());
-
-                        // Add this medium to the list of providers for the outputItemStack if not yet in there.
-                        providers.computeIfAbsent(outputItemStack, k -> new ArrayList<>());
-                        List<DimensionalCoord> list = providers.get(outputItemStack);
-                        if (medium instanceof ICraftingProvider) {
-                            TileEntity tile = this.getTile(medium);
-                            if (tile == null) continue;
-                            DimensionalCoord tileDimensionalCoord = new DimensionalCoord(tile);
-                            boolean isAdded = false;
-                            for (DimensionalCoord dimensionalCoord : list) {
-                                if (dimensionalCoord.isEqual(tileDimensionalCoord)) {
-                                    isAdded = true;
+                                if (!found) {
                                     break;
                                 }
                             }
-                            if (!isAdded) {
-                                list.add(tileDimensionalCoord);
+                        }
+
+                        if (!found) {
+                            // put stuff back.
+                            for (int x = 0; x < craftingInventory.getSizeInventory(); x++) {
+                                final ItemStack is = craftingInventory.getStackInSlot(x);
+                                if (is != null) {
+                                    this.inventory
+                                            .injectItems(AEItemStack.create(is), Actionable.MODULATE, this.machineSrc);
+                                }
                             }
+                            craftingInventory = null;
+                            break;
                         }
                     }
 
-                    if (details.isCraftable()) {
-                        FMLCommonHandler.instance().firePlayerCraftingEvent(
-                                Platform.getPlayer((WorldServer) this.getWorld()),
-                                details.getOutput(craftingInventory, this.getWorld()),
-                                craftingInventory);
-                        for (int x = 0; x < craftingInventory.getSizeInventory(); x++) {
-                            final ItemStack output = Platform.getContainerItem(craftingInventory.getStackInSlot(x));
-                            if (output != null) {
-                                final IAEItemStack cItem = AEItemStack.create(output);
-                                this.postChange(cItem, this.machineSrc);
-                                this.waitingFor.add(cItem);
-                                this.postCraftingStatusChange(cItem);
+                    if (medium.pushPattern(details, craftingInventory)) {
+                        eg.extractAEPower(sum, Actionable.MODULATE, PowerMultiplier.CONFIG);
+                        this.somethingChanged = true;
+                        this.remainingOperations--;
+                        pushedPattern = true;
+                        this.isFakeCrafting = (medium instanceof DualityInterface di && di.isFakeCraftingMode());
+
+                        // Process output items.
+                        for (final IAEItemStack outputItemStack : details.getCondensedOutputs()) {
+                            this.postChange(outputItemStack, this.machineSrc);
+                            this.waitingFor.add(outputItemStack.copy());
+                            this.postCraftingStatusChange(outputItemStack.copy());
+
+                            // Add this medium to the list of providers for the outputItemStack if not yet in there.
+                            providers.computeIfAbsent(outputItemStack, k -> new ArrayList<>());
+                            List<DimensionalCoord> list = providers.get(outputItemStack);
+                            if (medium instanceof ICraftingProvider) {
+                                TileEntity tile = this.getTile(medium);
+                                if (tile == null) continue;
+                                DimensionalCoord tileDimensionalCoord = new DimensionalCoord(tile);
+                                boolean isAdded = false;
+                                for (DimensionalCoord dimensionalCoord : list) {
+                                    if (dimensionalCoord.isEqual(tileDimensionalCoord)) {
+                                        isAdded = true;
+                                        break;
+                                    }
+                                }
+                                if (!isAdded) {
+                                    list.add(tileDimensionalCoord);
+                                }
                             }
                         }
+
+                        if (details.isCraftable()) {
+                            FMLCommonHandler.instance().firePlayerCraftingEvent(
+                                    Platform.getPlayer((WorldServer) this.getWorld()),
+                                    details.getOutput(craftingInventory, this.getWorld()),
+                                    craftingInventory);
+                            for (int x = 0; x < craftingInventory.getSizeInventory(); x++) {
+                                final ItemStack output = Platform.getContainerItem(craftingInventory.getStackInSlot(x));
+                                if (output != null) {
+                                    final IAEItemStack cItem = AEItemStack.create(output);
+                                    this.postChange(cItem, this.machineSrc);
+                                    this.waitingFor.add(cItem);
+                                    this.postCraftingStatusChange(cItem);
+                                }
+                            }
+                        }
+
+                        craftingInventory = null; // hand off complete!
+                        didPatternCraft = true;
+                        this.markDirty();
+
+                        executedTasks += 1;
+                        craftingEntry.getValue().value--;
+                        if (craftingEntry.getValue().value <= 0) {
+                            break;
+                        }
+
+                        if (this.remainingOperations == 0) {
+                            return;
+                        }
+                        // Smart blocking is fine sending the same recipe again.
+                        if (medium.getBlockingMode() == BlockingMode.BLOCKING) break;
+
+                        if (!this.canCraft(details, details.getCondensedInputs())) break;
                     }
-
-                    craftingInventory = null; // hand off complete!
-                    this.markDirty();
-
-                    executedTasks += 1;
-                    craftingEntry.getValue().value--;
-                    if (craftingEntry.getValue().value <= 0) {
-                        break;
-                    }
-
-                    if (this.remainingOperations == 0) {
-                        return;
-                    }
-                    // Smart blocking is fine sending the same recipe again.
-                    if (medium.getBlockingMode() == BlockingMode.BLOCKING) break;
-
-                    if (!this.canCraft(details, details.getCondensedInputs())) break;
                 }
-            }
+                if (craftingInventory != null) {
+                    // No suitable craftingInventory was found,
+                    // put stuff back that was injected during the search.
+                    for (int x = 0; x < craftingInventory.getSizeInventory(); x++) {
+                        final ItemStack is = craftingInventory.getStackInSlot(x);
+                        if (is != null) {
+                            this.inventory.injectItems(AEItemStack.create(is), Actionable.MODULATE, this.machineSrc);
+                        }
+                    }
+                }
+            } while (didPatternCraft);
 
             if (!pushedPattern) {
                 // If in all mediums no pattern was pushed,
@@ -893,16 +908,6 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 craftingTaskIterator.remove();
             }
 
-            if (craftingInventory != null) {
-                // No suitable craftingInventory was found,
-                // put stuff back that was injected during the search.
-                for (int x = 0; x < craftingInventory.getSizeInventory(); x++) {
-                    final ItemStack is = craftingInventory.getStackInSlot(x);
-                    if (is != null) {
-                        this.inventory.injectItems(AEItemStack.create(is), Actionable.MODULATE, this.machineSrc);
-                    }
-                }
-            }
         }
         for (IntConsumer craftingStatusListener : craftUpdateListeners) {
             // if executed tasks is 0 for too much long time, we may need to send an alert in callback registered by
