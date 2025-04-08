@@ -746,7 +746,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
             boolean pushedPattern = false;
             boolean didPatternCraft;
-            do {
+            doWhileCraftingLoop: do {
                 InventoryCrafting craftingInventory = null;
                 didPatternCraft = false;
                 for (final ICraftingMedium medium : cc.getMediums(craftingEntry.getKey())) {
@@ -878,7 +878,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         executedTasks += 1;
                         craftingEntry.getValue().value--;
                         if (craftingEntry.getValue().value <= 0) {
-                            break;
+                            // This craftingEntry is done.
+                            break doWhileCraftingLoop;
                         }
 
                         if (this.remainingOperations == 0) {
