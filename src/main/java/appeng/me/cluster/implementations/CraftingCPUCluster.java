@@ -832,7 +832,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         this.waitingFor.add(outputItemStack.copy());
                         this.postCraftingStatusChange(outputItemStack.copy());
 
-                        // Add this medium to the list of providers for the outputItemStack if not yet done.
+                        // Add this medium to the list of providers for the outputItemStack if not yet in there.
                         providers.computeIfAbsent(outputItemStack, k -> new ArrayList<>());
                         List<DimensionalCoord> list = providers.get(outputItemStack);
                         if (medium instanceof ICraftingProvider) {
