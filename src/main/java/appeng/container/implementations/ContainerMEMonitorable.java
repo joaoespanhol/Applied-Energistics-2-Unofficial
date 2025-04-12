@@ -12,6 +12,7 @@ package appeng.container.implementations;
 
 import java.io.IOException;
 import java.nio.BufferOverflowException;
+import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
@@ -451,7 +452,7 @@ public class ContainerMEMonitorable extends AEBaseContainer
                     final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
                     final ImmutableList<ICraftingCPU> cpuSet = cc.getCpus().asList();
 
-                    if (!cpuSet.equals(lastCpuSet) || lastUpdate > 20) {
+                    if (ext || !cpuSet.equals(lastCpuSet) || lastUpdate > 20) {
                         lastUpdate = 0;
                         lastCpuSet = cpuSet;
                         int j = 0;
@@ -480,15 +481,13 @@ public class ContainerMEMonitorable extends AEBaseContainer
                                     }
                                 }
                             }
-                            if (ais != null && checkPins(ais)) {
-                                serverPins[i] = ais;
+                            if (ext || (ais != null && checkPins(ais))) {
                                 updatePin(ais, i);
                             }
                         }
                     }
                 } else {
                     for (int i = 0; i < api.getSizeInventory(); i++) {
-                        serverPins[i] = null;
                         updatePin(null, i);
                     }
                 }
@@ -516,23 +515,28 @@ public class ContainerMEMonitorable extends AEBaseContainer
 
             aip.setInventorySlotContents(idx, is);
             aip.markDirty();
-            updatePin(aip.getAEStackInSlot(idx), idx);
 
             if (is == null) {
                 final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
                 final ImmutableSet<ICraftingCPU> cpuSet = cc.getCpus();
                 for (ICraftingCPU cpu : cpuSet.asList()) {
-                    if (cpu.getCraftingAllowMode() != CraftingAllow.ONLY_NONPLAYER && !cpu.isBusy()
-                            && cpu.getFinalOutput() != null
+                    if (cpu.getCraftingAllowMode() != CraftingAllow.ONLY_NONPLAYER && cpu.getFinalOutput() != null
                             && cpu.getFinalOutput().isSameType(serverPins[idx])) {
-                        cpu.resetFinalOutput();
+                        if (!cpu.isBusy()) {
+                            cpu.resetFinalOutput();
+                        } else {
+                            return;
+                        }
                     }
                 }
             }
+            Arrays.fill(serverPins, null);
+            updatePins(true);
         }
     }
 
     public void updatePin(IAEItemStack is, int idx) {
+        serverPins[idx] = is;
         if (is != null) is.setStackSize(0);
         for (final Object player : crafters) {
             if (player instanceof EntityPlayerMP) {

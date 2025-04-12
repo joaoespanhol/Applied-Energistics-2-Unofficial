@@ -71,22 +71,35 @@ public class ItemRepo implements IDisplayRepo {
     @Override
     public void setPin(IAEItemStack pin, int idx) {
         if (pin == null) {
-            list.add(pins[idx]);
-            pins[idx] = null;
+            if (pins[idx] != null) {
+                list.add(pins[idx]);
+                pins[idx] = null;
+            }
         } else {
             IAEItemStack ais = list.findPrecise(pin);
-            if (ais != null) {
-                pins[idx] = ais.copy();
-                ais.reset();
-            } else if (!pin.isSameType(pins[idx])) {
-                pins[idx] = pin;
+            IAEItemStack inPins = null;
+
+            for (int i = idx + 1; i < pins.length; i++) {
+                if (pins[i] != null && pins[i].isSameType(pin)) {
+                    inPins = pins[i].copy();
+                    pins[i] = null;
+                }
+            }
+
+            if (!pin.isSameType(pins[idx])) {
+                if (pins[idx] != null) list.add(pins[idx]);
+                if (ais != null) {
+                    pins[idx] = ais.copy();
+                    ais.reset();
+                } else {
+                    if (inPins != null) {
+                        pins[idx] = inPins;
+                    } else {
+                        pins[idx] = pin;
+                    }
+                }
             }
         }
-    }
-
-    @Override
-    public void setPins(IAEItemStack[] pins) {
-        this.pins = pins;
     }
 
     @Override
@@ -154,8 +167,6 @@ public class ItemRepo implements IDisplayRepo {
                     for (IAEItemStack pin : pins) {
                         if (pin != null && pin.isSameType(serverEntry)) {
                             notPin = false;
-                            pin.reset();
-                            pin.add(serverEntry);
                             entry.setStackSize(0);
                             break;
                         }
