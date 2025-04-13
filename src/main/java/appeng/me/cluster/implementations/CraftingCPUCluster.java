@@ -1649,6 +1649,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                                 AELog.logSimple(Level.INFO, "MISSING MODE OVERFLOW! TELL DEVS ASAP!");
                                 pg.getItemInventory()
                                         .injectItems((IAEItemStack) notInjected, Actionable.MODULATE, this.machineSrc);
+                                waitingForItem.setStackSize(0);
                             }
                         }
                     }
