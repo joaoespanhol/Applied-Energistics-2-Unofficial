@@ -1026,6 +1026,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         } catch (final CraftBranchFailure e) {
             handleCraftBranchFailure(e, src);
 
+            this.waitingForMissing.resetStatus();
             this.tasks.clear();
             this.providers.clear();
             this.inventory.getItemList().resetStatus();
