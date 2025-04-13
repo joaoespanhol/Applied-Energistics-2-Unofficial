@@ -67,11 +67,10 @@ import appeng.container.slot.SlotRestrictedInput;
 import appeng.container.slot.SlotRestrictedInput.PlacableItemType;
 import appeng.core.AELog;
 import appeng.core.sync.network.NetworkHandler;
-import appeng.core.sync.packets.PacketInventoryAction;
 import appeng.core.sync.packets.PacketMEInventoryUpdate;
+import appeng.core.sync.packets.PacketPinsUpdate;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.IPinsHandler;
-import appeng.helpers.InventoryAction;
 import appeng.helpers.WirelessTerminalGuiObject;
 import appeng.me.helpers.ChannelPowerSrc;
 import appeng.tile.inventory.AppEngInternalAEInventory;
@@ -88,8 +87,7 @@ public class ContainerMEMonitorable extends AEBaseContainer
     private final IItemList<IAEItemStack> items = AEApi.instance().storage().createItemList();
     private final IConfigManager clientCM;
     private final ITerminalHost host;
-    private final IAEItemStack[] serverPins = new IAEItemStack[9];
-    private ImmutableList<ICraftingCPU> lastCpuSet = null;
+    private IAEItemStack[] serverPins = new IAEItemStack[9];
     private int lastUpdate = 0;
 
     @GuiSync(99)
@@ -444,19 +442,19 @@ public class ContainerMEMonitorable extends AEBaseContainer
 
     public void updatePins(boolean ext) {
         if (host instanceof ITerminalPins itp) {
-            ++lastUpdate;
             AppEngInternalAEInventory api = itp.getPins();
             boolean isActive = serverCM.getSetting(Settings.PINS_STATE) == PinsState.ACTIVE;
             if (ext || isActive) {
+                IAEItemStack[] newPins = new IAEItemStack[api.getSizeInventory()];
                 if (isActive) {
-                    final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
-                    final ImmutableList<ICraftingCPU> cpuSet = cc.getCpus().asList();
-
-                    if (ext || !cpuSet.equals(lastCpuSet) || lastUpdate > 20) {
+                    ++lastUpdate;
+                    if (ext || lastUpdate > 20) {
                         lastUpdate = 0;
-                        lastCpuSet = cpuSet;
                         int j = 0;
                         int jj = 0;
+                        final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
+                        final ImmutableList<ICraftingCPU> cpuSet = cc.getCpus().asList();
+
                         for (int i = 0; i < api.getSizeInventory(); i++) {
                             IAEItemStack ais = api.getAEStackInSlot(i);
                             if (ais == null) {
@@ -481,25 +479,16 @@ public class ContainerMEMonitorable extends AEBaseContainer
                                     }
                                 }
                             }
-                            if (ext || (ais != null && checkPins(ais))) {
-                                updatePin(ais, i);
-                            }
+                            if (ais != null) ais.setStackSize(0);
+                            newPins[i] = ais;
                         }
+                        updatePins(newPins);
                     }
                 } else {
-                    for (int i = 0; i < api.getSizeInventory(); i++) {
-                        updatePin(null, i);
-                    }
+                    updatePins(newPins);
                 }
             }
         }
-    }
-
-    private boolean checkPins(IAEItemStack ais) {
-        for (IAEItemStack serverPin : serverPins) {
-            if (ais.isSameType(serverPin)) return false;
-        }
-        return true;
     }
 
     @Override
@@ -530,22 +519,20 @@ public class ContainerMEMonitorable extends AEBaseContainer
                     }
                 }
             }
-            Arrays.fill(serverPins, null);
             updatePins(true);
         }
     }
 
-    public void updatePin(IAEItemStack is, int idx) {
-        serverPins[idx] = is;
-        if (is != null) is.setStackSize(0);
-        for (final Object player : crafters) {
-            if (player instanceof EntityPlayerMP) {
-                try {
-                    NetworkHandler.instance.sendTo(
-                            new PacketInventoryAction(InventoryAction.SET_PIN, idx, is),
-                            (EntityPlayerMP) player);
-                } catch (IOException e) {
-                    AELog.debug(e);
+    public void updatePins(IAEItemStack[] newPins) {
+        if (!Arrays.equals(serverPins, newPins)) {
+            serverPins = newPins;
+            for (final Object player : crafters) {
+                if (player instanceof EntityPlayerMP) {
+                    try {
+                        NetworkHandler.instance.sendTo(new PacketPinsUpdate(newPins), (EntityPlayerMP) player);
+                    } catch (IOException e) {
+                        AELog.debug(e);
+                    }
                 }
             }
         }

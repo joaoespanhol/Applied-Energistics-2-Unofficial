@@ -8,5 +8,5 @@ public interface IPinsHandler {
 
     default void setPin(ItemStack is, int idx) {}
 
-    default void setAEPin(IAEItemStack ais, int idx) {}
+    default void setAEPins(IAEItemStack[] pins) {}
 }

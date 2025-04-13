@@ -699,8 +699,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
     }
 
     @Override
-    public void setAEPin(IAEItemStack ais, int idx) {
-        repo.setPin(ais, idx);
-        this.repo.updateView();
+    public void setAEPins(IAEItemStack[] pins) {
+        repo.setPins(pins);
     }
 }

@@ -43,5 +43,5 @@ public interface IDisplayRepo {
         return null;
     }
 
-    default void setPin(IAEItemStack pin, int idx) {}
+    default void setPins(IAEItemStack[] pins) {}
 }

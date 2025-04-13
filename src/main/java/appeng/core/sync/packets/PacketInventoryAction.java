@@ -12,7 +12,6 @@ package appeng.core.sync.packets;
 
 import java.io.IOException;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
@@ -28,7 +27,6 @@ import appeng.container.implementations.ContainerPatternValueAmount;
 import appeng.core.sync.AppEngPacket;
 import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.INetworkInfo;
-import appeng.helpers.IPinsHandler;
 import appeng.helpers.InventoryAction;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
@@ -183,8 +181,6 @@ public class PacketInventoryAction extends AppEngPacket {
             } else {
                 ClientHelper.proxy.getPlayers().get(0).inventory.setItemStack(this.slotItem.getItemStack());
             }
-        } else if (Minecraft.getMinecraft().currentScreen instanceof IPinsHandler iph) {
-            iph.setAEPin(slotItem, slot);
         }
     }
 }
