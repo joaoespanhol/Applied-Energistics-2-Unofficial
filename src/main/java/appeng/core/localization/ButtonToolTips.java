@@ -237,7 +237,18 @@ public enum ButtonToolTips {
 
     PinsSection,
     PinsSectionActive,
-    PinsSectionDisabled;
+    PinsSectionDisabled,
+
+    SuperWirelessToolGroupBySingleName,
+    SuperWirelessToolGroupBySingleDesc,
+    SuperWirelessToolGroupByNetworkName,
+    SuperWirelessToolGroupByNetworkDesc,
+    SuperWirelessToolGroupByColorName,
+    SuperWirelessToolGroupByColorDesc,
+    SuperWirelessToolHideBoundedYesName,
+    SuperWirelessToolHideBoundedYesDesc,
+    SuperWirelessToolHideBoundedNoName,
+    SuperWirelessToolHideBoundedNoDesc;
 
     private final String root;
 

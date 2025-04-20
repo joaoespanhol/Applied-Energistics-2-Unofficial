@@ -36,6 +36,7 @@ import appeng.items.tools.ToolMemoryCard;
 import appeng.items.tools.ToolNetworkTool;
 import appeng.items.tools.ToolNetworkVisualiser;
 import appeng.items.tools.ToolPriorityCard;
+import appeng.items.tools.ToolSuperWirelessKit;
 import appeng.items.tools.powered.ToolChargedStaff;
 import appeng.items.tools.powered.ToolColorApplicator;
 import appeng.items.tools.powered.ToolEntropyManipulator;
@@ -121,6 +122,7 @@ public final class ApiItems implements IItems {
     private final IItemDefinition toolReplicatorCard;
 
     private final IItemDefinition toolNetworkVisualiser;
+    private final IItemDefinition toolSuperWirelessKit;
 
     public ApiItems(final DefinitionConstructor constructor) {
         this.certusQuartzAxe = constructor.registerItemDefinition(new ToolQuartzAxe(AEFeature.CertusQuartzTools));
@@ -197,6 +199,7 @@ public final class ApiItems implements IItems {
         this.toolDebugCard = constructor.registerItemDefinition(new ToolDebugCard());
         this.toolReplicatorCard = constructor.registerItemDefinition(new ToolReplicatorCard());
         this.toolNetworkVisualiser = constructor.registerItemDefinition(new ToolNetworkVisualiser());
+        this.toolSuperWirelessKit = constructor.registerItemDefinition(new ToolSuperWirelessKit());
     }
 
     @Override
@@ -457,9 +460,5 @@ public final class ApiItems implements IItems {
 
     public IItemDefinition toolReplicatorCard() {
         return this.toolReplicatorCard;
-    }
-
-    public IItemDefinition toolNetworkVisualiser() {
-        return this.toolNetworkVisualiser;
     }
 }
