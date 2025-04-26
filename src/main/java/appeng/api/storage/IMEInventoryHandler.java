@@ -85,6 +85,7 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      */
 =======
 
+<<<<<<< HEAD
 >>>>>>> c2ebd5b68 (Adjusted PartExportBus to generate priority-ordered inventory lists)
     default List<IMEInventoryHandler<StackType>> getPriorityList() {
         return this.getPriorityList();
@@ -95,6 +96,8 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      * then high-low, etc.
      * @return
      */
+=======
+>>>>>>> f0fc56731 (Adjusted PartExportBus to generate priority-ordered inventory lists)
     default List<IMEInventoryHandler<StackType>> getPriorityList() {
         return this.getPriorityList();
     }
