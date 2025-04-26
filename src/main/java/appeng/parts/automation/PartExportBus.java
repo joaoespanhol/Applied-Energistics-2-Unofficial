@@ -16,6 +16,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Vec3;
 
+import java.util.Collection;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -39,8 +41,10 @@ import appeng.api.networking.ticking.TickingRequest;
 import appeng.api.parts.IPartCollisionHelper;
 import appeng.api.parts.IPartRenderHelper;
 import appeng.api.storage.IMEInventory;
+import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IItemList;
 import appeng.client.texture.CableBusTextures;
 import appeng.core.AELog;
 import appeng.core.settings.TickRates;
@@ -48,9 +52,12 @@ import appeng.core.sync.GuiBridge;
 import appeng.helpers.MultiCraftingTracker;
 import appeng.helpers.Reflected;
 import appeng.me.GridAccessException;
+import appeng.me.cache.NetworkMonitor;
 import appeng.util.InventoryAdaptor;
+import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
+import appeng.util.item.ItemList;
 import appeng.util.prioitylist.OreFilteredList;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -99,7 +106,13 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
 
         try {
             final InventoryAdaptor destination = this.getHandler();
-            final IMEMonitor<IAEItemStack> inv = this.getProxy().getStorage().getItemInventory();
+            final IMEMonitor<IAEItemStack> gridInv = this.getProxy().getStorage().getItemInventory();
+
+            /* This actually returns a NetworkInventoryHandler (NIH) object. The method .getAvailableItems() used is the overriden one found in
+             * the .java file. */
+            final IMEInventoryHandler<IAEItemStack> NIH = ((NetworkMonitor<IAEItemStack>) this.getProxy().getStorage().getItemInventory()).getHandler();
+            final IItemList<IAEItemStack> inv = NIH.getAvailableItems(new ItemList(), appeng.util.IterationCounter.fetchNewId());
+
             final IEnergyGrid energy = this.getProxy().getEnergy();
             final ICraftingGrid cg = this.getProxy().getCrafting();
             final FuzzyMode fzMode = (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE);
@@ -133,15 +146,20 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
                         final long before = this.itemToSend;
 
                         if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+
+                            final Collection<IAEItemStack> fzlist = gridInv.getStorageList().findFuzzy(ais, fzMode);
+
                             for (final IAEItemStack o : ImmutableList
-                                    .copyOf(inv.getStorageList().findFuzzy(ais, fzMode))) {
-                                this.pushItemIntoTarget(destination, energy, inv, o);
-                                if (this.itemToSend <= 0) {
+                                        .copyOf(inv)) {
+                                    if (fzlist.contains(o)) {
+                                        this.pushItemIntoTarget(destination, energy, NIH, o);
+                                    }
+                                    if (this.itemToSend <= 0) {
                                     break;
+                                    }
                                 }
-                            }
-                        } else {
-                            this.pushItemIntoTarget(destination, energy, inv, ais);
+                            } else {
+                            this.pushItemIntoTarget(destination, energy, NIH, ais);
                         }
 
                         if (this.itemToSend == before && this.isCraftingEnabled()) {
@@ -161,9 +179,9 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
                 } else if (!oreFilterString.isEmpty()) {
                     if (filterPredicate == null) filterPredicate = OreFilteredList.makeFilter(oreFilterString);
 
-                    for (IAEItemStack stack : inv.getStorageList()) {
+                    for (IAEItemStack stack : gridInv.getStorageList()) {
                         if (stack == null || filterPredicate == null || !this.filterPredicate.test(stack)) continue;
-                        this.pushItemIntoTarget(destination, energy, inv, stack);
+                        this.pushItemIntoTarget(destination, energy, NIH, stack);
                         if (this.itemToSend <= 0) break;
                     }
                 }

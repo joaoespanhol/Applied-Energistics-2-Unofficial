@@ -13,6 +13,10 @@
 
 package appeng.api.storage;
 
+import java.util.List;
+
+import java.util.List;
+
 import appeng.api.config.AccessRestriction;
 import appeng.api.storage.data.IAEStack;
 
@@ -74,6 +78,10 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      */
     boolean validForPass(int i);
 
+    default List<IMEInventoryHandler<StackType>> getPriorityList() {
+        return this.getPriorityList();
+    }
+    
     /**
      * Gets whether an inventory is "Sticky" i.e. only it and other sticky storages that have partitions with certain
      * items are allowed to be put into sticky storages.
