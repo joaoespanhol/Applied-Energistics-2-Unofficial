@@ -75,6 +75,7 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      * @return true, if this inventory is valid for this pass.
      */
     boolean validForPass(int i);
+<<<<<<< HEAD
     
     /**
      * Gets a list of inventories on a network ordered by priority, starting from autocrafting inventories, then sticky,
@@ -82,6 +83,9 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      * 
      * @return
      */
+=======
+
+>>>>>>> c2ebd5b68 (Adjusted PartExportBus to generate priority-ordered inventory lists)
     default List<IMEInventoryHandler<StackType>> getPriorityList() {
         return this.getPriorityList();
     }
