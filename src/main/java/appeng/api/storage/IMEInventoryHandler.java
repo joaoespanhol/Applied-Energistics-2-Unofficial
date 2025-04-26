@@ -75,7 +75,7 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      * @return true, if this inventory is valid for this pass.
      */
     boolean validForPass(int i);
-
+    
     /**
      * Gets a list of inventories on a network ordered by priority, starting from autocrafting inventories, then sticky,
      * then high-low, etc.
