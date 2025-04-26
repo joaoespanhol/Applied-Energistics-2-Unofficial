@@ -79,6 +79,7 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
     /**
      * Gets a list of inventories on a network ordered by priority, starting from autocrafting inventories, then sticky,
      * then high-low, etc.
+     * 
      * @return
      */
     default List<IMEInventoryHandler<StackType>> getPriorityList() {
