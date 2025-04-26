@@ -27,6 +27,7 @@ import appeng.api.networking.security.MachineSource;
 import appeng.api.networking.security.PlayerSource;
 import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.StorageChannel;
+import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.cache.SecurityCache;
@@ -84,6 +85,12 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
 
     public void addNewStorage(final IMEInventoryHandler<T> h) {
         this.priorityInventory.add(h);
+    }
+
+    @Override
+    public List<IMEInventoryHandler<T>> getPriorityList() {
+        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
+        return priorityInventory;
     }
 
     @Override
@@ -286,6 +293,9 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         return output;
     }
 
+    /* ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking 
+     * of connected network inventories. 
+     * */
     @Override
     public IItemList<T> getAvailableItems(IItemList out, int iteration) {
         if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
@@ -294,8 +304,18 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
 
         final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
         final int size = priorityInventory.size();
-        for (int i = 0; i < size; i++) {
-            out = priorityInventory.get(i).getAvailableItems(out, iteration);
+        for (int i = size - 1; i >= 0; i--) {
+            final IMEInventoryHandler<T> inv = priorityInventory.get(i);
+
+        /* This can be fixed if the iterated calls of getAvailableItems can be added to the list 
+         * passed to the overriden method instead of being reassigned.
+         * */
+            if (!inv.isAutoCraftingInventory()) {
+                out = priorityInventory.get(i).getAvailableItems(out, iteration);
+            }
+            if (!out.isEmpty()) {
+                break;
+            }
         }
 
         this.surface(this, Actionable.SIMULATE);
