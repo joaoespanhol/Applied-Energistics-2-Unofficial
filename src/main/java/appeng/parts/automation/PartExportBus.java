@@ -10,13 +10,13 @@
 
 package appeng.parts.automation;
 
+import java.util.Collection;
+
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Vec3;
-
-import java.util.Collection;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -54,7 +54,6 @@ import appeng.helpers.Reflected;
 import appeng.me.GridAccessException;
 import appeng.me.cache.NetworkMonitor;
 import appeng.util.InventoryAdaptor;
-import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
 import appeng.util.item.ItemList;
@@ -108,10 +107,14 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
             final InventoryAdaptor destination = this.getHandler();
             final IMEMonitor<IAEItemStack> gridInv = this.getProxy().getStorage().getItemInventory();
 
-            /* This actually returns a NetworkInventoryHandler (NIH) object. The method .getAvailableItems() used is the overriden one found in
-             * the .java file. */
-            final IMEInventoryHandler<IAEItemStack> NIH = ((NetworkMonitor<IAEItemStack>) this.getProxy().getStorage().getItemInventory()).getHandler();
-            final IItemList<IAEItemStack> inv = NIH.getAvailableItems(new ItemList(), appeng.util.IterationCounter.fetchNewId());
+            /*
+             * This actually returns a NetworkInventoryHandler (NIH) object. The method .getAvailableItems() used is the
+             * overriden one found in the .java file.
+             */
+            final IMEInventoryHandler<IAEItemStack> NIH = ((NetworkMonitor<IAEItemStack>) this.getProxy().getStorage()
+                    .getItemInventory()).getHandler();
+            final IItemList<IAEItemStack> inv = NIH
+                    .getAvailableItems(new ItemList(), appeng.util.IterationCounter.fetchNewId());
 
             final IEnergyGrid energy = this.getProxy().getEnergy();
             final ICraftingGrid cg = this.getProxy().getCrafting();
@@ -149,16 +152,15 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
 
                             final Collection<IAEItemStack> fzlist = gridInv.getStorageList().findFuzzy(ais, fzMode);
 
-                            for (final IAEItemStack o : ImmutableList
-                                        .copyOf(inv)) {
-                                    if (fzlist.contains(o)) {
-                                        this.pushItemIntoTarget(destination, energy, NIH, o);
-                                    }
-                                    if (this.itemToSend <= 0) {
-                                    break;
-                                    }
+                            for (final IAEItemStack o : ImmutableList.copyOf(inv)) {
+                                if (fzlist.contains(o)) {
+                                    this.pushItemIntoTarget(destination, energy, NIH, o);
                                 }
-                            } else {
+                                if (this.itemToSend <= 0) {
+                                    break;
+                                }
+                            }
+                        } else {
                             this.pushItemIntoTarget(destination, energy, NIH, ais);
                         }
 
