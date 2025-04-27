@@ -11,6 +11,7 @@
 package appeng.me.storage;
 
 import java.util.Collection;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +20,7 @@ import javax.annotation.Nonnull;
 
 import appeng.api.config.AccessRestriction;
 import appeng.api.config.Actionable;
+import appeng.api.config.FuzzyMode;
 import appeng.api.config.SecurityPermissions;
 import appeng.api.config.FuzzyMode;
 import appeng.api.networking.IGrid;
@@ -29,8 +31,8 @@ import appeng.api.networking.security.MachineSource;
 import appeng.api.networking.security.PlayerSource;
 import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.IMEInventoryHandler;
+import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.StorageChannel;
-import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.cache.SecurityCache;
