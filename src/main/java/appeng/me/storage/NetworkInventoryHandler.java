@@ -28,6 +28,7 @@ import appeng.api.networking.security.ISecurityGrid;
 import appeng.api.networking.security.MachineSource;
 import appeng.api.networking.security.PlayerSource;
 import appeng.api.storage.IMEInventoryHandler;
+import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
@@ -267,10 +268,17 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
         final int size = priorityInventory.size();
         for (int i = size - 1; i >= 0; i--) {
-            final IMEInventoryHandler<T> inv = priorityInventory.get(i);
-            if (!inv.isAutoCraftingInventory()) {
-                final Collection<T> fzlist = ((IMEMonitor<T>) inv).getStorageList().findFuzzy(fuzzyItem, fuzzyMode);
-                out.addAll(fzlist);
+            final IMEInventoryHandler<T> invObject = priorityInventory.get(i);
+
+            if (!invObject.isAutoCraftingInventory()) {
+                final IItemList<T> inv = ((IMEMonitor<T>) invObject).getStorageList();
+                if (!inv.isEmpty()) {
+                    final Collection<T> fzlist = ((IMEMonitor<T>) invObject).getStorageList()
+                            .findFuzzy(fuzzyItem, fuzzyMode);
+                    out.addAll(fzlist);
+
+                }
+
             }
 
         }
