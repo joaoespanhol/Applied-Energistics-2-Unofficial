@@ -276,8 +276,6 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
 
         }
 
-        this.surface(this, Actionable.SIMULATE);
-
         return out;
     }
 
@@ -354,13 +352,11 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         for (int i = size - 1; i >= 0; i--) {
             final IMEInventoryHandler<T> inv = priorityInventory.get(i);
             out = priorityInventory.get(i).getAvailableItems(out, iteration);
-            }
-        
+        }
 
         return out;
 
     }
-    
 
     private boolean diveIteration(final NetworkInventoryHandler<T> networkInventoryHandler, final Actionable type,
             int iteration) {
