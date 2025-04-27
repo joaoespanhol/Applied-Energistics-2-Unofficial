@@ -10,6 +10,7 @@
 
 package appeng.me.storage;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +19,7 @@ import javax.annotation.Nonnull;
 
 import appeng.api.config.AccessRestriction;
 import appeng.api.config.Actionable;
+import appeng.api.config.FuzzyMode;
 import appeng.api.config.SecurityPermissions;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
@@ -26,8 +28,8 @@ import appeng.api.networking.security.ISecurityGrid;
 import appeng.api.networking.security.MachineSource;
 import appeng.api.networking.security.PlayerSource;
 import appeng.api.storage.IMEInventoryHandler;
+import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.StorageChannel;
-import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.cache.SecurityCache;
@@ -85,12 +87,6 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
 
     public void addNewStorage(final IMEInventoryHandler<T> h) {
         this.priorityInventory.add(h);
-    }
-
-    @Override
-    public List<IMEInventoryHandler<T>> getPriorityList() {
-        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
-        return priorityInventory;
     }
 
     @Override
@@ -259,45 +255,12 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         return s;
     }
 
+    /*
+     * ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking of
+     * connected network inventories.
+     */
     @Override
-    public T extractItems(T request, final Actionable mode, final BaseActionSource src) {
-        if (this.diveList(this, mode)) {
-            return null;
-        }
-
-        if (this.testPermission(src, SecurityPermissions.EXTRACT)) {
-            this.surface(this, mode);
-            return null;
-        }
-
-        final T output = request.copy();
-        request = request.copy();
-        output.setStackSize(0);
-        final long req = request.getStackSize();
-
-        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
-        final int size = priorityInventory.size();
-        for (int i = size - 1; i >= 0 && output.getStackSize() < req; i--) {
-            final IMEInventoryHandler<T> inv = priorityInventory.get(i);
-
-            request.setStackSize(req - output.getStackSize());
-            output.add(inv.extractItems(request, mode, src));
-        }
-
-        this.surface(this, mode);
-
-        if (output.getStackSize() <= 0) {
-            return null;
-        }
-
-        return output;
-    }
-
-    /* ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking 
-     * of connected network inventories. 
-     * */
-    @Override
-    public IItemList<T> getAvailableItems(IItemList out, int iteration) {
+    public Collection<T> getSortedFuzzyItems(Collection<T> out, T fuzzyItem, FuzzyMode fuzzyMode, int iteration) {
         if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
             return out;
         }
@@ -306,16 +269,11 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         final int size = priorityInventory.size();
         for (int i = size - 1; i >= 0; i--) {
             final IMEInventoryHandler<T> inv = priorityInventory.get(i);
-
-        /* This can be fixed if the iterated calls of getAvailableItems can be added to the list 
-         * passed to the overriden method instead of being reassigned.
-         * */
             if (!inv.isAutoCraftingInventory()) {
-                out = priorityInventory.get(i).getAvailableItems(out, iteration);
+                final Collection<T> fzlist = ((IMEMonitor<T>) inv).getStorageList().findFuzzy(fuzzyItem, fuzzyMode);
+                out.addAll(fzlist);
             }
-            if (!out.isEmpty()) {
-                break;
-            }
+
         }
 
         this.surface(this, Actionable.SIMULATE);
@@ -350,6 +308,59 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
 
         return count == 0 ? null : request.copy().setStackSize(count);
     }
+
+    @Override
+    public T extractItems(T request, final Actionable mode, final BaseActionSource src) {
+        if (this.diveList(this, mode)) {
+            return null;
+        }
+
+        if (this.testPermission(src, SecurityPermissions.EXTRACT)) {
+            this.surface(this, mode);
+            return null;
+        }
+
+        final T output = request.copy();
+        request = request.copy();
+        output.setStackSize(0);
+        final long req = request.getStackSize();
+
+        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
+        final int size = priorityInventory.size();
+        for (int i = size - 1; i >= 0 && output.getStackSize() < req; i--) {
+            final IMEInventoryHandler<T> inv = priorityInventory.get(i);
+
+            request.setStackSize(req - output.getStackSize());
+            output.add(inv.extractItems(request, mode, src));
+        }
+
+        this.surface(this, mode);
+
+        if (output.getStackSize() <= 0) {
+            return null;
+        }
+
+        return output;
+    }
+
+    @Override
+    public IItemList<T> getAvailableItems(IItemList out, int iteration) {
+        if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
+            return out;
+        }
+
+        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
+        final int size = priorityInventory.size();
+        for (int i = size - 1; i >= 0; i--) {
+            final IMEInventoryHandler<T> inv = priorityInventory.get(i);
+            out = priorityInventory.get(i).getAvailableItems(out, iteration);
+            }
+        
+
+        return out;
+
+    }
+    
 
     private boolean diveIteration(final NetworkInventoryHandler<T> networkInventoryHandler, final Actionable type,
             int iteration) {
