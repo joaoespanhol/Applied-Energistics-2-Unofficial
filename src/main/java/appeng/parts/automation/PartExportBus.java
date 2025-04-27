@@ -152,9 +152,10 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
 
                             for (final IAEItemStack o : ImmutableList.copyOf(fzlist)) {
                                 this.pushItemIntoTarget(destination, energy, gridInv, o);
-                            }
-                            if (this.itemToSend <= 0) {
-                                break;
+
+                                if (this.itemToSend <= 0) {
+                                    break;
+                                }
                             }
 
                         } else {
