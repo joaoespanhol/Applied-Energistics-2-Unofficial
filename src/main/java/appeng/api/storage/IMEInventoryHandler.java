@@ -13,8 +13,6 @@
 
 package appeng.api.storage;
 
-import java.util.List;
-
 import appeng.api.config.AccessRestriction;
 import appeng.api.storage.data.IAEStack;
 
@@ -75,33 +73,14 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      * @return true, if this inventory is valid for this pass.
      */
     boolean validForPass(int i);
-<<<<<<< HEAD
-    
+
     /**
      * Gets a list of inventories on a network ordered by priority, starting from autocrafting inventories, then sticky,
      * then high-low, etc.
      * 
      * @return
      */
-=======
 
-<<<<<<< HEAD
->>>>>>> c2ebd5b68 (Adjusted PartExportBus to generate priority-ordered inventory lists)
-    default List<IMEInventoryHandler<StackType>> getPriorityList() {
-        return this.getPriorityList();
-    }
-    
-    /**
-     * Gets a list of inventories on a network ordered by priority, starting from autocrafting inventories, then sticky,
-     * then high-low, etc.
-     * @return
-     */
-=======
->>>>>>> f0fc56731 (Adjusted PartExportBus to generate priority-ordered inventory lists)
-    default List<IMEInventoryHandler<StackType>> getPriorityList() {
-        return this.getPriorityList();
-    }
-    
     /**
      * Gets whether an inventory is "Sticky" i.e. only it and other sticky storages that have partitions with certain
      * items are allowed to be put into sticky storages.
