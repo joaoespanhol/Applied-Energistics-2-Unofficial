@@ -255,65 +255,6 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         return s;
     }
 
-    /*
-     * ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking of
-     * connected network inventories.
-     */
-    @Override
-    public Collection<T> getSortedFuzzyItems(Collection<T> out, T fuzzyItem, FuzzyMode fuzzyMode, int iteration) {
-        if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
-            return out;
-        }
-
-        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
-        final int size = priorityInventory.size();
-        for (int i = size - 1; i >= 0; i--) {
-            final IMEInventoryHandler<T> invObject = priorityInventory.get(i);
-
-            if (!invObject.isAutoCraftingInventory()) {
-                final IItemList<T> inv = ((IMEMonitor<T>) invObject).getStorageList();
-                if (!inv.isEmpty()) {
-                    final Collection<T> fzlist = ((IMEMonitor<T>) invObject).getStorageList()
-                            .findFuzzy(fuzzyItem, fuzzyMode);
-                    out.addAll(fzlist);
-
-                }
-
-            }
-
-        }
-
-        return out;
-    }
-
-    @Override
-    public T getAvailableItem(@Nonnull T request, int iteration) {
-        long count = 0;
-
-        if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
-            return null;
-        }
-
-        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
-        final int size = priorityInventory.size();
-        for (int i = 0; i < size; i++) {
-            IMEInventoryHandler<T> j = priorityInventory.get(i);
-            final T stack = j.getAvailableItem(request, iteration);
-            if (stack != null && stack.getStackSize() > 0) {
-                count += stack.getStackSize();
-                if (count < 0) {
-                    // overflow
-                    count = Long.MAX_VALUE;
-                    break;
-                }
-            }
-        }
-
-        this.surface(this, Actionable.SIMULATE);
-
-        return count == 0 ? null : request.copy().setStackSize(count);
-    }
-
     @Override
     public T extractItems(T request, final Actionable mode, final BaseActionSource src) {
         if (this.diveList(this, mode)) {
@@ -360,8 +301,38 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
             out = priorityInventory.get(i).getAvailableItems(out, iteration);
         }
 
+        this.surface(this, Actionable.SIMULATE);
+
         return out;
 
+    }
+
+    @Override
+    public T getAvailableItem(@Nonnull T request, int iteration) {
+        long count = 0;
+
+        if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
+            return null;
+        }
+
+        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
+        final int size = priorityInventory.size();
+        for (int i = 0; i < size; i++) {
+            IMEInventoryHandler<T> j = priorityInventory.get(i);
+            final T stack = j.getAvailableItem(request, iteration);
+            if (stack != null && stack.getStackSize() > 0) {
+                count += stack.getStackSize();
+                if (count < 0) {
+                    // overflow
+                    count = Long.MAX_VALUE;
+                    break;
+                }
+            }
+        }
+
+        this.surface(this, Actionable.SIMULATE);
+
+        return count == 0 ? null : request.copy().setStackSize(count);
     }
 
     private boolean diveIteration(final NetworkInventoryHandler<T> networkInventoryHandler, final Actionable type,
@@ -372,6 +343,37 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         this.myPass = iteration;
         this.getDepth(type).push(this);
         return false;
+    }
+
+        /*
+     * ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking of
+     * connected network inventories.
+     */
+    @Override
+    public Collection<T> getSortedFuzzyItems(Collection<T> out, T fuzzyItem, FuzzyMode fuzzyMode, int iteration) {
+        if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
+            return out;
+        }
+
+        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
+        final int size = priorityInventory.size();
+        for (int i = size - 1; i >= 0; i--) {
+            final IMEInventoryHandler<T> invObject = priorityInventory.get(i);
+
+            if (!invObject.isAutoCraftingInventory()) {
+                final IItemList<T> inv = ((IMEMonitor<T>) invObject).getStorageList();
+                if (!inv.isEmpty()) {
+                    final Collection<T> fzlist = ((IMEMonitor<T>) invObject).getStorageList()
+                            .findFuzzy(fuzzyItem, fuzzyMode);
+                    out.addAll(fzlist);
+
+                }
+
+            }
+
+        }
+
+        return out;
     }
 
     @Override
