@@ -10,6 +10,9 @@
 
 package appeng.parts.automation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -107,12 +110,6 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
         try {
             final InventoryAdaptor destination = this.getHandler();
             final IMEMonitor<IAEItemStack> gridInv = this.getProxy().getStorage().getItemInventory();
-
-            /* This actually returns a NetworkInventoryHandler (NIH) object. The method .getAvailableItems() used is the overriden one found in
-             * the .java file. */
-            final IMEInventoryHandler<IAEItemStack> NIH = ((NetworkMonitor<IAEItemStack>) this.getProxy().getStorage().getItemInventory()).getHandler();
-            final IItemList<IAEItemStack> inv = NIH.getAvailableItems(new ItemList(), appeng.util.IterationCounter.fetchNewId());
-
             final IEnergyGrid energy = this.getProxy().getEnergy();
             final ICraftingGrid cg = this.getProxy().getCrafting();
             final FuzzyMode fzMode = (FuzzyMode) this.getConfigManager().getSetting(Settings.FUZZY_MODE);
@@ -147,19 +144,27 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
 
                         if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
 
-                            final Collection<IAEItemStack> fzlist = gridInv.getStorageList().findFuzzy(ais, fzMode);
+                            /*
+                             * This actually returns a NetworkInventoryHandler object. The method .getSortedFuzzyItems()
+                             * used is the overriden one found in the .java file.
+                             */
 
-                            for (final IAEItemStack o : ImmutableList
-                                        .copyOf(inv)) {
-                                    if (fzlist.contains(o)) {
-                                        this.pushItemIntoTarget(destination, energy, NIH, o);
-                                    }
-                                    if (this.itemToSend <= 0) {
-                                    break;
-                                    }
-                                }
-                            } else {
-                            this.pushItemIntoTarget(destination, energy, NIH, ais);
+                            final Collection<IAEItemStack> fzlist = ((NetworkMonitor<IAEItemStack>) gridInv)
+                                    .getHandler().getSortedFuzzyItems(
+                                            new ArrayList<>(),
+                                            ais,
+                                            fzMode,
+                                            appeng.util.IterationCounter.fetchNewId());
+
+                            for (final IAEItemStack o : ImmutableList.copyOf(fzlist)) {
+                                this.pushItemIntoTarget(destination, energy, gridInv, o);
+                            }
+                            if (this.itemToSend <= 0) {
+                                break;
+                            }
+
+                        } else {
+                            this.pushItemIntoTarget(destination, energy, gridInv, ais);
                         }
 
                         if (this.itemToSend == before && this.isCraftingEnabled()) {
@@ -181,7 +186,7 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
 
                     for (IAEItemStack stack : gridInv.getStorageList()) {
                         if (stack == null || filterPredicate == null || !this.filterPredicate.test(stack)) continue;
-                        this.pushItemIntoTarget(destination, energy, NIH, stack);
+                        this.pushItemIntoTarget(destination, energy, gridInv, stack);
                         if (this.itemToSend <= 0) break;
                     }
                 }

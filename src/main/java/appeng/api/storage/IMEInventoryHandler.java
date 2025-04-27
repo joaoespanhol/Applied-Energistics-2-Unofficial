@@ -15,6 +15,8 @@ package appeng.api.storage;
 
 import java.util.List;
 
+import java.util.List;
+
 import appeng.api.config.AccessRestriction;
 import appeng.api.storage.data.IAEStack;
 
@@ -76,6 +78,7 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      */
     boolean validForPass(int i);
 <<<<<<< HEAD
+<<<<<<< HEAD
     
     /**
      * Gets a list of inventories on a network ordered by priority, starting from autocrafting inventories, then sticky,
@@ -98,6 +101,9 @@ public interface IMEInventoryHandler<StackType extends IAEStack> extends IMEInve
      */
 =======
 >>>>>>> f0fc56731 (Adjusted PartExportBus to generate priority-ordered inventory lists)
+=======
+
+>>>>>>> 9a1972f4ec8a17c3e3a832ea303052340a23f9f6
     default List<IMEInventoryHandler<StackType>> getPriorityList() {
         return this.getPriorityList();
     }
