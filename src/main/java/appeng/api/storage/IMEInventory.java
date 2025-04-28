@@ -78,7 +78,7 @@ public interface IMEInventory<StackType extends IAEStack> {
      *                  conflicts
      * @return returns same list that was passed in, is passed out
      */
-    default IItemList<StackType> getAvailableItems(IItemList<StackType> out, int iteration) {
+    default IItemList<StackType> getAvailableItems(IItemList out, int iteration) {
         IterationCounter.incrementGlobalDepthWith(iteration);
         var ret = getAvailableItems(out);
         IterationCounter.decrementGlobalDepth();

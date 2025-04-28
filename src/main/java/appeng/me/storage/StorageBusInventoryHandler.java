@@ -21,7 +21,7 @@ public class StorageBusInventoryHandler<T extends IAEStack<T>> extends MEInvento
     }
 
     @Override
-    public IItemList<T> getAvailableItems(final IItemList<T> out, int iteration) {
+    public IItemList<T> getAvailableItems(final IItemList out, int iteration) {
         if (!this.hasReadAccess && !isVisible()) {
             return out;
         }
