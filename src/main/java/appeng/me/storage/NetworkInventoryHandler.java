@@ -373,6 +373,8 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
 
         }
 
+        this.surface(this, Actionable.SIMULATE);
+
         return out;
     }
 
