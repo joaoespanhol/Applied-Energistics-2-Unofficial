@@ -115,13 +115,13 @@ public class GuiInterfaceTerminal extends AEBaseGui
     private final GuiImgButton guiButtonHideFull;
     private final GuiImgButton guiButtonAssemblersOnly;
     private final GuiImgButton guiButtonBrokenRecipes;
-    private final GuiImgButton guiButtonUseSubstation;
+    private final GuiImgButton guiButtonUseSubstitute;
     private final GuiImgButton terminalStyleBox;
     private final GuiImgButton searchStringSave;
     private final GuiImgButton guiButtonSectionOrder;
     private boolean onlyMolecularAssemblers = false;
     private boolean onlyBrokenRecipes = false;
-    private boolean onlySubstation = false;
+    private boolean onlySubstitute = false;
     private boolean online;
     /** The height of the viewport. */
     private int viewHeight;
@@ -185,7 +185,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
         guiButtonAssemblersOnly = new GuiImgButton(0, 0, Settings.ACTIONS, null);
         guiButtonHideFull = new GuiImgButton(0, 0, Settings.ACTIONS, null);
         guiButtonBrokenRecipes = new GuiImgButton(0, 0, Settings.ACTIONS, null);
-        guiButtonUseSubstation = new GuiImgButton(0, 0, Settings.ACTIONS, null);
+        guiButtonUseSubstitute = new GuiImgButton(0, 0, Settings.ACTIONS, null);
         guiButtonSectionOrder = new GuiImgButton(0, 0, Settings.INTERFACE_TERMINAL_SECTION_ORDER, StringOrder.NATURAL);
 
         terminalStyleBox = new GuiImgButton(0, 0, Settings.TERMINAL_STYLE, null);
@@ -244,8 +244,8 @@ public class GuiInterfaceTerminal extends AEBaseGui
         guiButtonAssemblersOnly.xPosition = guiLeft - 18;
         guiButtonAssemblersOnly.yPosition = guiButtonHideFull.yPosition + 18;
 
-        guiButtonUseSubstation.xPosition = guiLeft - 18;
-        guiButtonUseSubstation.yPosition = guiButtonAssemblersOnly.yPosition + 18;
+        guiButtonUseSubstitute.xPosition = guiLeft - 18;
+        guiButtonUseSubstitute.yPosition = guiButtonAssemblersOnly.yPosition + 18;
 
         setSearchString();
 
@@ -258,7 +258,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
         buttonList.add(guiButtonSectionOrder);
         buttonList.add(searchStringSave);
         buttonList.add(terminalStyleBox);
-        buttonList.add(guiButtonUseSubstation);
+        buttonList.add(guiButtonUseSubstitute);
     }
 
     protected void repositionSlots() {
@@ -307,9 +307,9 @@ public class GuiInterfaceTerminal extends AEBaseGui
         guiButtonBrokenRecipes.set(
                 onlyBrokenRecipes ? ActionItems.TOGGLE_SHOW_ONLY_INVALID_PATTERN_OFF
                         : ActionItems.TOGGLE_SHOW_ONLY_INVALID_PATTERN_ON);
-        guiButtonUseSubstation.set(
-                onlySubstation ? ActionItems.TOGGLE_SHOW_ONLY_SUBSTATION_OFF
-                        : ActionItems.TOGGLE_SHOW_ONLY_SUBSTATION_ON);
+        guiButtonUseSubstitute.set(
+                onlySubstitute ? ActionItems.TOGGLE_SHOW_ONLY_SUBSTITUTE_OFF
+                        : ActionItems.TOGGLE_SHOW_ONLY_SUBSTITUTE_ON);
         guiButtonSectionOrder.set(AEConfig.instance.settings.getSetting(Settings.INTERFACE_TERMINAL_SECTION_ORDER));
 
         terminalStyleBox.set(AEConfig.instance.settings.getSetting(Settings.TERMINAL_STYLE));
@@ -344,8 +344,8 @@ public class GuiInterfaceTerminal extends AEBaseGui
         } else if (btn == guiButtonBrokenRecipes) {
             onlyBrokenRecipes = !onlyBrokenRecipes;
             masterList.markDirty();
-        } else if (btn == guiButtonUseSubstation) {
-            onlySubstation = !onlySubstation;
+        } else if (btn == guiButtonUseSubstitute) {
+            onlySubstitute = !onlySubstitute;
             masterList.markDirty();
         } else if (btn instanceof GuiImgButton iBtn) {
             if (iBtn.getSetting() != Settings.ACTIONS) {
@@ -970,7 +970,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
         }
     }
 
-    private boolean isUseSubstation(final ItemStack is) {
+    private boolean isUseSubstitute(final ItemStack is) {
         if (is == null) {
             return false;
         }
@@ -1226,7 +1226,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
                 if (onlyBrokenRecipes && !entry.hasBrokenSlot()) {
                     continue;
                 }
-                if (onlySubstation && !entry.hasUseSubstation()) continue;
+                if (onlySubstitute && !entry.hasUseSubstitute()) continue;
 
                 // Find search terms
                 if (!input.isEmpty() || !output.isEmpty()) {
@@ -1308,7 +1308,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
         int numItems = 0;
         /** Should recipe be filtered out/grayed out? */
         boolean[] filteredRecipes;
-        Boolean[] useSubstation;
+        Boolean[] useSubstitute;
         private int hoveredSlotIdx = -1;
 
         InterfaceTerminalEntry(long id, String name, int rows, int rowSize, boolean online, boolean p2pOutput) {
@@ -1332,7 +1332,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
             this.optionsButton.setHalfSize(true);
             this.guiHeight = 18 * rows + 1;
             this.brokenRecipes = new Boolean[rows * rowSize];
-            this.useSubstation = new Boolean[rows * rowSize];
+            this.useSubstitute = new Boolean[rows * rowSize];
             this.filteredRecipes = new boolean[rows * rowSize];
         }
 
@@ -1412,10 +1412,10 @@ public class GuiInterfaceTerminal extends AEBaseGui
             return false;
         }
 
-        public boolean hasUseSubstation() {
+        public boolean hasUseSubstitute() {
             boolean existsUnknown = false;
 
-            for (Boolean aBoolean : useSubstation) {
+            for (Boolean aBoolean : useSubstitute) {
                 if (aBoolean == null) {
                     existsUnknown = true;
                 } else if (aBoolean) {
@@ -1424,8 +1424,8 @@ public class GuiInterfaceTerminal extends AEBaseGui
             }
 
             if (existsUnknown) {
-                for (int idx = 0; idx < useSubstation.length; idx++) {
-                    if (slotIsUseSubstation(idx)) {
+                for (int idx = 0; idx < useSubstitute.length; idx++) {
+                    if (slotIsUseSubstitute(idx)) {
                         return true;
                     }
                 }
@@ -1443,13 +1443,13 @@ public class GuiInterfaceTerminal extends AEBaseGui
             return brokenRecipes[idx];
         }
 
-        public boolean slotIsUseSubstation(int idx) {
+        public boolean slotIsUseSubstitute(int idx) {
 
-            if (useSubstation[idx] == null) {
-                useSubstation[idx] = isUseSubstation(inv.getStackInSlot(idx));
+            if (useSubstitute[idx] == null) {
+                useSubstitute[idx] = isUseSubstitute(inv.getStackInSlot(idx));
             }
 
-            return useSubstation[idx];
+            return useSubstitute[idx];
         }
 
         public AppEngInternalInventory getInventory() {

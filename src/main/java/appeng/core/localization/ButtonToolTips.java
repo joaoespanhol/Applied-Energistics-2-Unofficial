@@ -234,9 +234,9 @@ public enum ButtonToolTips {
     CPUAllowAllDesc,
     CPUOnlyAllowPlayerDesc,
     CPUOnlyAllowNonPlayerDesc,
-    ToggleShowOnlySubstation,
-    ToggleShowOnlySubstationOnDesc,
-    ToggleShowOnlySubstationOffDesc;
+    ToggleShowOnlySubstitute,
+    ToggleShowOnlySubstituteOnDesc,
+    ToggleShowOnlySubstituteOffDesc;
 
     private final String root;
 

@@ -837,16 +837,16 @@ public class GuiImgButton extends GuiButton implements ITooltip {
             this.registerApp(
                     16 * 3 + 7,
                     Settings.ACTIONS,
-                    ActionItems.TOGGLE_SHOW_ONLY_SUBSTATION_ON,
-                    ButtonToolTips.ToggleShowOnlySubstation,
-                    ButtonToolTips.ToggleShowOnlySubstationOnDesc);
+                    ActionItems.TOGGLE_SHOW_ONLY_SUBSTITUTE_ON,
+                    ButtonToolTips.ToggleShowOnlySubstitute,
+                    ButtonToolTips.ToggleShowOnlySubstituteOnDesc);
 
             this.registerApp(
                     16 * 3 + 4,
                     Settings.ACTIONS,
-                    ActionItems.TOGGLE_SHOW_ONLY_SUBSTATION_OFF,
-                    ButtonToolTips.ToggleShowOnlySubstation,
-                    ButtonToolTips.ToggleShowOnlySubstationOffDesc);
+                    ActionItems.TOGGLE_SHOW_ONLY_SUBSTITUTE_OFF,
+                    ButtonToolTips.ToggleShowOnlySubstitute,
+                    ButtonToolTips.ToggleShowOnlySubstituteOffDesc);
 
         }
     }
