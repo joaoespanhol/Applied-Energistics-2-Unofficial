@@ -151,7 +151,6 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
                                             appeng.util.IterationCounter.fetchNewId());
 
                             for (final IAEItemStack o : ImmutableList.copyOf(fzlist)) {
-                                System.out.println(o);
                                 this.pushItemIntoTarget(destination, energy, gridInv, o);
                             }
                             if (this.itemToSend <= 0) {
