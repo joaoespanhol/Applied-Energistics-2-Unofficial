@@ -131,7 +131,7 @@ public interface IMEInventory<StackType extends IAEStack> {
      */
     default Collection<StackType> getSortedFuzzyItems(Collection<StackType> out, StackType fuzzyItem,
             FuzzyMode fuzzyMode, int iteration) {
-        return this.getSortedFuzzyItems(out, fuzzyItem, fuzzyMode, iteration);
+        return out;
     }
 
     /**
