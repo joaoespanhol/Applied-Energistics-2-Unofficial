@@ -834,6 +834,20 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.CPUAllowMode,
                     ButtonToolTips.CPUOnlyAllowNonPlayerDesc);
 
+            this.registerApp(
+                    16 * 3 + 7,
+                    Settings.ACTIONS,
+                    ActionItems.TOGGLE_SHOW_ONLY_SUBSTATION_ON,
+                    ButtonToolTips.ToggleShowOnlySubstation,
+                    ButtonToolTips.ToggleShowOnlySubstationOnDesc);
+
+            this.registerApp(
+                    16 * 3 + 4,
+                    Settings.ACTIONS,
+                    ActionItems.TOGGLE_SHOW_ONLY_SUBSTATION_OFF,
+                    ButtonToolTips.ToggleShowOnlySubstation,
+                    ButtonToolTips.ToggleShowOnlySubstationOffDesc);
+
         }
     }
 
