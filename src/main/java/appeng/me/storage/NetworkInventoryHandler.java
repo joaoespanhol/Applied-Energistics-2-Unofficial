@@ -345,7 +345,7 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         return false;
     }
 
-        /*
+    /*
      * ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking of
      * connected network inventories.
      */

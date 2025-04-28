@@ -157,7 +157,6 @@ public class PartExportBus extends PartSharedItemBus implements ICraftingRequest
                             if (this.itemToSend <= 0) {
                                 break;
                             }
-                            
 
                         } else {
                             this.pushItemIntoTarget(destination, energy, gridInv, ais);
