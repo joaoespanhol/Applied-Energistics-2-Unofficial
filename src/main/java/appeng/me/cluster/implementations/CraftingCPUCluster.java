@@ -196,6 +196,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final List<CraftUpdateListener> craftUpdateListeners = new ArrayList<>();
     private final List<CraftCancelListener> craftCancelListeners = new ArrayList<>();
     private final List<String> playersFollowingCurrentCraft = new ArrayList<>();
+    private final HashMap<ICraftingPatternDetails, List<ICraftingMedium>> parallelismProvider = new HashMap<>();
 
     public CraftingCPUCluster(final WorldCoord min, final WorldCoord max) {
         this.min = min;
@@ -647,6 +648,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
         this.waitingFor.resetStatus();
         this.waitingForMissing.resetStatus();
+        parallelismProvider.clear();
 
         for (final IAEItemStack is : items) {
             this.postCraftingStatusChange(is);
@@ -738,7 +740,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             final Entry<ICraftingPatternDetails, TaskProgress> craftingEntry = craftingTaskIterator.next();
 
             if (craftingEntry.getValue().value <= 0) {
-                this.tasks.remove(craftingEntry.getKey());
+                final ICraftingPatternDetails ceKey = craftingEntry.getKey();
+                this.tasks.remove(ceKey);
+                parallelismProvider.remove(ceKey);
                 craftingTaskIterator.remove();
                 continue;
             }
@@ -751,10 +755,27 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
             boolean pushedPattern = false;
             boolean didPatternCraft;
+
+            List<ICraftingMedium> mediumsList = cc.getMediums(details);
+            List<ICraftingMedium> mediumListCheck = null;
+
+            if (mediumsList.size() > 1) {
+                mediumListCheck = parallelismProvider.getOrDefault(details, new ArrayList<>(mediumsList));
+            }
+
             doWhileCraftingLoop: do {
                 InventoryCrafting craftingInventory = null;
                 didPatternCraft = false;
-                for (final ICraftingMedium medium : cc.getMediums(craftingEntry.getKey())) {
+
+                if (mediumListCheck != null) {
+                    if (mediumListCheck.isEmpty()) {
+                        mediumListCheck = new ArrayList<>(mediumsList);
+                    } else {
+                        mediumsList = new ArrayList<>(mediumListCheck);
+                    }
+                }
+
+                for (final ICraftingMedium medium : mediumsList) {
                     if (craftingEntry.getValue().value <= 0 || knownBusyMediums.contains(medium)) {
                         continue;
                     }
@@ -834,6 +855,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         pushedPattern = true;
                         this.isFakeCrafting = (medium instanceof DualityInterface di && di.isFakeCraftingMode());
 
+                        if (mediumListCheck != null) mediumListCheck.remove(medium);
+
                         // Process output items.
                         for (final IAEItemStack outputItemStack : details.getCondensedOutputs()) {
                             this.postChange(outputItemStack, this.machineSrc);
@@ -888,6 +911,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         }
 
                         if (this.remainingOperations == 0) {
+                            if (mediumListCheck != null) parallelismProvider.put(details, mediumListCheck);
                             return;
                         }
                         // Smart blocking is fine sending the same recipe again.
@@ -907,6 +931,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
                 }
             } while (didPatternCraft);
+
+            if (mediumListCheck != null) parallelismProvider.put(details, mediumListCheck);
 
             if (!pushedPattern) {
                 // If in all mediums no pattern was pushed,
