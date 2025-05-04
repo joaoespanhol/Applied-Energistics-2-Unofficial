@@ -92,6 +92,8 @@ public enum Settings {
 
     CRAFTING_ALLOW(EnumSet.allOf(CraftingAllow.class));
 
+    PINS_STATE(EnumSet.allOf(PinsState.class));
+
     private final EnumSet<? extends Enum<?>> values;
 
     Settings(@Nonnull final EnumSet<? extends Enum<?>> possibleOptions) {
