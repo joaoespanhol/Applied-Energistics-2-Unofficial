@@ -419,7 +419,7 @@ public class CraftingGridCache
     }
 
     @Override
-    public IItemList<IAEStack> getAvailableItems(final IItemList out, int iteration) {
+    public IItemList<IAEStack> getAvailableItems(final IItemList<IAEStack> out, int iteration) {
         // add craftable items!
         for (final IAEItemStack stack : this.craftableItems.keySet()) {
             out.addCrafting(stack);

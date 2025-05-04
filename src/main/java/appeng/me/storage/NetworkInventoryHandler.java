@@ -360,11 +360,11 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
             final IMEInventoryHandler<T> invObject = priorityInventory.get(i);
 
             if (!invObject.isAutoCraftingInventory()) {
-                final IItemList<T> inv = invObject.getAvailableItems(
-                        (IItemList<T>) invObject.getChannel().createList(),
+                final IItemList inv = invObject.getAvailableItems(
+                        invObject.getChannel().createList(),
                         appeng.util.IterationCounter.fetchNewId());
                 if (!inv.isEmpty()) {
-                    final Collection<T> fzlist = inv.findFuzzy(fuzzyItem, fuzzyMode);
+                    final Collection fzlist = inv.findFuzzy(fuzzyItem, fuzzyMode);
                     out.addAll(fzlist);
                 }
             }

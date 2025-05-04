@@ -449,7 +449,7 @@ public class CellInventory implements ICellInventory {
     }
 
     @Override
-    public IItemList<IAEItemStack> getAvailableItems(final IItemList out, int iteration) {
+    public IItemList<IAEItemStack> getAvailableItems(final IItemList<IAEItemStack> out, int iteration) {
         for (final IAEItemStack i : this.getCellItems()) {
             out.add(i);
         }

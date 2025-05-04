@@ -116,7 +116,7 @@ public class MEInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHa
     }
 
     @Override
-    public IItemList<T> getAvailableItems(final IItemList out, int iteration) {
+    public IItemList<T> getAvailableItems(final IItemList<T> out, int iteration) {
         if (!this.hasReadAccess && !isVisible()) {
             return out;
         }
