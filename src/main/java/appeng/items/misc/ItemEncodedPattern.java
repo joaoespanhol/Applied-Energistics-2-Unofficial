@@ -46,6 +46,7 @@ import appeng.helpers.PatternHelper;
 import appeng.items.AEBaseItem;
 import appeng.util.Platform;
 import cpw.mods.fml.common.registry.GameRegistry;
+import gregtech.common.items.ItemIntegratedCircuit;
 
 public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternItem {
 
@@ -258,7 +259,10 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
                                 + EnumChatFormatting.RESET
                                 + color
                                 + (isFluid ? Platform.getItemDisplayName(item).replace("drop of", "")
-                                        : Platform.getItemDisplayName(item)));
+                                        : item.getItem() instanceof ItemIntegratedCircuit
+                                                ? Platform.getItemDisplayName(item) + " "
+                                                        + item.getItemStack().getItemDamage()
+                                                : Platform.getItemDisplayName(item)));
             }
 
             first = false;
