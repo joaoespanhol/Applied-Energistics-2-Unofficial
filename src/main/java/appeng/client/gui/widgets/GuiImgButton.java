@@ -852,7 +852,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.PinsSection,
                     ButtonToolTips.PinsSectionDisabled);
 
-  this.registerApp(
+            this.registerApp(
                     16 * 6 + 9,
                     Settings.SUPER_WIRELESS_TOOL_GROUP_BY,
                     SuperWirelessToolGroupBy.Single,
@@ -887,7 +887,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.SuperWirelessToolHideBoundedNoName,
                     ButtonToolTips.SuperWirelessToolHideBoundedNoDesc);
 
-this.registerApp(
+            this.registerApp(
                     16 * 3 + 7,
                     Settings.ACTIONS,
                     ActionItems.TOGGLE_SHOW_ONLY_SUBSTITUTE_ON,
