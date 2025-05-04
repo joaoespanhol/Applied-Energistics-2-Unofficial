@@ -628,7 +628,7 @@ public class PartFormationPlane extends PartUpgradeable
     }
 
     @Override
-    public IItemList<IAEItemStack> getAvailableItems(final IItemList out, int iteration) {
+    public IItemList<IAEItemStack> getAvailableItems(final IItemList<IAEItemStack> out, int iteration) {
         return out;
     }
 

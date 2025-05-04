@@ -10,7 +10,6 @@
 
 package appeng.me.storage;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +18,6 @@ import javax.annotation.Nonnull;
 
 import appeng.api.config.AccessRestriction;
 import appeng.api.config.Actionable;
-import appeng.api.config.FuzzyMode;
 import appeng.api.config.SecurityPermissions;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
@@ -33,7 +31,6 @@ import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.cache.SecurityCache;
 import appeng.util.SortedArrayList;
-import appeng.util.item.ItemList;
 
 public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHandler<T> {
 
@@ -304,7 +301,6 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         this.surface(this, Actionable.SIMULATE);
 
         return out;
-
     }
 
     @Override
@@ -343,36 +339,6 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         this.myPass = iteration;
         this.getDepth(type).push(this);
         return false;
-    }
-
-    /*
-     * ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking of
-     * connected network inventories.
-     */
-    @Override
-    public Collection<T> getSortedFuzzyItems(Collection<T> out, T fuzzyItem, FuzzyMode fuzzyMode, int iteration) {
-        if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
-            return out;
-        }
-
-        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
-        final int size = priorityInventory.size();
-        for (int i = size - 1; i >= 0; i--) {
-            final IMEInventoryHandler<T> invObject = priorityInventory.get(i);
-
-            if (!invObject.isAutoCraftingInventory()) {
-                final IItemList<T> inv = invObject
-                        .getAvailableItems(new ItemList(), appeng.util.IterationCounter.fetchNewId());
-                if (!inv.isEmpty()) {
-                    final Collection<T> fzlist = inv.findFuzzy(fuzzyItem, fuzzyMode);
-                    out.addAll(fzlist);
-                }
-            }
-        }
-
-        this.surface(this, Actionable.SIMULATE);
-
-        return out;
     }
 
     @Override
