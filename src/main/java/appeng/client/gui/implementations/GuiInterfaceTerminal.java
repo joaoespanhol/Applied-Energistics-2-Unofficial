@@ -117,7 +117,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
     private final GuiImgButton guiButtonAssemblersOnly;
     private final GuiImgButton guiButtonBrokenRecipes;
     private final GuiImgButton guiButtonUseSubstitute;
-    private final GuiImgButton terminalStyleBox;
+    protected final GuiImgButton terminalStyleBox;
     private final GuiImgButton searchStringSave;
     private final GuiImgButton guiButtonSectionOrder;
     private boolean onlyMolecularAssemblers = false;
