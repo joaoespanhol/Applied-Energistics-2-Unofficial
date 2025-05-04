@@ -33,7 +33,6 @@ import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
 import appeng.me.cache.SecurityCache;
 import appeng.util.SortedArrayList;
-import appeng.util.item.ItemList;
 
 public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInventoryHandler<T> {
 
@@ -361,8 +360,9 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
             final IMEInventoryHandler<T> invObject = priorityInventory.get(i);
 
             if (!invObject.isAutoCraftingInventory()) {
-                final IItemList<T> inv = invObject
-                        .getAvailableItems(new ItemList(), appeng.util.IterationCounter.fetchNewId());
+                final IItemList<T> inv = invObject.getAvailableItems(
+                        (IItemList<T>) invObject.getChannel().createList(),
+                        appeng.util.IterationCounter.fetchNewId());
                 if (!inv.isEmpty()) {
                     final Collection<T> fzlist = inv.findFuzzy(fuzzyItem, fuzzyMode);
                     out.addAll(fzlist);
