@@ -248,7 +248,11 @@ public enum ButtonToolTips {
     SuperWirelessToolHideBoundedYesName,
     SuperWirelessToolHideBoundedYesDesc,
     SuperWirelessToolHideBoundedNoName,
-    SuperWirelessToolHideBoundedNoDesc;
+    SuperWirelessToolHideBoundedNoDesc,
+
+  ToggleShowOnlySubstitute,
+    ToggleShowOnlySubstituteOnDesc,
+    ToggleShowOnlySubstituteOffDesc;
 
     private final String root;
 

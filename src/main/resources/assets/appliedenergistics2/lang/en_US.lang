@@ -607,6 +607,10 @@ gui.tooltips.appliedenergistics2.scheduledreason.NO_TARGET=Cant find target to p
 gui.tooltips.appliedenergistics2.scheduledreason.NOT_ENOUGH_INGREDIENTS=Not enough ingredients
 gui.tooltips.appliedenergistics2.scheduledreason.SAME_NETWORK=Target interface in same network
 
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstitute=Toggles showing interfaces with substitute on
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOnDesc=Showing all interfaces
+gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOffDesc=Showing only interfaces with substitute on
+
 # Units
 gui.appliedenergistics2.units.appliedenergstics=AE
 gui.appliedenergistics2.units.ic2=Energy Units
