@@ -251,10 +251,10 @@ public class GuiInterfaceTerminal extends AEBaseGui
         guiButtonAssemblersOnly.xPosition = guiLeft - 18;
         guiButtonAssemblersOnly.yPosition = guiButtonHideFull.yPosition + 18;
 
-        offsetY = guiButtonAssemblersOnly.yPosition;
-
         guiButtonUseSubstitute.xPosition = guiLeft - 18;
         guiButtonUseSubstitute.yPosition = guiButtonAssemblersOnly.yPosition + 18;
+
+        offsetY = guiButtonUseSubstitute.yPosition;
 
         setSearchString();
 
