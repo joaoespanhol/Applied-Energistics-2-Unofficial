@@ -29,6 +29,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -116,7 +117,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
     private final GuiImgButton guiButtonAssemblersOnly;
     private final GuiImgButton guiButtonBrokenRecipes;
     private final GuiImgButton guiButtonUseSubstitute;
-    private final GuiImgButton terminalStyleBox;
+    protected final GuiImgButton terminalStyleBox;
     private final GuiImgButton searchStringSave;
     private final GuiImgButton guiButtonSectionOrder;
     private boolean onlyMolecularAssemblers = false;
@@ -132,6 +133,8 @@ public class GuiInterfaceTerminal extends AEBaseGui
     protected static String searchFieldOutputsText = "";
     protected static String searchFieldNamesText = "";
 
+    protected int offsetY;
+
     /*
      * Z-level Map (FLOATS) 0.0 - BACKGROUND 1.0 - ItemStacks 2.0 - Slot color overlays 20.0 - ItemStack overlays 21.0 -
      * Slot mouse hover overlay 200.0 - Tooltips
@@ -145,7 +148,11 @@ public class GuiInterfaceTerminal extends AEBaseGui
     private static final float MAGIC_RENDER_ITEM_Z = 50.0f;
 
     public GuiInterfaceTerminal(final InventoryPlayer inventoryPlayer, final PartInterfaceTerminal te) {
-        super(new ContainerInterfaceTerminal(inventoryPlayer, te));
+        this(new ContainerInterfaceTerminal(inventoryPlayer, te));
+    }
+
+    public GuiInterfaceTerminal(final Container cont) {
+        super(cont);
 
         this.setScrollBar(new GuiScrollbar());
         this.xSize = 208;
@@ -246,6 +253,8 @@ public class GuiInterfaceTerminal extends AEBaseGui
 
         guiButtonUseSubstitute.xPosition = guiLeft - 18;
         guiButtonUseSubstitute.yPosition = guiButtonAssemblersOnly.yPosition + 18;
+
+        offsetY = guiButtonUseSubstitute.yPosition; //last button pos for ae2fc
 
         setSearchString();
 
