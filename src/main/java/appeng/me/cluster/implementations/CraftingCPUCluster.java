@@ -77,6 +77,7 @@ import appeng.api.networking.crafting.ICraftingLink;
 import appeng.api.networking.crafting.ICraftingMedium;
 import appeng.api.networking.crafting.ICraftingMedium.BlockingMode;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
+import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.networking.crafting.ICraftingRequester;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.events.MENetworkCraftingCpuChange;
@@ -868,6 +869,25 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                             this.postChange(outputItemStack, this.machineSrc);
                             this.waitingFor.add(outputItemStack.copy());
                             this.postCraftingStatusChange(outputItemStack.copy());
+
+                            // Add this medium to the list of providers for the outputItemStack if not yet in there.
+                            providers.computeIfAbsent(outputItemStack, k -> new ArrayList<>());
+                            List<DimensionalCoord> list = providers.get(outputItemStack);
+                            if (medium instanceof ICraftingProvider) {
+                                TileEntity tile = this.getTile(medium);
+                                if (tile == null) continue;
+                                DimensionalCoord tileDimensionalCoord = new DimensionalCoord(tile);
+                                boolean isAdded = false;
+                                for (DimensionalCoord dimensionalCoord : list) {
+                                    if (dimensionalCoord.isEqual(tileDimensionalCoord)) {
+                                        isAdded = true;
+                                        break;
+                                    }
+                                }
+                                if (!isAdded) {
+                                    list.add(tileDimensionalCoord);
+                                }
+                            }
                         }
 
                         if (details.isCraftable()) {
