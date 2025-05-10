@@ -110,6 +110,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
     private int currentMouseX = 0;
     private int currentMouseY = 0;
     private boolean isPinsHost = false;
+    private boolean isPinsActive = false;
 
     public GuiMEMonitorable(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         this(inventoryPlayer, te, new ContainerMEMonitorable(inventoryPlayer, te));
@@ -149,6 +150,10 @@ public class GuiMEMonitorable extends AEBaseMEGui
 
         if (te instanceof ITerminalPins) {
             isPinsHost = true;
+
+            if (configSrc.getSetting(Settings.PINS_STATE) == PinsState.ACTIVE) {
+                isPinsActive = true;
+            }
         }
 
         this.searchField = new MEGuiTextField(90, 12, ButtonToolTips.SearchStringTooltip.getLocal()) {
@@ -178,7 +183,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
         this.getScrollBar().setTop(18).setLeft(175).setHeight(this.rows * 18 - 2);
         this.getScrollBar().setRange(
                 0,
-                (this.repo.size() + this.perRow - 1) / this.perRow - this.rows,
+                (this.repo.size() + (isPinsActive ? 9 : 0) + this.perRow - 1) / this.perRow - this.rows,
                 Math.max(1, this.rows / 6));
     }
 
@@ -234,21 +239,19 @@ public class GuiMEMonitorable extends AEBaseMEGui
         this.rows = calculateRowsCount();
 
         this.getMeSlots().clear();
-        if (isPinsHost && configSrc.getSetting(Settings.PINS_STATE) == PinsState.ACTIVE) {
+        if (isPinsActive) {
             for (int x = 0; x < this.perRow; x++) {
                 this.getMeSlots().add(new PinSlotME(this.repo, x, this.offsetX + x * 18, 18));
             }
         }
-        for (int y = 0; y < this.rows
-                - (isPinsHost && configSrc.getSetting(Settings.PINS_STATE) == PinsState.ACTIVE ? 1 : 0); y++) {
+        for (int y = 0; y < this.rows - (isPinsActive ? 1 : 0); y++) {
             for (int x = 0; x < this.perRow; x++) {
                 this.getMeSlots().add(
                         new InternalSlotME(
                                 this.repo,
                                 x + y * this.perRow,
                                 this.offsetX + x * 18,
-                                18 + (isPinsHost && configSrc.getSetting(Settings.PINS_STATE) == PinsState.ACTIVE ? 18
-                                        : 0) + y * 18));
+                                18 + (isPinsActive ? 18 : 0) + y * 18));
             }
         }
 
@@ -621,7 +624,9 @@ public class GuiMEMonitorable extends AEBaseMEGui
             this.typeFilter.set(this.configSrc.getSetting(Settings.TYPE_FILTER));
         }
         if (this.pinsState != null) {
-            this.pinsState.set(this.configSrc.getSetting(Settings.PINS_STATE));
+            Enum<?> state = this.configSrc.getSetting(Settings.PINS_STATE);
+            this.pinsState.set(state);
+            isPinsActive = state == PinsState.ACTIVE;
             initGui();
         }
 

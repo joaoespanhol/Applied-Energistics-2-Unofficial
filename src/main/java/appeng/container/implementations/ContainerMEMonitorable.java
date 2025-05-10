@@ -12,6 +12,7 @@ package appeng.container.implementations;
 
 import java.io.IOException;
 import java.nio.BufferOverflowException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.annotation.Nonnull;
@@ -471,6 +472,12 @@ public class ContainerMEMonitorable extends AEBaseContainer
                         final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
                         final ImmutableList<ICraftingCPU> cpuSet = cc.getCpus().asList();
 
+                        final ArrayList<IAEItemStack> checkCache = new ArrayList<>();
+                        for (int i = 0; i < api.getSizeInventory(); i++) {
+                            IAEItemStack ais = api.getAEStackInSlot(i);
+                            if (ais != null) checkCache.add(ais);
+                        }
+
                         for (int i = 0; i < api.getSizeInventory(); i++) {
                             IAEItemStack ais = api.getAEStackInSlot(i);
                             if (ais == null) {
@@ -483,6 +490,7 @@ public class ContainerMEMonitorable extends AEBaseContainer
                                         break;
                                     }
                                 }
+
                                 if (ais == null) {
                                     while (jj < cpuSet.size()) {
                                         ICraftingCPU cpu = cpuSet.get(jj);
@@ -494,6 +502,8 @@ public class ContainerMEMonitorable extends AEBaseContainer
                                         }
                                     }
                                 }
+
+                                if (ais != null && checkCache.contains(ais)) ais = null;
                             }
                             if (ais != null) ais.setStackSize(0);
                             newPins[i] = ais;
