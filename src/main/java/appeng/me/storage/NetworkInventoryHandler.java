@@ -341,6 +341,37 @@ public class NetworkInventoryHandler<T extends IAEStack<T>> implements IMEInvent
         return false;
     }
 
+    /*
+     * ME Network Inventory checker. Currently used in PartExportBus only, due to reverse-priority order checking of
+     * connected network inventories.
+     */
+    @Override
+    public Collection<T> getSortedFuzzyItems(Collection<T> out, T fuzzyItem, FuzzyMode fuzzyMode, int iteration) {
+        if (this.diveIteration(this, Actionable.SIMULATE, iteration)) {
+            return out;
+        }
+
+        final List<IMEInventoryHandler<T>> priorityInventory = this.priorityInventory;
+        final int size = priorityInventory.size();
+        for (int i = size - 1; i >= 0; i--) {
+            final IMEInventoryHandler<T> invObject = priorityInventory.get(i);
+
+            if (!invObject.isAutoCraftingInventory()) {
+                final IItemList inv = invObject.getAvailableItems(
+                        invObject.getChannel().createList(),
+                        appeng.util.IterationCounter.fetchNewId());
+                if (!inv.isEmpty()) {
+                    final Collection fzlist = inv.findFuzzy(fuzzyItem, fuzzyMode);
+                    out.addAll(fzlist);
+                }
+            }
+        }
+
+        this.surface(this, Actionable.SIMULATE);
+
+        return out;
+    }
+
     @Override
     public StorageChannel getChannel() {
         return this.myChannel;
