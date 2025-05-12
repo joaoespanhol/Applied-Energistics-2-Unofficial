@@ -56,11 +56,7 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
     private static final Map<ItemStack, ItemStack> SIMPLE_CACHE = new WeakHashMap<>();
     private static Item FLUID_DROP_ITEM;
     private static boolean checkedCache = false;
-    private static boolean isGTLoaded = false;
-
-    static {
-        isGTLoaded = IntegrationRegistry.INSTANCE.isEnabled(IntegrationType.GT);
-    }
+    private static final boolean isGTLoaded = IntegrationRegistry.INSTANCE.isEnabled(IntegrationType.GT);
 
     public ItemEncodedPattern() {
         this.setFeature(EnumSet.of(AEFeature.Patterns));
@@ -246,7 +242,7 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
             }
 
             String itemCountText = NumberFormat.getNumberInstance(Locale.US).format(itemCount);
-            String itemText = "";
+            String itemText;
             if (isGTLoaded) {
                 itemText = isFluid ? Platform.getItemDisplayName(item).replace("drop of", "")
                         : item.getItem() instanceof ItemIntegratedCircuit
