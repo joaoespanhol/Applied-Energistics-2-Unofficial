@@ -22,6 +22,7 @@ import appeng.api.networking.IGridNode;
 import appeng.api.util.AEColor;
 import appeng.api.util.DimensionalCoord;
 import appeng.core.AEConfig;
+import appeng.helpers.SuperWirelessToolDataObject;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.tile.TileEvent;
 import appeng.tile.events.TileEventType;
@@ -234,5 +235,18 @@ public class TileWirelessConnector extends AENetworkTile implements IColorableTi
 
     public int getFreeSlots() {
         return hasConnection() ? 0 : 1;
+    }
+
+    public SuperWirelessToolDataObject getDataForTool(int i) {
+        return new SuperWirelessToolDataObject(
+                i,
+                this.hasCustomName() ? this.getCustomName() : this.getBlockType().getLocalizedName(),
+                getLocation(),
+                hasConnection(),
+                getTarget(),
+                getColor(),
+                getChannelUsage(),
+                isHub(),
+                getFreeSlots());
     }
 }
