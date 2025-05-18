@@ -20,6 +20,7 @@ import net.minecraft.item.ItemStack;
 
 import appeng.api.AEApi;
 import appeng.api.config.AccessRestriction;
+import appeng.api.config.ActionItems;
 import appeng.api.config.FuzzyMode;
 import appeng.api.config.SecurityPermissions;
 import appeng.api.config.Settings;
@@ -29,15 +30,17 @@ import appeng.api.config.YesNo;
 import appeng.api.storage.IMEInventory;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
+import appeng.api.util.IConfigManager;
 import appeng.container.guisync.GuiSync;
 import appeng.container.slot.OptionalSlotFakeTypeOnly;
 import appeng.container.slot.SlotRestrictedInput;
 import appeng.parts.misc.PartStorageBus;
+import appeng.util.ConfigManager;
+import appeng.util.IConfigManagerHost;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
-import appeng.util.iterators.NullIterator;
 
-public class ContainerStorageBus extends ContainerUpgradeable {
+public class ContainerStorageBus extends ContainerUpgradeable implements IConfigManagerHost {
 
     private final PartStorageBus storageBus;
 
@@ -189,36 +192,75 @@ public class ContainerStorageBus extends ContainerUpgradeable {
         return upgrades > (idx - 2);
     }
 
+    private static Iterator<IAEItemStack> PartitionIterator = null;
+    private static final ConfigManager PartitionAction; // TODO: find a way to synchronize the client and server
+    private  static boolean HasNext = false;
+    static {
+        PartitionAction = new ConfigManager((manager, settingName, newValue) -> {});
+        PartitionAction.registerSetting(Settings.ACTIONS, ActionItems.WRENCH);
+    }
+
     public void clear() {
         final IInventory inv = this.getUpgradeable().getInventoryByName("config");
         for (int x = 0; x < inv.getSizeInventory(); x++) {
             inv.setInventorySlotContents(x, null);
         }
+        clearPartitionIterator();
         this.detectAndSendChanges();
     }
 
-    public void partition() {
+    private static void clearPartitionIterator() {
+        if (PartitionIterator != null) {
+            PartitionIterator = null;
+            HasNext = false;
+            PartitionAction.putSetting(Settings.ACTIONS, ActionItems.WRENCH);
+        }
+    }
+
+    public void partition(boolean clearIterator) {
+        if (clearIterator) {
+            clearPartitionIterator();
+            return;
+        }
         final IInventory inv = this.getUpgradeable().getInventoryByName("config");
 
         final IMEInventory<IAEItemStack> cellInv = this.storageBus.getInternalHandler();
 
-        Iterator<IAEItemStack> i = new NullIterator<>();
-        if (cellInv != null) {
+        if (cellInv == null) {
+            clearPartitionIterator();
+            PartitionAction.putSetting(Settings.ACTIONS, ActionItems.WRENCH);
+            return;
+        }
+
+        if (PartitionIterator == null) {
             final IItemList<IAEItemStack> list = cellInv
                     .getAvailableItems(AEApi.instance().storage().createItemList(), IterationCounter.fetchNewId());
-            i = list.iterator();
+            PartitionIterator = list.iterator();
+            PartitionAction.putSetting(Settings.ACTIONS, ActionItems.CELL_RESTRICTION);
+            HasNext = PartitionIterator.hasNext(); // cache HasNext, call next internally
         }
 
         for (int x = 0; x < inv.getSizeInventory(); x++) {
-            if (i.hasNext() && this.isSlotEnabled((x / 9) - 2)) {
-                final ItemStack g = i.next().getItemStack();
-                g.stackSize = 1;
-                inv.setInventorySlotContents(x, g);
-            } else {
+            if (PartitionIterator == null) {
                 inv.setInventorySlotContents(x, null);
+                continue;
             }
-        }
+            // invPartitionIteratorHasnext = invPartitionIteratorHasnext || invPartitionIterator.hasNext();
+            if (this.isSlotEnabled(x / 9)) {
+                if (HasNext) {
+                    final ItemStack is = PartitionIterator.next().getItemStack();
+                    is.stackSize = 1;
+                    HasNext = PartitionIterator.hasNext();
+                    inv.setInventorySlotContents(x, is);
+                } else {
+                    clearPartitionIterator();
+                    inv.setInventorySlotContents(x, null);
+                }
+            } else inv.setInventorySlotContents(x, null);
 
+        }
+        if (!HasNext)
+            clearPartitionIterator();
         this.detectAndSendChanges();
     }
 
@@ -229,6 +271,14 @@ public class ContainerStorageBus extends ContainerUpgradeable {
     public StorageFilter getStorageFilter() {
         return this.storageFilter;
     }
+
+    public ActionItems getPartitionMode() {
+        return (ActionItems) PartitionAction.getSetting(Settings.ACTIONS);
+    }
+
+//    public void setPartitionMode(final ActionItems action) {
+//        PartitionAction.putSetting(Settings.ACTIONS, action);
+//    }
 
     private void setStorageFilter(final StorageFilter storageFilter) {
         this.storageFilter = storageFilter;
@@ -246,4 +296,8 @@ public class ContainerStorageBus extends ContainerUpgradeable {
         this.rwMode = rwMode;
     }
 
+    @Override
+    public void updateSetting(IConfigManager manager, Enum settingName, Enum newValue) {
+
+    }
 }
