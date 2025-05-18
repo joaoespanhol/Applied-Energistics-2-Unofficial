@@ -49,6 +49,7 @@ public class GuiAeButton extends GuiButton implements ITooltip {
             this.drawHorizontalLine(xPosition, xPosition + width - 1, yPosition + height - 1, 0xFF000000);
         }
     }
+
     @Override
     public int xPos() {
         return this.xPosition;

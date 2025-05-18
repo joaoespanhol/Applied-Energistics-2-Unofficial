@@ -194,7 +194,7 @@ public class ContainerStorageBus extends ContainerUpgradeable implements IConfig
 
     private static Iterator<IAEItemStack> PartitionIterator = null;
     private static final ConfigManager PartitionAction; // TODO: find a way to synchronize the client and server
-    private  static boolean HasNext = false;
+    private static boolean HasNext = false;
     static {
         PartitionAction = new ConfigManager((manager, settingName, newValue) -> {});
         PartitionAction.registerSetting(Settings.ACTIONS, ActionItems.WRENCH);
@@ -259,8 +259,7 @@ public class ContainerStorageBus extends ContainerUpgradeable implements IConfig
             } else inv.setInventorySlotContents(x, null);
 
         }
-        if (!HasNext)
-            clearPartitionIterator();
+        if (!HasNext) clearPartitionIterator();
         this.detectAndSendChanges();
     }
 
@@ -276,9 +275,9 @@ public class ContainerStorageBus extends ContainerUpgradeable implements IConfig
         return (ActionItems) PartitionAction.getSetting(Settings.ACTIONS);
     }
 
-//    public void setPartitionMode(final ActionItems action) {
-//        PartitionAction.putSetting(Settings.ACTIONS, action);
-//    }
+    // public void setPartitionMode(final ActionItems action) {
+    // PartitionAction.putSetting(Settings.ACTIONS, action);
+    // }
 
     private void setStorageFilter(final StorageFilter storageFilter) {
         this.storageFilter = storageFilter;
