@@ -125,6 +125,7 @@ public abstract class InventoryAdaptor implements Iterable<ItemSlot> {
 
     public static InventoryAdaptor getNullAdaptor() {
         return new AdaptorNull();
+    }
 
     public IItemList<IAEItemStack> getAvailableItems(IItemList<IAEItemStack> out, int iteration) {
         return out;

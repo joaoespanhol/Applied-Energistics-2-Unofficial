@@ -109,8 +109,8 @@ import appeng.util.IConfigManagerHost;
 import appeng.util.InventoryAdaptor;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
-import appeng.util.inv.AdaptorConduitBandle;
 import appeng.util.ScheduledReason;
+import appeng.util.inv.AdaptorConduitBandle;
 import appeng.util.inv.AdaptorIInventory;
 import appeng.util.inv.IInventoryDestination;
 import appeng.util.inv.ItemSlot;
@@ -1116,10 +1116,10 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
                         try {
                             if (((IInterfaceHost) te).getInterfaceDuality().sameGrid(this.gridProxy.getGrid())) {
                                 if (!foundReason) {
-                                  foundReason = true;
-                                  scheduledReason = ScheduledReason.SAME_NETWORK;
+                                    foundReason = true;
+                                    scheduledReason = ScheduledReason.SAME_NETWORK;
                                 }
-                              
+
                                 possibleDirectionsDefault.remove(s);;
                                 continue;
                             }
