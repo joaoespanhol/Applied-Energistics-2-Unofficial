@@ -598,7 +598,23 @@ public class CraftingGridCache
     }
 
     @Override
+    public boolean canEmitFor(final IAEItemStack someItem) {
+        return this.emitableItems.contains(convertStack(someItem));
+    }
+
+    @Override
     public boolean isRequesting(final IAEStack<?> what) {
+        for (final CraftingCPUCluster cluster : this.craftingCPUClusters) {
+            if (cluster.isMaking(what)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isRequesting(final IAEItemStack what) {
         for (final CraftingCPUCluster cluster : this.craftingCPUClusters) {
             if (cluster.isMaking(what)) {
                 return true;

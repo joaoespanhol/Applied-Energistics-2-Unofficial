@@ -153,7 +153,7 @@ public class PatternHelper implements ICraftingPatternDetails, Comparable<Patter
 
     @Override
     public synchronized boolean isValidItemForSlot(final int slotIndex, final IAEStack<?> i, final World w) {
-        if (!isCrafting) return isValidItemForSlot(slotIndex, ((IAEItemStack) i).getItemStack(), w);
+        if (isCrafting) return isValidItemForSlot(slotIndex, ((IAEItemStack) i).getItemStack(), w);
         else throw new IllegalStateException("Only crafting recipes supported.");
     }
 
@@ -214,18 +214,8 @@ public class PatternHelper implements ICraftingPatternDetails, Comparable<Patter
     }
 
     @Override
-    public IAEStack<?>[] getAEInputs() {
-        return inputs;
-    }
-
-    @Override
     public IAEItemStack[] getCondensedInputs() {
         return this.condensedInputs;
-    }
-
-    @Override
-    public IAEStack<?>[] getCondensedAEInputs() {
-        return condensedInputs;
     }
 
     @Override
@@ -234,18 +224,8 @@ public class PatternHelper implements ICraftingPatternDetails, Comparable<Patter
     }
 
     @Override
-    public IAEStack<?>[] getCondensedAEOutputs() {
-        return condensedOutputs;
-    }
-
-    @Override
     public IAEItemStack[] getOutputs() {
         return this.outputs;
-    }
-
-    @Override
-    public IAEStack<?>[] getAEOutputs() {
-        return outputs;
     }
 
     @Override
