@@ -133,77 +133,77 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
             return;
         }
 
-            if (cellInventory != null) {
-                lines.add(
-                        NumberFormat.getInstance().format(cellInventory.getUsedBytes()) + " "
-                                + GuiText.Of.getLocal()
-                                + ' '
-                                + NumberFormat.getInstance().format(cellInventory.getTotalBytes())
-                                + ' '
-                                + GuiText.BytesUsed.getLocal());
+        if (cellInventory != null) {
+            lines.add(
+                    NumberFormat.getInstance().format(cellInventory.getUsedBytes()) + " "
+                            + GuiText.Of.getLocal()
+                            + ' '
+                            + NumberFormat.getInstance().format(cellInventory.getTotalBytes())
+                            + ' '
+                            + GuiText.BytesUsed.getLocal());
 
-        lines.add(
-                NumberFormat.getInstance().format(cellInventory.getStoredItemTypes()) + " "
-                        + GuiText.Of.getLocal()
-                        + ' '
-                        + NumberFormat.getInstance().format(cellInventory.getMaxItemTypes())
-                        + ' '
-                        + GuiText.Types.getLocal());
+            lines.add(
+                    NumberFormat.getInstance().format(cellInventory.getStoredItemTypes()) + " "
+                            + GuiText.Of.getLocal()
+                            + ' '
+                            + NumberFormat.getInstance().format(cellInventory.getMaxItemTypes())
+                            + ' '
+                            + GuiText.Types.getLocal());
 
-        if (handler.isPreformatted()) {
-            String filter = cellInventory.getOreFilter();
-            if (filter.isEmpty()) {
-                final String list = (handler.getIncludeExcludeMode() == IncludeExclude.WHITELIST ? GuiText.Included
-                        : GuiText.Excluded).getLocal();
+            if (handler.isPreformatted()) {
+                String filter = cellInventory.getOreFilter();
+                if (filter.isEmpty()) {
+                    final String list = (handler.getIncludeExcludeMode() == IncludeExclude.WHITELIST ? GuiText.Included
+                            : GuiText.Excluded).getLocal();
 
-                if (handler.isFuzzy()) {
-                    lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Fuzzy.getLocal());
-                } else {
-                    lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Precise.getLocal());
-                }
-                if (GuiScreen.isShiftKeyDown()) {
-                    int usedFilters = 0;
-                    ArrayList<String> filtersTexts = new ArrayList<>();
-                    for (int i = 0; i < cellInventory.getConfigInventory().getSizeInventory(); ++i) {
-                        ItemStack s = cellInventory.getConfigInventory().getStackInSlot(i);
-                        if (s != null) {
-                            usedFilters++;
-                            filtersTexts.add(s.getDisplayName());
+                    if (handler.isFuzzy()) {
+                        lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Fuzzy.getLocal());
+                    } else {
+                        lines.add(GuiText.Partitioned.getLocal() + " - " + list + ' ' + GuiText.Precise.getLocal());
+                    }
+                    if (GuiScreen.isShiftKeyDown()) {
+                        int usedFilters = 0;
+                        ArrayList<String> filtersTexts = new ArrayList<>();
+                        for (int i = 0; i < cellInventory.getConfigInventory().getSizeInventory(); ++i) {
+                            ItemStack s = cellInventory.getConfigInventory().getStackInSlot(i);
+                            if (s != null) {
+                                usedFilters++;
+                                filtersTexts.add(s.getDisplayName());
+                            }
                         }
-                    }
-                    lines.add(
-                            GuiText.Filter.getLocal() + " ("
-                                    + usedFilters
-                                    + "/"
-                                    + cellInventory.getConfigInventory().getSizeInventory()
-                                    + ")"
-                                    + ": ");
+                        lines.add(
+                                GuiText.Filter.getLocal() + " ("
+                                        + usedFilters
+                                        + "/"
+                                        + cellInventory.getConfigInventory().getSizeInventory()
+                                        + ")"
+                                        + ": ");
 
-                    if (!filtersTexts.isEmpty()) {
-                        lines.addAll(filtersTexts);
-                    }
+                        if (!filtersTexts.isEmpty()) {
+                            lines.addAll(filtersTexts);
+                        }
 
+                    }
+                } else {
+                    lines.add(GuiText.PartitionedOre.getLocal() + " : " + filter);
                 }
-            } else {
-                lines.add(GuiText.PartitionedOre.getLocal() + " : " + filter);
-            }
 
-            if (handler.getSticky()) {
-                lines.add(GuiText.Sticky.getLocal());
+                if (handler.getSticky()) {
+                    lines.add(GuiText.Sticky.getLocal());
+                }
             }
-        }
-        List<Object> restricted = handler.getRestricted();
-        if (restricted != null && ((long) restricted.get(0) != 0 || (byte) restricted.get(1) != 0)) {
-            lines.add(GuiText.Restricted.getLocal());
-            if (GuiScreen.isShiftKeyDown()) {
-                NumberFormat nf = NumberFormat.getNumberInstance();
-                if ((long) restricted.get(0) != 0)
-                    lines.add(GuiText.MaxItems.getLocal() + " " + nf.format((long) restricted.get(0)));
-                if ((byte) restricted.get(1) != 0) lines.add(GuiText.MaxTypes.getLocal() + " " + restricted.get(1));
+            List<Object> restricted = handler.getRestricted();
+            if (restricted != null && ((long) restricted.get(0) != 0 || (byte) restricted.get(1) != 0)) {
+                lines.add(GuiText.Restricted.getLocal());
+                if (GuiScreen.isShiftKeyDown()) {
+                    NumberFormat nf = NumberFormat.getNumberInstance();
+                    if ((long) restricted.get(0) != 0)
+                        lines.add(GuiText.MaxItems.getLocal() + " " + nf.format((long) restricted.get(0)));
+                    if ((byte) restricted.get(1) != 0) lines.add(GuiText.MaxTypes.getLocal() + " " + restricted.get(1));
+                }
             }
         }
     }
-
     @Override
     public int getBytes(final ItemStack cellItem) {
         return (int) this.totalBytes;
