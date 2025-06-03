@@ -128,17 +128,19 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
             return;
         }
 
-        if (!(handler.getCellInv() instanceof CellInventory cellInventory)) {
+        final CellInventory cellInventory = (CellInventory) handler.getCellInv();
+        if (cellInventory == null) {
             return;
         }
 
-        lines.add(
-                NumberFormat.getInstance().format(cellInventory.getUsedBytes()) + " "
-                        + GuiText.Of.getLocal()
-                        + ' '
-                        + NumberFormat.getInstance().format(cellInventory.getTotalBytes())
-                        + ' '
-                        + GuiText.BytesUsed.getLocal());
+            if (cellInventory != null) {
+                lines.add(
+                        NumberFormat.getInstance().format(cellInventory.getUsedBytes()) + " "
+                                + GuiText.Of.getLocal()
+                                + ' '
+                                + NumberFormat.getInstance().format(cellInventory.getTotalBytes())
+                                + ' '
+                                + GuiText.BytesUsed.getLocal());
 
         lines.add(
                 NumberFormat.getInstance().format(cellInventory.getStoredItemTypes()) + " "

@@ -118,6 +118,11 @@ public class ItemFilterList implements IItemList<IAEItemStack> {
         }
     }
 
+    @Override
+    public byte getStackType() {
+        return LIST_ITEM;
+    }
+
     public void clear() {
         this.records.clear();
     }

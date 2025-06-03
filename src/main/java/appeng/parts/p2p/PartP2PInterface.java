@@ -1,5 +1,7 @@
 package appeng.parts.p2p;
 
+import static appeng.util.Platform.stackConvertPacket;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -38,6 +40,7 @@ import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.IStorageMonitorable;
 import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IAEStack;
 import appeng.api.util.IConfigManager;
 import appeng.core.sync.GuiBridge;
 import appeng.helpers.DualityInterface;
@@ -131,14 +134,12 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
                 super.addDrops(drops);
                 try {
                     for (PartP2PInterface p2p : getOutputs()) p2p.duality.addDrops(drops);
-                } catch (GridAccessException e) {
-
-                }
+                } catch (GridAccessException ignored) {}
             } else {
                 if (this.getWaitingToSend() != null) {
-                    for (final ItemStack is : this.getWaitingToSend()) {
+                    for (final IAEStack<?> is : this.getWaitingToSend()) {
                         if (is != null) {
-                            drops.add(is);
+                            drops.add(stackConvertPacket(is).getItemStack());
                         }
                     }
                 }
