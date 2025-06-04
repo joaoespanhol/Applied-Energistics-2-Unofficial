@@ -204,6 +204,7 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
             }
         }
     }
+
     @Override
     public int getBytes(final ItemStack cellItem) {
         return (int) this.totalBytes;
