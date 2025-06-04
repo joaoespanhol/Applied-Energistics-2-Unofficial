@@ -622,14 +622,18 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         /*
          * This returns a NetworkInventoryHandler object. getSortedFuzzyItems has an Override definition in there.
          */
-        if (cell instanceof NetworkMonitor<?>) {
-            fzlist = ((NetworkMonitor<IAEItemStack>) cell).getHandler().getSortedFuzzyItems(
+        if (destination instanceof NetworkMonitor<?>) {
+            fzlist = ((NetworkMonitor<IAEItemStack>) destination).getHandler().getSortedFuzzyItems(
                     new ArrayList<>(),
                     itemStack,
                     ((FuzzyMode) cm.getSetting(Settings.FUZZY_MODE)),
                     iteration);
 
-        } else return new IAEItemStack[] { null, fuzzyItemStack };
+        } /*
+           * else if (!(destination instanceof NetworkMonitor<?>)) { throw new IllegalStateException(
+           * "Function definition protection (cannot call correct override for getSortedFuzzyItems)"); } <-- throw error
+           * here...?
+           */
 
         if (fzlist.iterator().hasNext()) {
             fuzzyItemStack = fzlist.iterator().next();

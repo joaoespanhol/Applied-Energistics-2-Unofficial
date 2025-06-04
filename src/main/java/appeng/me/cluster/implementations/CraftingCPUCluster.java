@@ -1147,8 +1147,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         final MECraftingInventory ci = new MECraftingInventory(sg, true, false, false);
 
         final MECraftingInventory backupInventory = new MECraftingInventory(inventory);
-        final IItemList<IAEItemStack> backupWaitingForMissing = AEApi.instance().storage().createItemList();
-        for (IAEItemStack ais : waitingForMissing) {
+        final IItemList<IAEStack<?>> backupWaitingForMissing = AEApi.instance().storage().createAEStackList();
+        for (IAEStack<?> ais : waitingForMissing) {
             backupWaitingForMissing.add(ais);
         }
         final Map<ICraftingPatternDetails, TaskProgress> tasksBackup = new TreeMap<>(priorityComparator);
