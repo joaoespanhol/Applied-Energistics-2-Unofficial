@@ -10,6 +10,8 @@
 
 package appeng.items.misc;
 
+import static appeng.helpers.PatternHelper.convertToCondensedAEList;
+import static appeng.helpers.UltimatePatternHelper.loadIAEStackFromNBT;
 import static appeng.util.Platform.stackConvertPacket;
 
 import java.text.NumberFormat;
@@ -129,10 +131,10 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
             final ItemStack unknownItem = new ItemStack(Blocks.fire);
             unknownItem.setStackDisplayName(GuiText.UnknownItem.getLocal());
 
-            inItems = PatternHelper.convertToCondensedList(
-                    PatternHelper.loadIAEItemStackFromNBT(encodedValue.getTagList("in", 10), false, unknownItem));
-            outItems = PatternHelper.convertToCondensedList(
-                    PatternHelper.loadIAEItemStackFromNBT(encodedValue.getTagList("out", 10), false, unknownItem));
+            inItems = convertToCondensedAEList(
+                    loadIAEStackFromNBT(encodedValue.getTagList("in", 10), false, unknownItem));
+            outItems = convertToCondensedAEList(
+                    loadIAEStackFromNBT(encodedValue.getTagList("out", 10), false, unknownItem));
         } else {
             inItems = details.getCondensedAEInputs();
             outItems = details.getCondensedAEOutputs();

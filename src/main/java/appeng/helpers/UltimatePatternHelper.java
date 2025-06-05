@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 
+import appeng.api.AEApi;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
@@ -210,5 +211,30 @@ public class UltimatePatternHelper implements ICraftingPatternDetails, Comparabl
     @Override
     public synchronized boolean isValidItemForSlot(final int slotIndex, final ItemStack i, final World w) {
         throw new IllegalStateException("Only crafting recipes supported.");
+    }
+
+    public static IAEStack<?>[] loadIAEStackFromNBT(final NBTTagList tags, boolean saveOrder,
+            final ItemStack unknownItem) {
+        final List<IAEStack<?>> items = new ArrayList<>();
+
+        for (int x = 0; x < tags.tagCount(); x++) {
+            final NBTTagCompound tag = tags.getCompoundTagAt(x);
+
+            if (tag.hasNoTags()) {
+                continue;
+            }
+
+            IAEStack<?> gs = readStackNBT(tag, true);
+
+            if (gs == null && unknownItem != null) {
+                gs = AEApi.instance().storage().createItemStack(unknownItem);
+            }
+
+            if (gs != null || saveOrder) {
+                items.add(gs);
+            }
+        }
+
+        return items.toArray(new IAEStack<?>[0]);
     }
 }
