@@ -132,11 +132,8 @@ public class GuiStorageBus extends GuiUpgradeable {
 
         try {
             if (btn == this.partition) {
-                if (backwards) {
-                    NetworkHandler.instance.sendToServer(new PacketValueConfig("StorageBus.Action", "Partition-Clear"));
-                } else {
-                    NetworkHandler.instance.sendToServer(new PacketValueConfig("StorageBus.Action", "Partition"));
-                }
+                NetworkHandler.instance.sendToServer(
+                        new PacketValueConfig("StorageBus.Action", backwards ? "Partition-Clear" : "Partition"));
             } else if (btn == this.clear) {
                 NetworkHandler.instance.sendToServer(new PacketValueConfig("StorageBus.Action", "Clear"));
             } else if (btn == this.priority) {
