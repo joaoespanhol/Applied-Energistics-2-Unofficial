@@ -199,20 +199,20 @@ public class ContainerNetworkStatus extends AEBaseContainer {
                         for (final IGridNode machine : this.network.getMachines(machineClass)) {
                             final IGridBlock blk = machine.getGridBlock();
                             final ItemStack is = blk.getMachineRepresentation();
-                            if (is != null && is.getItem() != null) {
-                                final IAEItemStack ais = AEItemStack.create(is);
-                                ais.setStackSize(1);
-                                ais.setCountRequestable(
-                                        (long) PowerMultiplier.CONFIG.multiply(blk.getIdlePowerUsage() * 100.0));
-                                list.add(ais);
-                                if (dcMap.containsKey(ais)) {
-                                    ArrayList<DimensionalCoord> dcList = dcMap.get(ais);
-                                    dcList.add(blk.getLocation());
-                                } else {
-                                    ArrayList<DimensionalCoord> dcList = new ArrayList<>();
-                                    dcList.add(blk.getLocation());
-                                    dcMap.put(ais, dcList);
-                                }
+                            if (is == null || is.getItem() == null) continue;
+
+                            final IAEItemStack ais = AEItemStack.create(is);
+                            ais.setStackSize(1);
+                            ais.setCountRequestable(
+                                    (long) PowerMultiplier.CONFIG.multiply(blk.getIdlePowerUsage() * 100.0));
+                            list.add(ais);
+                            if (dcMap.containsKey(ais)) {
+                                ArrayList<DimensionalCoord> dcList = dcMap.get(ais);
+                                dcList.add(blk.getLocation());
+                            } else {
+                                ArrayList<DimensionalCoord> dcList = new ArrayList<>();
+                                dcList.add(blk.getLocation());
+                                dcMap.put(ais, dcList);
                             }
                         }
                     }
