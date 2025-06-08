@@ -116,4 +116,13 @@ public interface ICraftingCPU extends IBaseMonitor<IAEItemStack> {
     public default void changeCraftingAllowMode(CraftingAllow mode) {}
 
     default void resetFinalOutput() {}
+
+    /**
+     * get this crafting elapsed time
+     * 
+     * @return
+     */
+    public default long getElapsedTime() {
+        return 0l;
+    }
 }
