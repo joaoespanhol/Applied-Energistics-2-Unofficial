@@ -111,13 +111,29 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
 
     @Override
     protected void mouseClicked(int xCoord, int yCoord, int btn) {
-        if (menu.mouseClick(xCoord, yCoord, btn)) {
 
-        } else if (btn == 0 && isShiftKeyDown() && tooltip > -1) {
-            final ItemStack is = repo.getReferenceItem(tooltip).getItemStack();
-            if (is.hasTagCompound()) {
-                NBTTagCompound tag = is.getTagCompound();
-                List<DimensionalCoord> dcl = DimensionalCoord.readAsListFromNBT(tag);
+        // Check if the context menu is active and handle it
+        if (menu.mouseClick(xCoord, yCoord, btn)) {
+            super.mouseClicked(xCoord, yCoord, btn);
+            return;
+        }
+
+        final ItemStack is;
+        if (tooltip > -1) {
+            is = repo.getReferenceItem(tooltip).getItemStack();
+        } else is = null;
+
+        if (is == null || !is.hasTagCompound()) {
+            super.mouseClicked(xCoord, yCoord, btn);
+            return;
+        }
+
+        NBTTagCompound tag = is.getTagCompound();
+        List<DimensionalCoord> dcl = DimensionalCoord.readAsListFromNBT(tag);
+        switch (btn) {
+            case 0:
+                if (!isShiftKeyDown()) break;
+                // show all blocks in the world
                 BlockPosHighlighter.highlightBlocks(
                         mc.thePlayer,
                         dcl,
@@ -125,14 +141,11 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                         PlayerMessages.MachineHighlighted.getName(),
                         PlayerMessages.MachineInInOtherDim.getName());
                 mc.thePlayer.closeScreen();
-            }
-        } else if (btn == 1 && tooltip > -1) {
-            final ItemStack is = repo.getReferenceItem(tooltip).getItemStack();
-            if (is.hasTagCompound()) {
-                NBTTagCompound tag = is.getTagCompound();
-                List<DimensionalCoord> dcl = DimensionalCoord.readAsListFromNBT(tag);
+                break;
+            case 1:
+                // open context menu
                 menu.init(dcl, xCoord, yCoord);
-            }
+                break;
         }
         super.mouseClicked(xCoord, yCoord, btn);
     }

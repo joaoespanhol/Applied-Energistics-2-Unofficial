@@ -153,7 +153,7 @@ public class ToolAdvancedNetworkTool extends AEBaseItem
 
             if (!p.isSneaking()) {
                 if (p.openContainer instanceof ContainerNetworkStatus) {
-                    w.getBlock(x, y, z).onBlockActivated(w, x, y, z, p, side, 0, 0, 0);
+                    b.onBlockActivated(w, x, y, z, p, side, 0, 0, 0);
                 }
 
                 if (p.openContainer instanceof AEBaseContainer) {
