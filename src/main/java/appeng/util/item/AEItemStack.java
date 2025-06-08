@@ -492,9 +492,7 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
     public int compareTo(final IAEStack<?> b) {
         if (b instanceof AEItemStack ais) {
             return compareTo(ais);
-        }
-        final int diff = this.hashCode() - b.hashCode();
-        return Integer.compare(diff, 0);
+        } else return -1;
     }
 
     private int compareNBT(final AEItemDef b) {

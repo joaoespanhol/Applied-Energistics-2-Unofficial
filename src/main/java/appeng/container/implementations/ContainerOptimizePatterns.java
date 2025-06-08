@@ -1,7 +1,5 @@
 package appeng.container.implementations;
 
-import static appeng.util.Platform.stackConvert;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,7 +23,6 @@ import appeng.api.networking.crafting.ICraftingJob;
 import appeng.api.networking.crafting.ICraftingPatternDetails;
 import appeng.api.networking.security.IActionHost;
 import appeng.api.storage.ITerminalHost;
-import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.util.IInterfaceViewable;
 import appeng.container.AEBaseContainer;
@@ -55,7 +52,7 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
 
     private ICraftingJob result;
 
-    HashMap<IAEItemStack, Pattern> patterns = new HashMap<>();
+    HashMap<IAEStack<?>, Pattern> patterns = new HashMap<>();
 
     public ContainerOptimizePatterns(final InventoryPlayer ip, final ITerminalHost te) {
         super(ip, te);
@@ -92,8 +89,7 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
             for (CraftingTask resolvedTask : context.getResolvedTasks()) {
                 if (resolvedTask instanceof CraftFromPatternTask cfpt) {
                     if (!blacklistedPatterns.contains(cfpt.pattern.getPattern())) {
-                        patterns.computeIfAbsent(stackConvert(cfpt.request.stack), i -> new Pattern())
-                                .addCraftingTask(cfpt);
+                        patterns.computeIfAbsent(cfpt.request.stack, i -> new Pattern()).addCraftingTask(cfpt);
                     }
                 }
             }
@@ -103,8 +99,8 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
             try {
                 final PacketMEInventoryUpdate patternsUpdate = new PacketMEInventoryUpdate((byte) 0);
 
-                for (Entry<IAEItemStack, Pattern> entry : this.patterns.entrySet()) {
-                    IAEItemStack stack = entry.getKey().copy();
+                for (Entry<IAEStack<?>, Pattern> entry : this.patterns.entrySet()) {
+                    IAEStack<?> stack = entry.getKey().copy();
                     stack.setCountRequestableCrafts(entry.getValue().requestedCrafts);
                     long perCraft = entry.getValue().getCraftAmountForItem(stack);
                     int hash = entry.getKey().hashCode();
@@ -133,12 +129,12 @@ public class ContainerOptimizePatterns extends AEBaseContainer {
 
         if (grid == null || grid.getMachines(TilePatternOptimizationMatrix.class).isEmpty()) return;
 
-        Map<IAEItemStack, Integer> multipliersMap = patterns.keySet().stream()
+        Map<IAEStack<?>, Integer> multipliersMap = patterns.keySet().stream()
                 .filter(i -> hashCodeToMultipliers.containsKey(i.hashCode()))
                 .collect(Collectors.toMap(i -> i, i -> hashCodeToMultipliers.get(i.hashCode())));
 
         ItemStackMap<Pair<Pattern, Integer>> lookupMap = new ItemStackMap<>();
-        for (Entry<IAEItemStack, Integer> entry : multipliersMap.entrySet()) {
+        for (Entry<IAEStack<?>, Integer> entry : multipliersMap.entrySet()) {
             Pattern pattern = patterns.get(entry.getKey());
             lookupMap.put(pattern.getPattern().getPattern(), Pair.of(pattern, entry.getValue()));
         }

@@ -68,7 +68,7 @@ public final class AEFluidStack extends AEStack<IAEFluidStack> implements IAEFlu
         this.setCountRequestableCrafts(0);
         this.setUsedPercent(0);
 
-        this.myHash = this.fluid.hashCode()
+        this.myHash = this.fluid.getName().hashCode()
                 ^ (this.tagCompound == null ? 0 : System.identityHashCode(this.tagCompound));
     }
 
@@ -272,8 +272,9 @@ public final class AEFluidStack extends AEStack<IAEFluidStack> implements IAEFlu
 
     @Override
     public int compareTo(final IAEStack<?> b) {
-        final int diff = this.hashCode() - b.hashCode();
-        return Integer.compare(diff, 0);
+        if (b instanceof AEFluidStack ifs) {
+            return compareTo(ifs);
+        } else return 1;
     }
 
     @Override
