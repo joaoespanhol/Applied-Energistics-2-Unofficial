@@ -139,7 +139,7 @@ public class GuiNetworkStatus extends AEBaseGui implements ISortSource {
                         dcl,
                         is.getDisplayName(),
                         PlayerMessages.MachineHighlighted.getName(),
-                        PlayerMessages.MachineInInOtherDim.getName());
+                        PlayerMessages.MachineInOtherDim.getName());
                 mc.thePlayer.closeScreen();
                 break;
             case 1:
