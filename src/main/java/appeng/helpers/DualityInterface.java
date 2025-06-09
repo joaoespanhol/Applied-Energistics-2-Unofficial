@@ -139,6 +139,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private boolean hasConfig = false;
     private int priority;
     public List<ICraftingPatternDetails> craftingList = null;
+    public boolean inputProxy = false;
     private List<ItemStack> waitingToSend = null;
     private IMEInventory<IAEItemStack> destination;
     private boolean isWorking = false;
@@ -827,9 +828,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
                     if (issue != null) {
                         throw new IllegalStateException("bad attempt at managing inventory. ( addItems )");
                     }
-                } else if (this.getInstalledUpgrades(Upgrades.FUZZY) == 1) {
-                    changed = true;
-                } else if (this.getInstalledUpgrades(Upgrades.CRAFTING) > 0) {
+                } else {
                     changed = this.handleCrafting(x, adaptor, itemStack);
                     if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
                         changed = true;
