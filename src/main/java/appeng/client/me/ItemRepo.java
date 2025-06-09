@@ -61,7 +61,7 @@ public class ItemRepo implements IDisplayRepo {
     private boolean hasPower;
     private boolean paused = false;
 
-    private IAEItemStack[] pins = new IAEItemStack[9];
+    private final IAEItemStack[] pins = new IAEItemStack[9];
 
     public ItemRepo(final IScrollSource src, final ISortSource sortSrc) {
         this.src = src;
@@ -73,20 +73,18 @@ public class ItemRepo implements IDisplayRepo {
         IItemList<IAEItemStack> oldPins = getPinsCache();
 
         for (int i = 0; i < pins.length; i++) {
-            IAEItemStack checkList = list.findPrecise(newPins[i]);
+            IAEItemStack isToPin = list.findPrecise(newPins[i]);
 
-            if (checkList != null) {
-                pins[i] = checkList.copy();
-                checkList.reset();
+            if (isToPin == null) {
+                // If the item is not found in the repo, try to find it in the previous pins.
+                isToPin = oldPins.findPrecise(newPins[i]);
+            }
+
+            if (isToPin != null) {
+                pins[i] = isToPin.copy();
+                isToPin.reset();
             } else {
-                IAEItemStack checkOldPins = oldPins.findPrecise(newPins[i]);
-
-                if (checkOldPins != null) {
-                    pins[i] = checkOldPins.copy();
-                    checkOldPins.setStackSize(-1);
-                } else {
-                    pins[i] = newPins[i];
-                }
+                pins[i] = newPins[i];
             }
         }
 
@@ -97,6 +95,7 @@ public class ItemRepo implements IDisplayRepo {
         updateView();
     }
 
+    /** pins order is not keep */
     private IItemList<IAEItemStack> getPinsCache() {
         IItemList<IAEItemStack> oldPins = AEApi.instance().storage().createItemList();
 
@@ -169,9 +168,7 @@ public class ItemRepo implements IDisplayRepo {
                 IAEItemStack entry = this.view.get(i);
                 IAEItemStack serverEntry = this.list.findPrecise(entry);
                 IAEItemStack pinsEntry = pins.findPrecise(serverEntry);
-                if (serverEntry == null) {
-                    entry.setStackSize(0);
-                } else if (pinsEntry != null) {
+                if (serverEntry == null || pinsEntry != null) {
                     entry.setStackSize(0);
                 } else {
                     this.view.set(i, serverEntry);

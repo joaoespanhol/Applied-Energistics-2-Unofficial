@@ -711,13 +711,11 @@ public abstract class AEBaseContainer extends Container {
                 }
             }
 
-            if (action == InventoryAction.SET_PIN) {
-                if (this instanceof IPinsHandler iph) {
-                    if (id == -1) {
-                        iph.setPin(null, slot);
-                    } else if (player.inventory.getItemStack() != null) {
-                        iph.setPin(player.inventory.getItemStack(), slot);
-                    }
+            if (action == InventoryAction.SET_PIN && this instanceof IPinsHandler iph) {
+                if (id == -1) {
+                    iph.setPin(null, slot);
+                } else if (player.inventory.getItemStack() != null) {
+                    iph.setPin(player.inventory.getItemStack(), slot);
                 }
             }
 
