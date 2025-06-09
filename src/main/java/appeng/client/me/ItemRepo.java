@@ -61,7 +61,7 @@ public class ItemRepo implements IDisplayRepo {
     private boolean hasPower;
     private boolean paused = false;
 
-    private final IAEItemStack[] pins = new IAEItemStack[9];
+    private final IAEItemStack[] pins = new IAEItemStack[getPinCount()]; // 4 rows of 9 pins
 
     public ItemRepo(final IScrollSource src, final ISortSource sortSrc) {
         this.src = src;
@@ -69,7 +69,7 @@ public class ItemRepo implements IDisplayRepo {
     }
 
     @Override
-    public void setPins(IAEItemStack[] newPins) {
+    public void setAEPins(IAEItemStack[] newPins) {
         IItemList<IAEItemStack> oldPins = getPinsCache();
 
         for (int i = 0; i < pins.length; i++) {

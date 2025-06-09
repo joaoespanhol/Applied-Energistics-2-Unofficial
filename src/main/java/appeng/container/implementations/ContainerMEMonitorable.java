@@ -89,7 +89,7 @@ public class ContainerMEMonitorable extends AEBaseContainer
     private final IItemList<IAEItemStack> items = AEApi.instance().storage().createItemList();
     private final IConfigManager clientCM;
     private final ITerminalHost host;
-    private IAEItemStack[] serverPins = new IAEItemStack[9];
+    private IAEItemStack[] serverPins = new IAEItemStack[getPinCount()]; //
     private int lastUpdate = 0;
 
     @GuiSync(99)
@@ -461,7 +461,8 @@ public class ContainerMEMonitorable extends AEBaseContainer
         if (!(host instanceof ITerminalPins itp)) return;
 
         AppEngInternalAEInventory pinInv = itp.getPins();
-        boolean isActive = serverCM.getSetting(Settings.PINS_STATE) == PinsState.ACTIVE;
+        PinsState pinsState = (PinsState) serverCM.getSetting(Settings.PINS_STATE);
+        boolean isActive = pinsState != PinsState.DISABLED;
         if (!(forceUpdate || isActive)) return;
 
         IAEItemStack[] newPins = new IAEItemStack[pinInv.getSizeInventory()];
@@ -486,7 +487,8 @@ public class ContainerMEMonitorable extends AEBaseContainer
             if (ais != null) checkCache.add(ais);
         }
 
-        for (int i = 0; i < pinInv.getSizeInventory(); i++) {
+        // fetch lines according to the setting
+        for (int i = 0; i < pinsState.ordinal() * 9; i++) {
             IAEItemStack ais = pinInv.getAEStackInSlot(i);
             if (ais == null) {
                 // fetch the first available crafting output
@@ -552,19 +554,27 @@ public class ContainerMEMonitorable extends AEBaseContainer
         updatePins(true);
     }
 
-    public void updatePins(IAEItemStack[] newPins) {
+    public void setPinsState(PinsState pinsState) {
+        this.serverCM.putSetting(Settings.PINS_STATE, pinsState);
+        updatePins(true);
+    }
+
+    private void updatePins(IAEItemStack[] newPins) {
         if (Arrays.equals(serverPins, newPins)) return;
 
         serverPins = newPins;
         for (final Object player : crafters) {
             if (player instanceof EntityPlayerMP) {
                 try {
-                    NetworkHandler.instance.sendTo(new PacketPinsUpdate(newPins), (EntityPlayerMP) player);
+                    NetworkHandler.instance.sendTo(
+                            new PacketPinsUpdate(newPins, (PinsState) serverCM.getSetting(Settings.PINS_STATE)),
+                            (EntityPlayerMP) player);
                 } catch (IOException e) {
                     AELog.debug(e);
                 }
             }
         }
 
+        onListUpdate(); // notify the repo that the pins have changed
     }
 }

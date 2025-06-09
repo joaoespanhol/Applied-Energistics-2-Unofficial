@@ -4,10 +4,12 @@ import javax.annotation.Nonnull;
 
 import net.minecraft.item.ItemStack;
 
+import appeng.helpers.IPinsHandler;
+
 /**
  * Used to display and filter items shown.
  */
-public interface IDisplayRepo {
+public interface IDisplayRepo extends IPinsHandler {
 
     void postUpdate(final IAEItemStack stack);
 
@@ -38,10 +40,4 @@ public interface IDisplayRepo {
     boolean isPaused();
 
     void setPaused(boolean paused);
-
-    default IAEItemStack getPin(int idx) {
-        return null;
-    }
-
-    default void setPins(IAEItemStack[] pins) {}
 }

@@ -61,6 +61,7 @@ import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
 import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketPinsUpdate;
 import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.IPinsHandler;
@@ -110,7 +111,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
     private int currentMouseX = 0;
     private int currentMouseY = 0;
     private boolean isPinsHost = false;
-    private boolean isPinsActive = false;
+    private int pinsRows = 0;
 
     public GuiMEMonitorable(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         this(inventoryPlayer, te, new ContainerMEMonitorable(inventoryPlayer, te));
@@ -149,10 +150,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
 
         if (te instanceof ITerminalPins) {
             isPinsHost = true;
-
-            if (configSrc.getSetting(Settings.PINS_STATE) == PinsState.ACTIVE) {
-                isPinsActive = true;
-            }
+            pinsRows = configSrc.getSetting(Settings.PINS_STATE).ordinal();
         }
 
         this.searchField = new MEGuiTextField(90, 12, ButtonToolTips.SearchStringTooltip.getLocal()) {
@@ -182,7 +180,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
         this.getScrollBar().setTop(18).setLeft(175).setHeight(this.rows * 18 - 2);
         this.getScrollBar().setRange(
                 0,
-                (this.repo.size() + (isPinsActive ? 9 : 0) + this.perRow - 1) / this.perRow - this.rows,
+                (this.repo.size() + pinsRows * 9 + this.perRow - 1) / this.perRow - this.rows,
                 Math.max(1, this.rows / 6));
     }
 
@@ -238,21 +236,22 @@ public class GuiMEMonitorable extends AEBaseMEGui
         this.rows = calculateRowsCount();
 
         this.getMeSlots().clear();
-        if (isPinsActive) {
+
+        for (int y = 0; y < pinsRows; y++) {
             for (int x = 0; x < this.perRow; x++) {
-                this.getMeSlots().add(new PinSlotME(this.repo, x, this.offsetX + x * 18, 18));
+                this.getMeSlots()
+                        .add(new PinSlotME(this.repo, x + y * this.perRow, this.offsetX + x * 18, y * 18 + 18));
             }
         }
 
-        int pinSlotOffset = isPinsActive ? 1 : 0;
-        for (int y = 0; y < this.rows - pinSlotOffset; y++) {
+        for (int y = 0; y < this.rows - pinsRows; y++) {
             for (int x = 0; x < this.perRow; x++) {
                 this.getMeSlots().add(
                         new InternalSlotME(
                                 this.repo,
                                 x + y * this.perRow,
                                 this.offsetX + x * 18,
-                                18 + pinSlotOffset * 18 + y * 18));
+                                18 + y * 18 + pinsRows * 18));
             }
         }
 
@@ -627,7 +626,15 @@ public class GuiMEMonitorable extends AEBaseMEGui
         if (this.pinsState != null) {
             Enum<?> state = this.configSrc.getSetting(Settings.PINS_STATE);
             this.pinsState.set(state);
-            isPinsActive = state == PinsState.ACTIVE;
+            pinsRows = state.ordinal();
+
+            IAEItemStack[] pins = new IAEItemStack[PinsState.getPinsCount()];
+            try {
+                final PacketPinsUpdate p = new PacketPinsUpdate(pins, (PinsState) state);
+                NetworkHandler.instance.sendToServer(p);
+            } catch (final IOException e) {
+                AELog.debug(e);
+            }
             initGui();
         }
 
@@ -733,6 +740,6 @@ public class GuiMEMonitorable extends AEBaseMEGui
 
     @Override
     public void setAEPins(IAEItemStack[] pins) {
-        repo.setPins(pins);
+        repo.setAEPins(pins);
     }
 }

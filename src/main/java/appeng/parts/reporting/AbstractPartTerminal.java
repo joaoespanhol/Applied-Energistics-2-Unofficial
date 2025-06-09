@@ -59,7 +59,7 @@ public abstract class AbstractPartTerminal extends AbstractPartDisplay
 
     private final IConfigManager cm = new ConfigManager(this);
     private final AppEngInternalInventory viewCell = new AppEngInternalInventory(this, 5);
-    private final AppEngInternalAEInventory pins = new AppEngInternalAEInventory(this, 9);
+    private final AppEngInternalAEInventory pins = new AppEngInternalAEInventory(this, PinsState.getPinsCount());
     private final AppEngInternalInventory upgrades = new RefillerInventory(this);
 
     public AbstractPartTerminal(final ItemStack is) {
