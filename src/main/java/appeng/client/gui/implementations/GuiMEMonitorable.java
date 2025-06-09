@@ -145,7 +145,6 @@ public class GuiMEMonitorable extends AEBaseMEGui
             this.myName = GuiText.Chest;
         } else if (te instanceof AbstractPartTerminal) {
             this.myName = GuiText.Terminal;
-
         }
 
         if (te instanceof ITerminalPins) {
@@ -244,14 +243,16 @@ public class GuiMEMonitorable extends AEBaseMEGui
                 this.getMeSlots().add(new PinSlotME(this.repo, x, this.offsetX + x * 18, 18));
             }
         }
-        for (int y = 0; y < this.rows - (isPinsActive ? 1 : 0); y++) {
+
+        int pinSlotOffset = isPinsActive ? 1 : 0;
+        for (int y = 0; y < this.rows - pinSlotOffset; y++) {
             for (int x = 0; x < this.perRow; x++) {
                 this.getMeSlots().add(
                         new InternalSlotME(
                                 this.repo,
                                 x + y * this.perRow,
                                 this.offsetX + x * 18,
-                                18 + (isPinsActive ? 18 : 0) + y * 18));
+                                18 + pinSlotOffset * 18 + y * 18));
             }
         }
 
