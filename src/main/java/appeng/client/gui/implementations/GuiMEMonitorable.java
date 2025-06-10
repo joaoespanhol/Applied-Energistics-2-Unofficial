@@ -628,9 +628,8 @@ public class GuiMEMonitorable extends AEBaseMEGui
             this.pinsState.set(state);
             pinsRows = state.ordinal();
 
-            IAEItemStack[] pins = new IAEItemStack[PinsState.getPinsCount()];
             try {
-                final PacketPinsUpdate p = new PacketPinsUpdate(pins, (PinsState) state);
+                final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) state);
                 NetworkHandler.instance.sendToServer(p);
             } catch (final IOException e) {
                 AELog.debug(e);

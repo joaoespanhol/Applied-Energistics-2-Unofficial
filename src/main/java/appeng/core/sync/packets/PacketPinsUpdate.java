@@ -26,20 +26,29 @@ public class PacketPinsUpdate extends AppEngPacket {
     // input.
     @Nullable
     private final IAEItemStack[] list;
-
+    @Nullable
     private final PinsState state;
 
     public PacketPinsUpdate(final ByteBuf stream) throws IOException {
-        IAEItemStack[] newList = new IAEItemStack[stream.readInt()];
-        state = PinsState.values()[stream.readInt()];
+        int arrLength = stream.readInt();
 
-        for (int i = 0; i < newList.length; i++) {
-            if (stream.readBoolean()) {
-                newList[i] = AEItemStack.loadItemStackFromPacket(stream);
-            }
+        int stateOrdinal = stream.readInt();
+        if (stateOrdinal >= 0 )
+            state = PinsState.values()[stateOrdinal];
+        else
+            state = null;
+
+        if (arrLength < 0) {
+            list = null;
+            return;
         }
 
-        list = newList;
+        list = new IAEItemStack[arrLength];
+        for (int i = 0; i < list.length; i++) {
+            if (stream.readBoolean()) {
+                list[i] = AEItemStack.loadItemStackFromPacket(stream);
+            }
+        }
     }
 
     public PacketPinsUpdate(IAEItemStack[] arr, PinsState state) throws IOException {
@@ -65,12 +74,48 @@ public class PacketPinsUpdate extends AppEngPacket {
         this.configureWrite(data);
     }
 
+    public PacketPinsUpdate(PinsState state) throws IOException {
+        this.state = state;
+        this.list = null;
+
+        final ByteBuf data = Unpooled.buffer();
+
+        data.writeInt(this.getPacketID());
+
+        data.writeInt(-1); // No item array provided
+        data.writeInt(state.ordinal());
+
+        this.configureWrite(data);
+    }
+
+    public PacketPinsUpdate(IAEItemStack[] arr) throws IOException {
+        list = arr;
+        this.state = null;
+
+        final ByteBuf data = Unpooled.buffer();
+
+        data.writeInt(this.getPacketID());
+
+        data.writeInt(arr.length);
+        data.writeInt(-1); // No state provided
+
+        for (IAEItemStack aeItemStack : arr) {
+            if (aeItemStack != null) {
+                data.writeBoolean(true);
+                aeItemStack.writeToPacket(data);
+            } else {
+                data.writeBoolean(false);
+            }
+        }
+
+        this.configureWrite(data);
+    }
+
     @Override
     @SideOnly(Side.CLIENT)
     public void clientPacketData(final INetworkInfo network, final AppEngPacket packet, final EntityPlayer player) {
         final GuiScreen gs = Minecraft.getMinecraft().currentScreen;
-
-        if (gs instanceof IPinsHandler iph) {
+        if (gs instanceof IPinsHandler iph && list != null) {
             iph.setAEPins(list);
         }
     }
@@ -78,7 +123,7 @@ public class PacketPinsUpdate extends AppEngPacket {
     @Override
     public void serverPacketData(final INetworkInfo network, final AppEngPacket packet, final EntityPlayer player) {
         final EntityPlayerMP sender = (EntityPlayerMP) player;
-        if (sender.openContainer instanceof ContainerMEMonitorable container) {
+        if (sender.openContainer instanceof ContainerMEMonitorable container && state != null) {
             container.setPinsState(state);
         }
     }
