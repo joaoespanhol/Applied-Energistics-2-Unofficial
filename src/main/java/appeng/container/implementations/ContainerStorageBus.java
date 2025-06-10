@@ -54,7 +54,7 @@ public class ContainerStorageBus extends ContainerUpgradeable {
     private static final HashMap<EntityPlayer, IteratorState> PartitionIteratorMap = new HashMap<>();
 
     @GuiSync(8)
-    public ActionItems partitionMode;
+    public ActionItems partitionMode; // use for icon and tooltip
 
     public ContainerStorageBus(final InventoryPlayer ip, final PartStorageBus te) {
         super(ip, te);

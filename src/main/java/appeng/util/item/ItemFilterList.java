@@ -23,8 +23,7 @@ public class ItemFilterList implements IItemList<IAEItemStack> {
         final IAEItemStack st = this.records.get(option);
 
         if (st == null) {
-            final IAEItemStack opt = option.copy().setStackSize(1);
-            putItemRecord(opt);
+            putItemRecord(option.copy());
         }
     }
 
@@ -56,8 +55,7 @@ public class ItemFilterList implements IItemList<IAEItemStack> {
         final IAEItemStack st = this.records.get(option);
 
         if (st == null) {
-            final IAEItemStack opt = option.copy().setStackSize(1);
-            putItemRecord(opt);
+            putItemRecord(option.copy());
         }
     }
 
@@ -70,8 +68,7 @@ public class ItemFilterList implements IItemList<IAEItemStack> {
         final IAEItemStack st = this.records.get(option);
 
         if (st == null) {
-            final IAEItemStack opt = option.copy().setStackSize(1).setCraftable(false);
-            putItemRecord(opt);
+            putItemRecord(option.copy());
         }
     }
 
@@ -84,10 +81,7 @@ public class ItemFilterList implements IItemList<IAEItemStack> {
         final IAEItemStack st = this.records.get(option);
 
         if (st == null) {
-            final IAEItemStack opt = option.copy().setStackSize(1);
-            opt.setCraftable(false);
-            opt.setCountRequestable(0);
-            putItemRecord(opt);
+            putItemRecord(option.copy());
         }
     }
 
@@ -123,6 +117,7 @@ public class ItemFilterList implements IItemList<IAEItemStack> {
     }
 
     private void putItemRecord(final IAEItemStack itemStack) {
+        itemStack.setStackSize(1).setCraftable(false).setCountRequestable(0);
         this.records.add(itemStack);
     }
 }
