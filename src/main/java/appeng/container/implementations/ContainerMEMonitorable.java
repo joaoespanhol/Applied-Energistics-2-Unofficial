@@ -566,9 +566,7 @@ public class ContainerMEMonitorable extends AEBaseContainer
         for (final Object player : crafters) {
             if (player instanceof EntityPlayerMP) {
                 try {
-                    NetworkHandler.instance.sendTo(
-                            new PacketPinsUpdate(newPins),
-                            (EntityPlayerMP) player);
+                    NetworkHandler.instance.sendTo(new PacketPinsUpdate(newPins), (EntityPlayerMP) player);
                 } catch (IOException e) {
                     AELog.debug(e);
                 }

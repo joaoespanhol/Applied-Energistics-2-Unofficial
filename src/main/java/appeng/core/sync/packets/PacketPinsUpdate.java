@@ -33,10 +33,8 @@ public class PacketPinsUpdate extends AppEngPacket {
         int arrLength = stream.readInt();
 
         int stateOrdinal = stream.readInt();
-        if (stateOrdinal >= 0 )
-            state = PinsState.values()[stateOrdinal];
-        else
-            state = null;
+        if (stateOrdinal >= 0) state = PinsState.values()[stateOrdinal];
+        else state = null;
 
         if (arrLength < 0) {
             list = null;
