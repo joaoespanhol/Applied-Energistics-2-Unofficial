@@ -59,7 +59,7 @@ public class ContainerStorageBus extends ContainerUpgradeable {
     public ContainerStorageBus(final InventoryPlayer ip, final PartStorageBus te) {
         super(ip, te);
         this.storageBus = te;
-        partitionMode = PartitionIteratorMap.containsKey(ip.player) ? ActionItems.CELL_RESTRICTION : ActionItems.WRENCH;
+        partitionMode = PartitionIteratorMap.containsKey(ip.player) ? ActionItems.NEXT_PARTITION : ActionItems.WRENCH;
     }
 
     @Override
@@ -186,13 +186,14 @@ public class ContainerStorageBus extends ContainerUpgradeable {
         }
         IteratorState it;
         if (!PartitionIteratorMap.containsKey(player)) {
+            // clear filter for fetching items
             cellInv.setPartitionList(new PrecisePriorityList<>(AEApi.instance().storage().createItemList()));
             final IItemList<IAEItemStack> list = cellInv.getAvailableItems(
                     AEApi.instance().storage().createItemFilterList(),
                     IterationCounter.fetchNewId());
             it = new IteratorState(list.iterator());
             PartitionIteratorMap.put(player, it);
-            partitionMode = ActionItems.CELL_RESTRICTION;
+            partitionMode = ActionItems.NEXT_PARTITION;
         } else {
             it = PartitionIteratorMap.get(player);
         }
