@@ -241,7 +241,7 @@ public class ContainerNetworkStatus extends AEBaseContainer {
                         NBTTagCompound tag = new NBTTagCompound();
                         DimensionalCoord.writeListToNBT(tag, dcl);
                         is.setTagCompound(tag);
-                        piu.appendItem(AEItemStack.create(is));
+                        piu.appendItem(AEItemStack.create(is).setCountRequestable(ais.getCountRequestable()));
                     } else {
                         piu.appendItem(ais);
                     }
