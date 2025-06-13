@@ -36,12 +36,13 @@ import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.storage.IStorageGrid;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
-import appeng.api.util.DimensionalCoord;
+import appeng.api.util.NamedDimensionalCoord;
 import appeng.container.AEBaseContainer;
 import appeng.container.guisync.GuiSync;
 import appeng.core.AEConfig;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketMEInventoryUpdate;
+import appeng.helpers.ICustomNameObject;
 import appeng.me.cache.GridStorageCache;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
@@ -191,7 +192,7 @@ public class ContainerNetworkStatus extends AEBaseContainer {
             try {
                 final PacketMEInventoryUpdate piu = new PacketMEInventoryUpdate();
                 final IItemList<IAEItemStack> list = AEApi.instance().storage().createItemList();
-                final HashMap<IAEItemStack, ArrayList<DimensionalCoord>> dcMap = new HashMap<>();
+                final HashMap<IAEItemStack, ArrayList<NamedDimensionalCoord>> dcMap = new HashMap<>();
 
                 // Network machine
                 if (this.isConsume) {
@@ -206,12 +207,15 @@ public class ContainerNetworkStatus extends AEBaseContainer {
                             ais.setCountRequestable(
                                     (long) PowerMultiplier.CONFIG.multiply(blk.getIdlePowerUsage() * 100.0));
                             list.add(ais);
+                            String customName = "";
+                            if (blk.getMachine() instanceof ICustomNameObject ico && ico.hasCustomName())
+                                customName = ico.getCustomName();
                             if (dcMap.containsKey(ais)) {
-                                ArrayList<DimensionalCoord> dcList = dcMap.get(ais);
-                                dcList.add(blk.getLocation());
+                                ArrayList<NamedDimensionalCoord> dcList = dcMap.get(ais);
+                                dcList.add(new NamedDimensionalCoord(blk.getLocation(), customName));
                             } else {
-                                ArrayList<DimensionalCoord> dcList = new ArrayList<>();
-                                dcList.add(blk.getLocation());
+                                ArrayList<NamedDimensionalCoord> dcList = new ArrayList<>();
+                                dcList.add(new NamedDimensionalCoord(blk.getLocation(), customName));
                                 dcMap.put(ais, dcList);
                             }
                         }
@@ -235,11 +239,11 @@ public class ContainerNetworkStatus extends AEBaseContainer {
                 }
 
                 for (final IAEItemStack ais : list) {
-                    ArrayList<DimensionalCoord> dcl = dcMap.get(ais);
+                    ArrayList<NamedDimensionalCoord> dcl = dcMap.get(ais);
                     if (dcl != null) {
                         ItemStack is = ais.getItemStack();
                         NBTTagCompound tag = new NBTTagCompound();
-                        DimensionalCoord.writeListToNBT(tag, dcl);
+                        NamedDimensionalCoord.writeListToNBTNamed(tag, dcl);
                         is.setTagCompound(tag);
                         piu.appendItem(AEItemStack.create(is).setCountRequestable(ais.getCountRequestable()));
                     } else {
