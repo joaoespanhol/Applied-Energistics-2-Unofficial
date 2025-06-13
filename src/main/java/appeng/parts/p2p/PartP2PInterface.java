@@ -135,8 +135,9 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
 
                 if (p2p != null) {
                     if (!p2p.duality.getConfig().isEmpty()) this.setHasConfig(p2p.duality.hasConfig());
-                    this.notifyNeighbors();
                 }
+
+                this.notifyNeighbors();
             }
         }
 
