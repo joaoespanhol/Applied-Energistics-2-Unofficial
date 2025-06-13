@@ -51,6 +51,7 @@ import appeng.tile.inventory.IAEAppEngInventory;
 import appeng.tile.inventory.InvOperation;
 import appeng.util.Platform;
 import appeng.util.inv.IInventoryDestination;
+import appeng.util.inv.WrapperInvSlot;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -90,8 +91,11 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
 
         @Override
         public boolean updateStorage() {
+            boolean didSomething = false;
+
             if (!isOutput()) {
-                super.updateStorage();
+                didSomething = super.updateStorage();
+
                 try {
                     for (PartP2PInterface p2p : getOutputs()) p2p.duality.updateStorage();
                 } catch (GridAccessException e) {
@@ -99,10 +103,21 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
                 }
             } else {
                 PartP2PInterface p2p = getInput();
-                if ((p2p != null)) this.setStorage(p2p.duality.getStorage());
-                this.readConfig();
+                if (p2p != null) {
+                    this.setStorage(p2p.duality.getStorage());
+                    this.inputProxy = true;
+                }
+                if ((p2p == null) && (this.inputProxy)) {
+                    this.setStorage(new AppEngInternalInventory(this, NUMBER_OF_STORAGE_SLOTS));
+                    this.setSlotInv(new WrapperInvSlot(this.getStorage()));
+                    this.inputProxy = false;
+                }
+                if ((p2p == null) && (!this.inputProxy)) {
+                    didSomething = super.updateStorage();
+                }
             }
-            return true;
+
+            return didSomething;
         }
 
         @Override
@@ -476,6 +491,14 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
     @Override
     public void onTunnelNetworkChange() {
         this.duality.updateCraftingList();
+
+        if (isOutput()) {
+            PartP2PInterface input = getInput();
+            if (input == null) {
+                this.duality.updateStorage();
+                this.duality.readConfig();
+            }
+        }
     }
 
     @Override

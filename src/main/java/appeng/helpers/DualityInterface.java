@@ -126,7 +126,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private final AppEngInternalAEInventory config = new AppEngInternalAEInventory(this, NUMBER_OF_CONFIG_SLOTS);
     private AppEngInternalInventory storage = new AppEngInternalInventory(this, NUMBER_OF_STORAGE_SLOTS);
     private final AppEngInternalInventory patterns = new AppEngInternalInventory(this, NUMBER_OF_PATTERN_SLOTS * 4);
-    private final WrapperInvSlot slotInv = new WrapperInvSlot(this.storage);
+    private WrapperInvSlot slotInv = new WrapperInvSlot(this.storage);
     private final MEMonitorPassThrough<IAEItemStack> items = new MEMonitorPassThrough<>(
             new NullInventory<IAEItemStack>(),
             StorageChannel.ITEMS);
@@ -564,6 +564,11 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
     public int getConfigSize() {
         return this.config.getSizeInventory();
+    }
+
+    public WrapperInvSlot setSlotInv(final WrapperInvSlot slotInventory) {
+        this.slotInv = slotInventory;
+        return this.slotInv;
     }
 
     public void gridChanged() {
