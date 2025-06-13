@@ -350,6 +350,11 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
 
     @Override
     public ItemStack getStackInSlot(final int i) {
+        if (isOutput()) {
+            PartP2PInterface input = getInput();
+            if (input != null) return input.getStackInSlot(i);
+            return this.duality.getStorage().getStackInSlot(i);
+        }
         return this.duality.getStorage().getStackInSlot(i);
     }
 
