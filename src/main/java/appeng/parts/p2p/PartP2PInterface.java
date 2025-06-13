@@ -103,7 +103,7 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
                 }
             } else {
                 PartP2PInterface p2p = getInput();
-                if (p2p != null) {
+                if (p2p != null && (!this.inputProxy)) {
                     this.setStorage(p2p.duality.getStorage());
                     this.inputProxy = true;
                 }
