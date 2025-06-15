@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.IntBuffer;
 import java.nio.file.FileAlreadyExistsException;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -16,22 +17,36 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
+import com.google.common.base.Joiner;
+
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.client.gui.AEBaseGui;
 import appeng.core.AELog;
+import appeng.core.AppEng;
+import appeng.core.localization.GuiColors;
+import appeng.core.localization.GuiText;
+import appeng.util.ColorPickHelper;
+import appeng.util.Platform;
+import appeng.util.ReadableNumberConverter;
+import appeng.util.RoundHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.event.ClickEvent;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.ResourceLocation;
 
 public class GuiCraftingList {
 	
 	private static final int FIELD_WIDTH = 69;
 	private static final int FIELD_HEIGHT = 24;
-	private static final String FIELD_TEXTURE = "guis/onefiled.png";
+	private static final int FIELD_SECTIONLENGTH = 67;
+	private static final ResourceLocation FIELD_TEXTURE = new ResourceLocation(AppEng.MOD_ID, "textures/guis/onefiled.png");
 	
     private static final DateTimeFormatter SCREENSHOT_DATE_FORMAT = DateTimeFormatter
             .ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
@@ -74,47 +89,44 @@ public class GuiCraftingList {
             final Framebuffer fb = new Framebuffer(FIELD_WIDTH, FIELD_HEIGHT, true);
             GL11.glMatrixMode(GL11.GL_PROJECTION);
             GL11.glLoadIdentity();
+            GL11.glOrtho(0, FIELD_WIDTH, FIELD_HEIGHT, 0, -3000, 3000);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glLoadIdentity();
             GL11.glDisable(GL11.GL_DEPTH_TEST);
 			try {
 				fb.bindFramebuffer(true);
 
-				for (int x = 0; x < width; x++) {
-					for (int y = 0; y < height; y++) {
-						GL11.glPushMatrix();
-						parent.bindTexture(FIELD_TEXTURE);
-						parent.drawTexturedModalRect(0, 0, 0, 0, FIELD_WIDTH,
-								FIELD_HEIGHT);
-						GL11.glPopMatrix();
-						GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.framebufferTexture);
-						GL11.glGetTexImage(
-								GL11.GL_TEXTURE_2D,
-								0,
-								GL12.GL_BGRA,
-								GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
-								downloadBuffer);
-						for(int i = 0; i < FIELD_WIDTH * FIELD_HEIGHT; i ++) {
-							int x_ = i % FIELD_WIDTH;
-							int y_ = (int)(i / FIELD_WIDTH);
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						if(width * y + x < visualSize) {
+							GL11.glPushMatrix();
+
+							GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+							parent.bindTexture(FIELD_TEXTURE);
+							parent.drawTexturedModalRect(0, 0, 0, 0, FIELD_WIDTH,
+									FIELD_HEIGHT);
+							GL11.glPopMatrix();
+							test(parent, visual.get(width * y + x), visual, storage, pending, missing);
+							AELog.info("%d, %s", width * y + x, visual.get(width * y + x).getItemStack().getDisplayName());
 							
-							outputImg.setRGB(x * (FIELD_WIDTH - 1) + x_, y * (FIELD_HEIGHT - 1) + y_, downloadBuffer.get(FIELD_WIDTH * FIELD_HEIGHT - i - 1));
+							
+							GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.framebufferTexture);
+							GL11.glGetTexImage(
+									GL11.GL_TEXTURE_2D,
+									0,
+									GL12.GL_BGRA,
+									GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
+									downloadBuffer);
+							
+							for(int i = 0; i < FIELD_WIDTH * FIELD_HEIGHT; i ++) {
+								int x_ = i % FIELD_WIDTH;
+								int y_ = (int)(i / FIELD_WIDTH);
+								outputImg.setRGB(x * (FIELD_WIDTH - 1) + x_, (y + 1) * (FIELD_HEIGHT - 1) - y_, downloadBuffer.get(i));
+							}
 						}
-						
 						
 					}
 				}
-                
-//                for(int i = 0; i < imgWidth * imgHeight; i ++) {
-//                	int x = i % imgWidth;
-//                	int y = (int)(i / imgWidth);
-//                }
-                
-//                for(int w = 0; w < imgWidth; w ++) {
-//                	for(int h = 0; h < imgHeight; h ++) {
-//                		outputImg.setRGB(w, h, downloadBuffer.get(imgHeight * h + w));
-//                	}
-//                }
                 
 			} finally {
 				fb.deleteFramebuffer();
@@ -146,6 +158,118 @@ public class GuiCraftingList {
             AELog.warn(e, "Could not save crafting list screenshot");
             mc.ingameGUI.getChatGUI()
                     .printChatMessage(new ChatComponentTranslation("screenshot.failure", e.getMessage()));
+        }
+	}
+	
+	private static void test(AEBaseGui parent, IAEItemStack refStack, List<IAEItemStack> visual, IItemList<IAEItemStack> storage,
+			IItemList<IAEItemStack> pending, IItemList<IAEItemStack> missing) {
+        final int xo = 9;
+        final int yo = 22;
+		if (refStack != null) {
+            GL11.glPushMatrix();
+//            GL11.glScaled(0.5, 0.5, 0.5);
+////
+//            final IAEItemStack stored = storage.findPrecise(refStack);
+//            final IAEItemStack pendingStack = pending.findPrecise(refStack);
+//            final IAEItemStack missingStack = missing.findPrecise(refStack);
+////
+//            int lines = 0;
+//
+//            if (stored != null && stored.getStackSize() > 0) {
+//                lines++;
+//                if (missingStack == null && pendingStack == null) {
+//                    lines++;
+//                }
+//            }
+//            if (missingStack != null && missingStack.getStackSize() > 0) {
+//                lines++;
+//            }
+//            if (pendingStack != null && pendingStack.getStackSize() > 0) {
+//                lines += 2;
+//            }
+//
+//            final int negY = ((lines - 1) * 5) / 2;
+//            int downY = 0;
+//
+//            if (stored != null && stored.getStackSize() > 0) {
+//                String str = GuiText.FromStorage.getLocal() + ": "
+//                        + ReadableNumberConverter.INSTANCE.toWideReadableForm(stored.getStackSize());
+//                final int w = 4 + parent.getFontRenderer().getStringWidth(str);
+//                parent.getFontRenderer().drawString(
+//                        str,
+////                        (int) ((xo + FIELD_SECTIONLENGTH - 19 - (w * 0.5)) * 2),
+//                        9,
+//                        (yo + 6 - negY + downY) * 2,
+//                        GuiColors.CraftConfirmFromStorage.getColor());
+////
+//                downY += 5;
+//            }
+//
+//            if (missingStack != null && missingStack.getStackSize() > 0) {
+//                String str = GuiText.Missing.getLocal() + ": "
+//                        + ReadableNumberConverter.INSTANCE.toWideReadableForm(missingStack.getStackSize());
+//                final int w = 4 + parent.getFontRenderer().getStringWidth(str);
+//                parent.getFontRenderer().drawString(
+//                        str,
+//                        (int) ((xo + FIELD_SECTIONLENGTH - 19 - (w * 0.5)) * 2),
+//                        (yo + 6 - negY + downY) * 2,
+//                        GuiColors.CraftConfirmMissing.getColor());
+//
+//                downY += 5;
+//            }
+//
+//            if (pendingStack != null && pendingStack.getStackSize() > 0) {
+//                String str = GuiText.ToCraft.getLocal() + ": "
+//                        + ReadableNumberConverter.INSTANCE.toWideReadableForm(pendingStack.getStackSize());
+//                int w = 4 + parent.getFontRenderer().getStringWidth(str);
+//                parent.getFontRenderer().drawString(
+//                        str,
+//                        (int) ((xo + FIELD_SECTIONLENGTH - 19 - (w * 0.5)) * 2),
+//                        (yo + 6 - negY + downY) * 2,
+//                        GuiColors.CraftConfirmToCraft.getColor());
+//
+//                downY += 5;
+//                str = GuiText.ToCraftRequests.getLocal() + ": "
+//                        + ReadableNumberConverter.INSTANCE
+//                                .toWideReadableForm(pendingStack.getCountRequestableCrafts());
+//                w = 4 + parent.getFontRenderer().getStringWidth(str);
+//                parent.getFontRenderer().drawString(
+//                        str,
+//                        (int) ((xo + FIELD_SECTIONLENGTH - 19 - (w * 0.5)) * 2),
+//                        (yo + 6 - negY + downY) * 2,
+//                        GuiColors.CraftConfirmToCraft.getColor());
+//            }
+//
+//            if (stored != null && stored.getStackSize() > 0 && missingStack == null && pendingStack == null) {
+//                String str = GuiText.FromStoragePercent.getLocal() + ": "
+//                        + RoundHelper.toRoundedFormattedForm(stored.getUsedPercent(), 2)
+//                        + "%";
+//                int w = 4 + parent.getFontRenderer().getStringWidth(str);
+//                parent.getFontRenderer().drawString(
+//                        str,
+//                        (int) ((xo + FIELD_SECTIONLENGTH - 19 - (w * 0.5)) * 2),
+//                        (yo + 6 - negY + downY) * 2,
+//                        ColorPickHelper.selectColorFromThreshold(stored.getUsedPercent()).getColor());
+//            }
+
+            GL11.glPopMatrix();
+            final int posX = FIELD_SECTIONLENGTH - 18;
+
+            final ItemStack is = refStack.copy().getItemStack();
+            GL11.glPushMatrix();
+            parent.drawItem(posX, FIELD_HEIGHT / 2 - 8, is);
+            GL11.glPopMatrix();
+
+//            if (red) {
+//                final int startX = xo;
+//                final int startY = posY - 4;
+//                Gui.drawRect(
+//                        startX,
+//                        startY,
+//                        startX + FIELD_SECTIONLENGTH,
+//                        startY + offY,
+//                        GuiColors.CraftConfirmMissingItem.getColor());
+//            }
         }
 	}
 
