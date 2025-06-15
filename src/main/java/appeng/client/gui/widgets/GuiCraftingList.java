@@ -43,9 +43,9 @@ import net.minecraft.util.ResourceLocation;
 
 public class GuiCraftingList {
 	
-	private static final int FIELD_WIDTH = 69;
-	private static final int FIELD_HEIGHT = 24;
-	private static final int FIELD_SECTIONLENGTH = 67;
+	private static final int FIELD_WIDTH = 69 * 4;
+	private static final int FIELD_HEIGHT = 24 * 4;
+	private static final int FIELD_SECTIONLENGTH = 67 * 4;
 	private static final ResourceLocation FIELD_TEXTURE = new ResourceLocation(AppEng.MOD_ID, "textures/guis/onefiled.png");
 	
     private static final DateTimeFormatter SCREENSHOT_DATE_FORMAT = DateTimeFormatter
@@ -58,7 +58,8 @@ public class GuiCraftingList {
 		int width = 3;
 		int height = 0;
 		while(true) {
-			height = (int)((visualSize  * 1.0) / width + 1);
+
+			height = (int) Math.ceil((visualSize  * 1.0) / width);
 			// Make sure aspect ratio is under 0.9, like a square
 			if((width * (FIELD_WIDTH - 1) + 1) * 1.0 / (height * (FIELD_HEIGHT - 1) + 1) >= 0.9) {
 				break;
@@ -102,6 +103,7 @@ public class GuiCraftingList {
 							GL11.glPushMatrix();
 
 							GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+							GL11.glScaled(4, 4, 1);
 							parent.bindTexture(FIELD_TEXTURE);
 							parent.drawTexturedModalRect(0, 0, 0, 0, FIELD_WIDTH,
 									FIELD_HEIGHT);
@@ -168,11 +170,11 @@ public class GuiCraftingList {
 		if (refStack != null) {
             GL11.glPushMatrix();
 //            GL11.glScaled(0.5, 0.5, 0.5);
-////
+//
 //            final IAEItemStack stored = storage.findPrecise(refStack);
 //            final IAEItemStack pendingStack = pending.findPrecise(refStack);
 //            final IAEItemStack missingStack = missing.findPrecise(refStack);
-////
+//
 //            int lines = 0;
 //
 //            if (stored != null && stored.getStackSize() > 0) {
@@ -197,11 +199,9 @@ public class GuiCraftingList {
 //                final int w = 4 + parent.getFontRenderer().getStringWidth(str);
 //                parent.getFontRenderer().drawString(
 //                        str,
-////                        (int) ((xo + FIELD_SECTIONLENGTH - 19 - (w * 0.5)) * 2),
-//                        9,
+//                        (int) ((xo + FIELD_SECTIONLENGTH - 19 - (w * 0.5)) * 2),
 //                        (yo + 6 - negY + downY) * 2,
 //                        GuiColors.CraftConfirmFromStorage.getColor());
-////
 //                downY += 5;
 //            }
 //
@@ -253,11 +253,12 @@ public class GuiCraftingList {
 //            }
 
             GL11.glPopMatrix();
-            final int posX = FIELD_SECTIONLENGTH - 18;
+            final int posX = FIELD_SECTIONLENGTH - 18 * 4;
 
             final ItemStack is = refStack.copy().getItemStack();
             GL11.glPushMatrix();
-            parent.drawItem(posX, FIELD_HEIGHT / 2 - 8, is);
+			GL11.glScaled(4.0d, 4.0d, 1.0d);
+            parent.drawItem((int)(posX / 4), (int)((FIELD_HEIGHT / 8) - 8), is);
             GL11.glPopMatrix();
 
 //            if (red) {
