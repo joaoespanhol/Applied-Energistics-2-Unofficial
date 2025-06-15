@@ -373,19 +373,19 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
         else this.optimizeButton.setTooltip(ButtonToolTips.OptimizePatterns.getLocal());
         this.selectCPU.visible = this.optimizeButton.visible = this.sortingModeButton.visible = this.sortingDirectionButton.visible = (displayMode
                 == DisplayMode.LIST);
-        
-		switch (displayMode) {
-		case LIST -> {
-			drawListScreen(mouseX, mouseY, btn);
-			this.takeScreenshot.xPosition = this.guiLeft - 38;
-			this.takeScreenshot.yPosition = this.guiTop + this.ySize - 18;
-		}
-		case TREE -> {
-			drawTreeScreen(mouseX, mouseY, btn);
-			this.takeScreenshot.xPosition = this.guiLeft - 36;
-			this.takeScreenshot.yPosition = this.guiTop + this.ySize - 18;
-		}
-		}
+
+        switch (displayMode) {
+            case LIST -> {
+                drawListScreen(mouseX, mouseY, btn);
+                this.takeScreenshot.xPosition = this.guiLeft - 38;
+                this.takeScreenshot.yPosition = this.guiTop + this.ySize - 18;
+            }
+            case TREE -> {
+                drawTreeScreen(mouseX, mouseY, btn);
+                this.takeScreenshot.xPosition = this.guiLeft - 36;
+                this.takeScreenshot.yPosition = this.guiTop + this.ySize - 18;
+            }
+        }
 
         super.drawScreen(mouseX, mouseY, btn);
     }
@@ -1001,16 +1001,16 @@ public class GuiCraftConfirm extends AEBaseGui implements ICraftingCPUTableHolde
             this.setWorldAndResolution(mc, width, height);
             this.searchField.setText("");
         } else if (btn == this.takeScreenshot) {
-			switch (displayMode) {
-			case LIST -> {
-				GuiCraftingList.saveScreenShot(this, visual, storage, pending, missing);
-			}
-			case TREE -> {
-				if (craftingTree != null) {
-					craftingTree.saveScreenshot();
-				}
-			}
-			}
+            switch (displayMode) {
+                case LIST -> {
+                    GuiCraftingList.saveScreenShot(this, visual, storage, pending, missing);
+                }
+                case TREE -> {
+                    if (craftingTree != null) {
+                        craftingTree.saveScreenshot();
+                    }
+                }
+            }
         } else if (btn instanceof GuiImgButton iBtn) {
             final Enum cv = iBtn.getCurrentValue();
             final Enum next = Platform.rotateEnum(cv, backwards, iBtn.getSetting().getPossibleValues());
