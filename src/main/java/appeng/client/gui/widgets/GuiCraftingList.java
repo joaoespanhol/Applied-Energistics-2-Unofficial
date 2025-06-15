@@ -12,7 +12,6 @@ import java.util.Locale;
 import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.event.ClickEvent;
@@ -97,21 +96,44 @@ public class GuiCraftingList {
 
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
-                        GL11.glPushMatrix();
-                        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-                        GL11.glScaled(4, 4, 1);
-                        parent.bindTexture(FIELD_TEXTURE);
-                        parent.drawTexturedModalRect(0, 0, 0, 0, FIELD_WIDTH, FIELD_HEIGHT);
-                        GL11.glPopMatrix();
-
+                        boolean need_red = false;
                         if (width * y + x < visualSize) {
-                            test(parent, visual.get(width * y + x), visual, storage, pending, missing);
+                            IAEItemStack refStack = visual.get(width * y + x);
+
+                            final IAEItemStack stored = storage.findPrecise(refStack);
+                            final IAEItemStack pendingStack = pending.findPrecise(refStack);
+                            final IAEItemStack missingStack = missing.findPrecise(refStack);
+
+                            if (missingStack != null && missingStack.getStackSize() > 0) {
+                                need_red = true;
+                            }
+
+                            GL11.glPushMatrix();
+                            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+                            GL11.glScaled(4, 4, 1);
+                            parent.bindTexture(FIELD_TEXTURE);
+                            parent.drawTexturedModalRect(
+                                    0,
+                                    0,
+                                    0,
+                                    need_red ? FIELD_HEIGHT / 4 : 0,
+                                    FIELD_WIDTH,
+                                    FIELD_HEIGHT);
+                            GL11.glPopMatrix();
+
+                            test(parent, refStack, stored, pendingStack, missingStack);
                             AELog.info(
                                     "%d, %s",
                                     width * y + x,
                                     visual.get(width * y + x).getItemStack().getDisplayName());
+                        } else {
+                            GL11.glPushMatrix();
+                            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+                            GL11.glScaled(4, 4, 1);
+                            parent.bindTexture(FIELD_TEXTURE);
+                            parent.drawTexturedModalRect(0, 0, 0, 0, FIELD_WIDTH, FIELD_HEIGHT);
+                            GL11.glPopMatrix();
                         }
-
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.framebufferTexture);
                         GL11.glGetTexImage(
                                 GL11.GL_TEXTURE_2D,
@@ -165,8 +187,8 @@ public class GuiCraftingList {
         }
     }
 
-    private static void test(AEBaseGui parent, IAEItemStack refStack, List<IAEItemStack> visual,
-            IItemList<IAEItemStack> storage, IItemList<IAEItemStack> pending, IItemList<IAEItemStack> missing) {
+    private static void test(AEBaseGui parent, IAEItemStack refStack, IAEItemStack stored, IAEItemStack pendingStack,
+            IAEItemStack missingStack) {
         final int xo = 9;
         final int yo = 22;
         if (refStack != null) {
@@ -175,10 +197,6 @@ public class GuiCraftingList {
             GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
 
             GL11.glScaled(2.0d, 2.0d, 0.5d);
-
-            final IAEItemStack stored = storage.findPrecise(refStack);
-            final IAEItemStack pendingStack = pending.findPrecise(refStack);
-            final IAEItemStack missingStack = missing.findPrecise(refStack);
 
             int lines = 0;
 
@@ -210,7 +228,6 @@ public class GuiCraftingList {
                 downY += 5 * 4;
             }
 
-            boolean red = false;
             if (missingStack != null && missingStack.getStackSize() > 0) {
                 String str = GuiText.Missing.getLocal() + ": "
                         + ReadableNumberConverter.INSTANCE.toWideReadableForm(missingStack.getStackSize());
@@ -221,7 +238,6 @@ public class GuiCraftingList {
                         (yo + 6 - negY + downY) / 2,
                         GuiColors.CraftConfirmMissing.getColor());
 
-                red = true;
                 downY += 5 * 4;
             }
 
@@ -257,11 +273,7 @@ public class GuiCraftingList {
                         (yo + 6 - negY + downY) / 2,
                         ColorPickHelper.selectColorFromThreshold(stored.getUsedPercent()).getColor());
             }
-            if (red) {
-                GL11.glTranslated(0, 0, 10);
-                Gui.drawRect(2, 2, ((FIELD_WIDTH - 4) / 2), ((FIELD_HEIGHT - 4) / 2), 0x1AFF0000);
-                GL11.glTranslated(0, 0, -10);
-            }
+
             GL11.glPopAttrib();
             GL11.glPopMatrix();
 
@@ -270,7 +282,6 @@ public class GuiCraftingList {
             final ItemStack is = refStack.copy().getItemStack();
             parent.drawItem((int) (FIELD_SECTIONLENGTH / 4 - 18), (int) ((FIELD_HEIGHT / 8) - 8), is);
             GL11.glPopMatrix();
-
         }
     }
 
