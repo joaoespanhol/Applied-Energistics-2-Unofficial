@@ -60,7 +60,7 @@ public class GuiCraftingList {
 		while(true) {
 			height = (int)((visualSize  * 1.0) / width + 1);
 			// Make sure aspect ratio is under 0.9, like a square
-			if((width * 68 + 1) * 1.0 / (height * 23 + 1) >= 0.9) {
+			if((width * (FIELD_WIDTH - 1) + 1) * 1.0 / (height * (FIELD_HEIGHT - 1) + 1) >= 0.9) {
 				break;
 			}
 			width ++;
