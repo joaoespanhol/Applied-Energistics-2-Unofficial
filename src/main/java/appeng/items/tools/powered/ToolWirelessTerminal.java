@@ -44,7 +44,7 @@ import baubles.api.expanded.IBaubleExpanded;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-@cpw.mods.fml.common.Optional.Interface(iface = "baubles.api.IBaubleExpanded", modid = "Baubles|Expanded")
+@cpw.mods.fml.common.Optional.Interface(iface = "baubles.api.expanded.IBaubleExpanded", modid = "Baubles|Expanded")
 public class ToolWirelessTerminal extends AEBasePoweredItem implements IWirelessTermHandler, IBauble, IBaubleExpanded {
 
     public ToolWirelessTerminal() {
