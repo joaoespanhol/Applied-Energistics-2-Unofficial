@@ -98,8 +98,8 @@ public class GuiCraftingList {
                     for (int x = 0; x < width; x++) {
                         boolean need_red = false;
                         if (width * y + x < visualSize) {
+                            // Draw field with string and itemstack
                             IAEItemStack refStack = visual.get(width * y + x);
-
                             final IAEItemStack stored = storage.findPrecise(refStack);
                             final IAEItemStack pendingStack = pending.findPrecise(refStack);
                             final IAEItemStack missingStack = missing.findPrecise(refStack);
@@ -120,13 +120,9 @@ public class GuiCraftingList {
                                     FIELD_WIDTH,
                                     FIELD_HEIGHT);
                             GL11.glPopMatrix();
-
-                            test(parent, refStack, stored, pendingStack, missingStack);
-                            AELog.info(
-                                    "%d, %s",
-                                    width * y + x,
-                                    visual.get(width * y + x).getItemStack().getDisplayName());
+                            GuiCraftingList.drawStringAndItem(parent, refStack, stored, pendingStack, missingStack);
                         } else {
+                            // Draw empty field
                             GL11.glPushMatrix();
                             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                             GL11.glScaled(4, 4, 1);
@@ -134,6 +130,7 @@ public class GuiCraftingList {
                             parent.drawTexturedModalRect(0, 0, 0, 0, FIELD_WIDTH, FIELD_HEIGHT);
                             GL11.glPopMatrix();
                         }
+
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, fb.framebufferTexture);
                         GL11.glGetTexImage(
                                 GL11.GL_TEXTURE_2D,
@@ -187,15 +184,13 @@ public class GuiCraftingList {
         }
     }
 
-    private static void test(AEBaseGui parent, IAEItemStack refStack, IAEItemStack stored, IAEItemStack pendingStack,
-            IAEItemStack missingStack) {
+    private static void drawStringAndItem(AEBaseGui parent, IAEItemStack refStack, IAEItemStack stored,
+            IAEItemStack pendingStack, IAEItemStack missingStack) {
         final int xo = 9;
         final int yo = 22;
         if (refStack != null) {
             GL11.glPushMatrix();
-
             GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
-
             GL11.glScaled(2.0d, 2.0d, 0.5d);
 
             int lines = 0;
@@ -273,7 +268,6 @@ public class GuiCraftingList {
                         (yo + 6 - negY + downY) / 2,
                         ColorPickHelper.selectColorFromThreshold(stored.getUsedPercent()).getColor());
             }
-
             GL11.glPopAttrib();
             GL11.glPopMatrix();
 
