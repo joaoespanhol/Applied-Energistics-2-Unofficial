@@ -26,6 +26,7 @@ dependencies {
     compileOnly('com.github.GTNewHorizons:ae2stuff:0.9.5-GTNH:dev') {
         exclude module: "Applied-Energistics-2-Unofficial"
     }
+    compileOnly('com.github.GTNewHorizons:Baubles-Expanded:2.1.8-GTNH:dev')
 
     //Uncomment to add thermal expansion + foundation for testing
     //runtimeOnlyNonPublishable('curse.maven:thermal-foundation-222880:2388753')
