@@ -881,7 +881,7 @@ public class GuiImgButton extends GuiButton implements ITooltip {
                     ButtonToolTips.PinsSection,
                     ButtonToolTips.PinsSectionActive);
 
-  this.registerApp(
+            this.registerApp(
                     16 * 6 + 9,
                     Settings.SUPER_WIRELESS_TOOL_GROUP_BY,
                     SuperWirelessToolGroupBy.Single,
