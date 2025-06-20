@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableSet;
 import appeng.api.AEApi;
 import appeng.api.config.Actionable;
 import appeng.api.config.AdvancedBlockingMode;
+import appeng.api.config.FuzzyMode;
 import appeng.api.config.InsertionMode;
 import appeng.api.config.LockCraftingMode;
 import appeng.api.config.Settings;
@@ -80,6 +81,7 @@ import appeng.core.AELog;
 import appeng.core.features.registries.BlockingModeIgnoreItemRegistry;
 import appeng.core.settings.TickRates;
 import appeng.me.GridAccessException;
+import appeng.me.cache.NetworkMonitor;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.me.storage.MEMonitorIInventory;
 import appeng.me.storage.MEMonitorPassThrough;
@@ -94,7 +96,9 @@ import appeng.tile.networking.TileCableBus;
 import appeng.util.ConfigManager;
 import appeng.util.IConfigManagerHost;
 import appeng.util.InventoryAdaptor;
+import appeng.util.IterationCounter;
 import appeng.util.Platform;
+import appeng.util.ScheduledReason;
 import appeng.util.inv.AdaptorIInventory;
 import appeng.util.inv.IInventoryDestination;
 import appeng.util.inv.ItemSlot;
@@ -113,6 +117,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private static final Collection<Block> BAD_BLOCKS = new HashSet<>(100);
     private final int[] sides = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
     private final IAEItemStack[] requireWork = { null, null, null, null, null, null, null, null, null };
+    private final boolean[] hasFuzzyConfig = { false, false, false, false, false, false, false, false, false, };
     private final MultiCraftingTracker craftingTracker;
     protected final AENetworkProxy gridProxy;
     private final IInterfaceHost iHost;
@@ -130,6 +135,8 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
             new NullInventory<IAEFluidStack>(),
             StorageChannel.FLUIDS);
     private final UpgradeInventory upgrades;
+    private ItemStack stored;
+    private IAEItemStack fuzzyItemStack;
     private boolean hasConfig = false;
     private int priority;
     public List<ICraftingPatternDetails> craftingList = null;
@@ -142,6 +149,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private UnlockCraftingEvent unlockEvent;
     private List<IAEItemStack> unlockStacks;
     private int lastInputHash = 0;
+    private ScheduledReason scheduledReason = ScheduledReason.UNDEFINED;
 
     public DualityInterface(final AENetworkProxy networkProxy, final IInterfaceHost ih) {
         this.gridProxy = networkProxy;
@@ -155,6 +163,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         this.cm.registerSetting(Settings.ADVANCED_BLOCKING_MODE, AdvancedBlockingMode.DEFAULT);
         this.cm.registerSetting(Settings.LOCK_CRAFTING_MODE, LockCraftingMode.NONE);
         this.cm.registerSetting(Settings.PATTERN_OPTIMIZATION, YesNo.YES);
+        this.cm.registerSetting(Settings.FUZZY_MODE, FuzzyMode.IGNORE_ALL);
 
         this.iHost = ih;
         this.craftingTracker = new MultiCraftingTracker(this.iHost, 9);
@@ -429,7 +438,9 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
             req = null;
         }
 
+        final int fuzzycards = this.getInstalledUpgrades(Upgrades.FUZZY);
         final ItemStack Stored = this.storage.getStackInSlot(slot);
+        this.stored = Stored;
 
         if (req == null && Stored != null) {
             final IAEItemStack work = AEApi.instance().storage().createItemStack(Stored);
@@ -440,8 +451,22 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
             {
                 this.requireWork[slot] = req.copy();
                 return;
-            } else if (req.isSameType(Stored)) // same type ( qty different? )!
-            {
+
+                /*
+                 * Checks if a fuzzy-matched item exists, and sets the config slot stack to that item; and if it doesnt
+                 * exist, it sets the variable for it equal to an IAEItemStack version of the ItemStack in the storage
+                 * slot. This ensures fast and accurate adjustment of the stack size stocked in the storage slot.
+                 */
+            } else if (((fuzzycards == 1) && (slot) > 5) || ((fuzzycards == 2) && (slot > 2)) || (fuzzycards == 3)) {
+                if (this.fuzzyItemStack == null) {
+                    this.fuzzyItemStack = AEApi.instance().storage().createItemStack(Stored);
+                }
+                if ((req.getStackSize() != Stored.stackSize)) {
+                    this.requireWork[slot] = this.fuzzyItemStack.copy();
+                    this.requireWork[slot].setStackSize(req.getStackSize() - Stored.stackSize);
+                    return;
+                }
+            } else if (req.isSameType(Stored)) { // same type, possibly different quantity!
                 if (req.getStackSize() != Stored.stackSize) {
                     this.requireWork[slot] = req.copy();
                     this.requireWork[slot].setStackSize(req.getStackSize() - Stored.stackSize);
@@ -562,6 +587,42 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         return this.sides;
     }
 
+    public IAEItemStack[] fuzzyPoweredExtraction(final IEnergySource energy, final IMEInventory<IAEItemStack> cell,
+            final IAEItemStack itemStack, final ItemStack is, final BaseActionSource src, int iteration) {
+        Collection<IAEItemStack> fzlist = null;
+        IAEItemStack fuzzyItemStack = null;
+        IAEItemStack pe = null;
+        /*
+         * This returns a NetworkInventoryHandler object. getSortedFuzzyItems has an Override definition in there.
+         */
+        if (cell instanceof NetworkMonitor<?>) {
+            fzlist = ((NetworkMonitor<IAEItemStack>) cell).getHandler().getSortedFuzzyItems(
+                    new ArrayList<>(),
+                    itemStack,
+                    ((FuzzyMode) cm.getSetting(Settings.FUZZY_MODE)),
+                    iteration);
+
+        } else return new IAEItemStack[] { null, fuzzyItemStack };
+
+        if (fzlist.iterator().hasNext()) {
+            fuzzyItemStack = fzlist.iterator().next();
+
+            /*
+             * Checks if the fuzzy-matched item can be merged with the ItemStack currently in the storage slot.
+             */
+            if ((fuzzyItemStack.isSameType(is)) || (is == null)) {
+                fuzzyItemStack.setStackSize(itemStack.getStackSize());
+
+                // To prevent duping in case fuzzy-matched item cannot be merged with stack in storage
+                // slot...
+            } else fuzzyItemStack.setStackSize(0);
+
+            pe = Platform.poweredExtraction(energy, cell, fuzzyItemStack, src);
+        }
+        return new IAEItemStack[] { pe, fuzzyItemStack };
+
+    }
+
     @Override
     public TickingRequest getTickingRequest(final IGridNode node) {
         return new TickingRequest(
@@ -677,6 +738,8 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
     private boolean usePlan(final int x, final IAEItemStack itemStack) {
         final InventoryAdaptor adaptor = this.getAdaptor(x);
+        final int fuzzycards = this.getInstalledUpgrades(Upgrades.FUZZY);
+        IAEItemStack acquired = null;
         this.isWorking = true;
 
         boolean changed = false;
@@ -723,8 +786,23 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
                     throw new GridAccessException();
                 }
 
-                final IAEItemStack acquired = Platform
-                        .poweredExtraction(src, this.destination, itemStack, this.interfaceRequestSource);
+                if (((fuzzycards == 1) && (x > 5)) || ((fuzzycards == 2) && (x > 2)) || (fuzzycards == 3)) {
+                    int iteration = IterationCounter.fetchNewId();
+                    final IAEItemStack[] fpe = fuzzyPoweredExtraction(
+                            src,
+                            this.destination,
+                            itemStack,
+                            this.stored,
+                            this.interfaceRequestSource,
+                            iteration);
+                    acquired = fpe[0];
+                    this.fuzzyItemStack = fpe[1];
+                    hasFuzzyConfig[x] = true;
+                } else {
+                    acquired = Platform
+                            .poweredExtraction(src, this.destination, itemStack, this.interfaceRequestSource);
+                    this.fuzzyItemStack = null;
+                }
                 if (acquired != null) {
                     changed = true;
                     final ItemStack issue = adaptor.addItems(acquired.getItemStack());
@@ -733,6 +811,9 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
                     }
                 } else {
                     changed = this.handleCrafting(x, adaptor, itemStack);
+                    if (this.getInstalledUpgrades(Upgrades.FUZZY) > 0) {
+                        changed = true;
+                    }
                 }
             }
             // else wtf?
@@ -946,9 +1027,11 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     @Override
     public boolean pushPattern(final ICraftingPatternDetails patternDetails, final InventoryCrafting table) {
         if (this.hasItemsToSend() || !this.gridProxy.isActive() || !this.craftingList.contains(patternDetails)) {
+            scheduledReason = ScheduledReason.SOMETHING_STUCK;
             return false;
         }
         if (getCraftingLockedReason() != LockCraftingMode.NONE) {
+            scheduledReason = ScheduledReason.LOCK_MODE;
             return false;
         }
 
@@ -957,6 +1040,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
 
         final EnumSet<ForgeDirection> possibleDirections = this.iHost.getTargets();
         EnumSet<ForgeDirection> out = EnumSet.noneOf(ForgeDirection.class);
+        boolean foundReason = false;
         for (final ForgeDirection s : possibleDirections) {
             final TileEntity te = w
                     .getTileEntity(tile.xCoord + s.offsetX, tile.yCoord + s.offsetY, tile.zCoord + s.offsetZ);
@@ -978,6 +1062,10 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
             if (te instanceof IInterfaceHost) {
                 try {
                     if (((IInterfaceHost) te).getInterfaceDuality().sameGrid(this.gridProxy.getGrid())) {
+                        if (!foundReason) {
+                            foundReason = true;
+                            scheduledReason = ScheduledReason.SAME_NETWORK;
+                        }
                         continue;
                     }
                 } catch (final GridAccessException e) {
@@ -989,8 +1077,11 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
             if (ad != null) {
                 if (this.isBlocking() && !(this.isSmartBlocking() && this.lastInputHash == patternDetails.hashCode())
                         && ad.containsItems()
-                        && !inventoryCountsAsEmpty(te, ad, s.getOpposite()))
+                        && !inventoryCountsAsEmpty(te, ad, s.getOpposite())) {
+                    foundReason = true;
+                    scheduledReason = ScheduledReason.BLOCKING_MODE;
                     continue;
+                }
 
                 if (acceptsItems(ad, table, getInsertionMode())) {
                     for (int x = 0; x < table.getSizeInventory(); x++) {
@@ -1027,12 +1118,20 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
             }
         }
 
+        if (!foundReason) scheduledReason = ScheduledReason.NO_TARGET;
+
         return false;
+    }
+
+    @Override
+    public ScheduledReason getScheduledReason() {
+        return scheduledReason;
     }
 
     @Override
     public boolean isBusy() {
         if (this.hasItemsToSend()) {
+            scheduledReason = ScheduledReason.SOMETHING_STUCK;
             return true;
         }
 
@@ -1062,9 +1161,14 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
             }
 
             busy = allAreBusy;
+
+            if (busy) {
+                scheduledReason = ScheduledReason.BLOCKING_MODE;
+            }
         }
 
         if (this.getCraftingLockedReason() != LockCraftingMode.NONE) {
+            scheduledReason = ScheduledReason.LOCK_MODE;
             busy = true;
         }
 

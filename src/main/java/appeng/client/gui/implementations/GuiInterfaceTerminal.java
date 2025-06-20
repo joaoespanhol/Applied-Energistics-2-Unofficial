@@ -964,7 +964,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
         if (searchTerm.length() >= 2 && searchTerm.startsWith("\"") && searchTerm.endsWith("\"")) {
             return sectionName.contains(searchTerm.substring(1, searchTerm.length() - 1).toLowerCase());
         } else {
-            String[] terms = searchTerm.toLowerCase().split("\s*");
+            String[] terms = searchTerm.toLowerCase().split("\s+");
 
             for (int i = 0; i < terms.length; i++) {
                 if (!sectionName.contains(terms[i])) {
@@ -1008,17 +1008,7 @@ public class GuiInterfaceTerminal extends AEBaseGui
             return false;
         }
 
-        final World w = CommonHelper.proxy.getWorld();
-        if (w == null) {
-            return false;
-        }
-
-        try {
-            final PatternHelper pt = new PatternHelper(is, w);
-            return pt.canSubstitute() || pt.canBeSubstitute();
-        } catch (final Throwable t) {
-            return true;
-        }
+        return encodedValue.getBoolean("substitute") || encodedValue.getBoolean("beSubstitute");
     }
 
     private int getMaxViewHeight() {
