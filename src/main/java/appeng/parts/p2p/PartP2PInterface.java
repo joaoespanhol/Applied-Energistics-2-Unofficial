@@ -297,8 +297,8 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
                 for (int i = 0; i < upgrades.getSizeInventory(); ++i) {
                     newUpgrade.setInventorySlotContents(i, upgrades.getStackInSlot(i));
                 }
-                IInventory storage = duality.getStorage();
-                IInventory newStorage = newDuality.getStorage();
+                IInventory storage = (IInventory) duality.getStorage();
+                IInventory newStorage = (IInventory) newDuality.getStorage();
                 for (int i = 0; i < storage.getSizeInventory(); ++i) {
                     newStorage.setInventorySlotContents(i, storage.getStackInSlot(i));
                 }
