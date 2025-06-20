@@ -115,6 +115,9 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
                 if ((p2p == null) && (!this.inputProxy)) {
                     didSomething = super.updateStorage();
                 }
+
+                // This must be called here for outputs to update properly...
+                this.readConfig();
             }
 
             return didSomething;
@@ -131,10 +134,11 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
                 }
             } else {
                 PartP2PInterface p2p = getInput();
-                this.setHasConfig(false);
 
                 if (p2p != null) {
                     if (!p2p.duality.getConfig().isEmpty()) this.setHasConfig(p2p.duality.hasConfig());
+                } else if ((p2p == null) && (this.hasConfig())) {
+                    this.setHasConfig(false);
                 }
 
                 this.notifyNeighbors();
@@ -271,11 +275,17 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
     @Override
     public boolean onPartActivate(final EntityPlayer p, final Vec3 pos) {
         AppEngInternalInventory patterns = (AppEngInternalInventory) this.duality.getPatterns();
+        AppEngInternalInventory storageAppEng = this.duality.getStorage();
+
         if (super.onPartActivate(p, pos)) {
             ArrayList<ItemStack> drops = new ArrayList<>();
             for (int i = 0; i < patterns.getSizeInventory(); i++) {
                 if (patterns.getStackInSlot(i) == null) continue;
                 drops.add(patterns.getStackInSlot(i));
+            }
+            for (int i = 0; i < DualityInterface.NUMBER_OF_STORAGE_SLOTS; i++) {
+                if (storageAppEng.getStackInSlot(i) == null) continue;
+                drops.add(storageAppEng.getStackInSlot(i));
             }
             final IPart tile = this.getHost().getPart(this.getSide());
             if (tile instanceof PartP2PInterface) {
@@ -311,6 +321,22 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
         }
 
         return true;
+    }
+
+    @Override
+    public boolean onPartShiftActivate(final EntityPlayer player, final Vec3 pos) {
+        boolean storageReset = false;
+        if (isOutput()) storageReset = true;
+        if (super.onPartShiftActivate(player, pos)) {
+            if (storageReset) {
+                this.duality.setStorage(new AppEngInternalInventory(this, DualityInterface.NUMBER_OF_STORAGE_SLOTS));
+                this.duality.setSlotInv(new WrapperInvSlot(this.duality.getStorage()));
+                this.duality.readConfig();
+            }
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -502,7 +528,6 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
             PartP2PInterface input = getInput();
             if (input == null) {
                 this.duality.updateStorage();
-                this.duality.readConfig();
             }
         }
     }
