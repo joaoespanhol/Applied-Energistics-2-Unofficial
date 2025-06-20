@@ -90,7 +90,9 @@ public enum Settings {
 
     NETWORK_VISUALISER(EnumSet.allOf(VisualisationModes.class)),
 
-    CRAFTING_ALLOW(EnumSet.allOf(CraftingAllow.class));
+    CRAFTING_ALLOW(EnumSet.allOf(CraftingAllow.class)),
+
+    PINS_STATE(EnumSet.allOf(PinsState.class));
 
     private final EnumSet<? extends Enum<?>> values;
 

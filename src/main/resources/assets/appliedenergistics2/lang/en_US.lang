@@ -596,6 +596,10 @@ gui.tooltips.appliedenergistics2.scheduledreason.NO_TARGET=Cant find target to p
 gui.tooltips.appliedenergistics2.scheduledreason.NOT_ENOUGH_INGREDIENTS=Not enough ingredients
 gui.tooltips.appliedenergistics2.scheduledreason.SAME_NETWORK=Target interface in same network
 
+gui.tooltips.appliedenergistics2.PinsSection=Pins Section
+gui.tooltips.appliedenergistics2.PinsSectionActive=Pins Section Enabled
+gui.tooltips.appliedenergistics2.PinsSectionDisabled=Pins Section Disabled
+
 gui.tooltips.appliedenergistics2.ToggleShowOnlySubstitute=Toggles showing interfaces with patterns with substitutions enabled
 gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOnDesc=Showing all interfaces
 gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOffDesc=Showing only interfaces with patterns with substitutions enabled
