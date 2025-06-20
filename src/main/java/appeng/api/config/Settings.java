@@ -92,7 +92,15 @@ public enum Settings {
 
     CRAFTING_ALLOW(EnumSet.allOf(CraftingAllow.class)),
 
-    PINS_STATE(EnumSet.allOf(PinsState.class));
+    PINS_STATE(EnumSet.allOf(PinsState.class)),
+
+    SUPER_WIRELESS_TOOL(EnumSet.allOf(SuperWirelessTool.class)),
+
+    SUPER_WIRELESS_TOOL_ADVANCED(EnumSet.allOf(SuperWirelessToolAdvanced.class)),
+
+    SUPER_WIRELESS_TOOL_GROUP_BY(EnumSet.allOf(SuperWirelessToolGroupBy.class)),
+
+    SUPER_WIRELESS_TOOL_HIDE_BOUNDED(EnumSet.of(YesNo.YES, YesNo.NO));
 
     private final EnumSet<? extends Enum<?>> values;
 
