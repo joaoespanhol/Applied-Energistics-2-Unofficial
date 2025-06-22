@@ -140,7 +140,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     private boolean hasConfig = false;
     private int priority;
     public List<ICraftingPatternDetails> craftingList = null;
-    public boolean inputProxy = false;
+    public boolean sharedInventory = false;
     private List<ItemStack> waitingToSend = null;
     private IMEInventory<IAEItemStack> destination;
     private boolean isWorking = false;
@@ -232,7 +232,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     public void writeToNBT(final NBTTagCompound data) {
         this.config.writeToNBT(data, "config");
         this.patterns.writeToNBT(data, "patterns");
-        this.storage.writeToNBT(data, "storage");
+        if (!sharedInventory) this.storage.writeToNBT(data, "storage");
         this.upgrades.writeToNBT(data, "upgrades");
         this.cm.writeToNBT(data);
         this.craftingTracker.writeToNBT(data);
@@ -418,7 +418,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         }
     }
 
-    private boolean hasWorkToDo() {
+    protected boolean hasWorkToDo() {
         if (this.hasItemsToSend()) {
             return true;
         } else {
@@ -524,7 +524,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         }
     }
 
-    private boolean hasItemsToSend() {
+    protected boolean hasItemsToSend() {
         return this.waitingToSend != null && !this.waitingToSend.isEmpty();
     }
 
