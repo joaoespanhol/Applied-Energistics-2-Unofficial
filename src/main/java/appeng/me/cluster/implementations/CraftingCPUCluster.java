@@ -199,6 +199,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final List<String> playersFollowingCurrentCraft = new ArrayList<>();
     private final HashMap<ICraftingPatternDetails, List<ICraftingMedium>> parallelismProvider = new HashMap<>();
     private final HashMap<ICraftingPatternDetails, ScheduledReason> reasonProvider = new HashMap<>();
+    private BaseActionSource currentJobSource = null;
 
     public CraftingCPUCluster(final WorldCoord min, final WorldCoord max) {
         this.min = min;
@@ -222,6 +223,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     @Override
     public void resetFinalOutput() {
         finalOutput = null;
+        currentJobSource = null;
     }
 
     @Override
@@ -1043,6 +1045,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     this.isComplete = false;
                     this.usedStorage = job.getByteTotal();
                     this.numsOfOutput = job.getOutput().getStackSize();
+                    this.currentJobSource = src;
                     for (IAEItemStack fte : ci.getExtractFailedList()) {
                         this.waitingForMissing.add(fte);
                     }
@@ -1142,6 +1145,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 this.usedStorage += job.getByteTotal();
                 this.numsOfOutput += job.getOutput().getStackSize();
                 this.isMissingMode = job.getCraftingMode() == CraftingMode.IGNORE_MISSING;
+                this.currentJobSource = src;
 
                 this.prepareStepCount();
                 this.markDirty();
@@ -1733,6 +1737,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         } else {
             countToTryExtractItems++;
         }
+    }
+
+    public BaseActionSource getCurrentJobSource() {
+        return currentJobSource;
     }
 
     private static class TaskProgress {
