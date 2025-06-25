@@ -2,6 +2,7 @@ package appeng.client.gui.widgets;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.FileAlreadyExistsException;
 import java.time.LocalDateTime;
@@ -13,6 +14,8 @@ import javax.imageio.ImageIO;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.item.ItemStack;
@@ -48,8 +51,10 @@ public class GuiCraftingList {
     private static final DateTimeFormatter SCREENSHOT_DATE_FORMAT = DateTimeFormatter
             .ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
 
+    protected static RenderItem itemRender = new RenderItem();
+
     public static void saveScreenShot(AEBaseGui parent, List<IAEItemStack> visual, IItemList<IAEItemStack> storage,
-            IItemList<IAEItemStack> pending, IItemList<IAEItemStack> missing) {
+                                      IItemList<IAEItemStack> pending, IItemList<IAEItemStack> missing) {
         // Make a better size for reading
         int visualSize = visual.size();
         int width = 3;
@@ -93,6 +98,10 @@ public class GuiCraftingList {
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             try {
                 fb.bindFramebuffer(true);
+                GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+
+                GL11.glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
+                GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
@@ -109,7 +118,6 @@ public class GuiCraftingList {
                             }
 
                             GL11.glPushMatrix();
-                            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                             GL11.glScaled(4, 4, 1);
                             parent.bindTexture(FIELD_TEXTURE);
                             parent.drawTexturedModalRect(
@@ -124,7 +132,6 @@ public class GuiCraftingList {
                         } else {
                             // Draw empty field
                             GL11.glPushMatrix();
-                            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                             GL11.glScaled(4, 4, 1);
                             parent.bindTexture(FIELD_TEXTURE);
                             parent.drawTexturedModalRect(0, 0, 0, 0, FIELD_WIDTH, FIELD_HEIGHT);
@@ -139,13 +146,31 @@ public class GuiCraftingList {
                                 GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
                                 downloadBuffer);
 
+                        int backgroundColor = need_red ? 0xFFE0BABA : 0xFFDBDBDB;
+
                         for (int i = 0; i < FIELD_WIDTH * FIELD_HEIGHT; i++) {
                             int x_ = i % FIELD_WIDTH;
                             int y_ = (int) (i / FIELD_WIDTH);
-                            outputImg.setRGB(
-                                    x * (FIELD_WIDTH - 1) + x_,
-                                    (y + 1) * (FIELD_HEIGHT - 1) - y_,
-                                    downloadBuffer.get(i));
+                            int rgba = downloadBuffer.get(i);
+
+                            int a = (rgba >>> 24) & 0xFF;
+                            int r = (rgba >>> 16) & 0xFF;
+                            int g = (rgba >>> 8) & 0xFF;
+                            int b = rgba & 0xFF;
+
+                            int br = (backgroundColor >>> 16) & 0xFF;
+                            int bg = (backgroundColor >>> 8) & 0xFF;
+                            int bb = backgroundColor & 0xFF;
+
+                            float alpha = a / 255.0f;
+
+                            int outR = (int) (r * alpha + br * (1 - alpha));
+                            int outG = (int) (g * alpha + bg * (1 - alpha));
+                            int outB = (int) (b * alpha + bb * (1 - alpha));
+
+                            int finalRGB = (0xFF << 24) | (outR << 16) | (outG << 8) | outB;
+
+                            outputImg.setRGB(x * (FIELD_WIDTH - 1) + x_, (y + 1) * (FIELD_HEIGHT - 1) - y_, finalRGB);
                         }
 
                     }
@@ -154,6 +179,7 @@ public class GuiCraftingList {
             } finally {
                 fb.deleteFramebuffer();
                 GL11.glViewport(0, 0, mc.displayWidth, mc.displayHeight);
+                GL11.glPopAttrib();
             }
             GL11.glPopAttrib();
             GL11.glPopMatrix();
@@ -185,7 +211,7 @@ public class GuiCraftingList {
     }
 
     private static void drawStringAndItem(AEBaseGui parent, IAEItemStack refStack, IAEItemStack stored,
-            IAEItemStack pendingStack, IAEItemStack missingStack) {
+                                          IAEItemStack pendingStack, IAEItemStack missingStack) {
         final int xo = 9;
         final int yo = 22;
         if (refStack != null) {
@@ -274,9 +300,40 @@ public class GuiCraftingList {
             GL11.glPushMatrix();
             GL11.glScaled(4.0d, 4.0d, 1.0d);
             final ItemStack is = refStack.copy().getItemStack();
-            parent.drawItem((int) (FIELD_SECTIONLENGTH / 4 - 18), (int) ((FIELD_HEIGHT / 8) - 8), is);
+            drawItem((int) (FIELD_SECTIONLENGTH / 4 - 18), (int) ((FIELD_HEIGHT / 8) - 8), is, true);
             GL11.glPopMatrix();
         }
+    }
+
+    public static void drawItem(final int x, final int y, final ItemStack is, boolean enhanceLight) {
+        itemRender.zLevel = 100.0F;
+
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glTranslatef(0.0f, 0.0f, 101.0f);
+        RenderHelper.enableGUIStandardItemLighting();
+
+        if (enhanceLight) {
+            GL11.glLight(GL11.GL_LIGHT0, GL11.GL_DIFFUSE, createColorBuffer(1.0F, 1.0F, 1.0F, 1.0F));
+            GL11.glLight(GL11.GL_LIGHT1, GL11.GL_DIFFUSE, createColorBuffer(1.0F, 1.0F, 1.0F, 1.0F));
+            GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, createColorBuffer(0.6F, 0.6F, 0.6F, 1.0F));
+        }
+
+        Minecraft mc = Minecraft.getMinecraft();
+        itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.renderEngine, is, x, y);
+        GL11.glTranslatef(0.0f, 0.0f, -101.0f);
+        GL11.glPopAttrib();
+
+        itemRender.zLevel = 0.0F;
+    }
+
+    private static FloatBuffer createColorBuffer(float r, float g, float b, float a) {
+        FloatBuffer buffer = BufferUtils.createFloatBuffer(4);
+        buffer.put(r).put(g).put(b).put(a);
+        buffer.flip();
+        return buffer;
     }
 
 }
