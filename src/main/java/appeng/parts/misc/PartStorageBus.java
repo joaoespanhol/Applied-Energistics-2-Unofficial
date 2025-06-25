@@ -97,6 +97,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     private final BaseActionSource mySrc;
     private final AppEngInternalAEInventory Config = new AppEngInternalAEInventory(this, 63);
     public boolean needSyncGUI = false;
+    // represents the 45 optional slots unlockable with a Storage Card
     private final ItemStack[] filterCache = new ItemStack[63 - 18];
     private int priority = 0;
     private boolean cached = false;
