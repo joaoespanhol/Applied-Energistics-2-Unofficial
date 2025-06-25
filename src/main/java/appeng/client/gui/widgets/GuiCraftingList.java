@@ -50,11 +50,10 @@ public class GuiCraftingList {
 
     private static final DateTimeFormatter SCREENSHOT_DATE_FORMAT = DateTimeFormatter
             .ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
-
     protected static RenderItem itemRender = new RenderItem();
 
     public static void saveScreenShot(AEBaseGui parent, List<IAEItemStack> visual, IItemList<IAEItemStack> storage,
-                                      IItemList<IAEItemStack> pending, IItemList<IAEItemStack> missing) {
+            IItemList<IAEItemStack> pending, IItemList<IAEItemStack> missing) {
         // Make a better size for reading
         int visualSize = visual.size();
         int width = 3;
@@ -98,10 +97,6 @@ public class GuiCraftingList {
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             try {
                 fb.bindFramebuffer(true);
-                GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
-
-                GL11.glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
-                GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
@@ -118,6 +113,7 @@ public class GuiCraftingList {
                             }
 
                             GL11.glPushMatrix();
+                            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                             GL11.glScaled(4, 4, 1);
                             parent.bindTexture(FIELD_TEXTURE);
                             parent.drawTexturedModalRect(
@@ -132,6 +128,7 @@ public class GuiCraftingList {
                         } else {
                             // Draw empty field
                             GL11.glPushMatrix();
+                            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                             GL11.glScaled(4, 4, 1);
                             parent.bindTexture(FIELD_TEXTURE);
                             parent.drawTexturedModalRect(0, 0, 0, 0, FIELD_WIDTH, FIELD_HEIGHT);
@@ -146,7 +143,8 @@ public class GuiCraftingList {
                                 GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
                                 downloadBuffer);
 
-                        int backgroundColor = need_red ? 0xFFE0BABA : 0xFFDBDBDB;
+                        // int backgroundColor = need_red ? 0xFFE0BABA : 0xFFDBDBDB;
+                        int backgroundColor = downloadBuffer.get(FIELD_WIDTH * 7 + 7);
 
                         for (int i = 0; i < FIELD_WIDTH * FIELD_HEIGHT; i++) {
                             int x_ = i % FIELD_WIDTH;
@@ -211,7 +209,7 @@ public class GuiCraftingList {
     }
 
     private static void drawStringAndItem(AEBaseGui parent, IAEItemStack refStack, IAEItemStack stored,
-                                          IAEItemStack pendingStack, IAEItemStack missingStack) {
+            IAEItemStack pendingStack, IAEItemStack missingStack) {
         final int xo = 9;
         final int yo = 22;
         if (refStack != null) {
