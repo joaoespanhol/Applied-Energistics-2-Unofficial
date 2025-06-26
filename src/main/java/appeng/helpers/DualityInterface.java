@@ -750,7 +750,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
         return sentSomething;
     }
 
-    public boolean updateStorage() {
+    private boolean updateStorage() {
         boolean didSomething = false;
 
         for (int x = 0; x < NUMBER_OF_STORAGE_SLOTS; x++) {
