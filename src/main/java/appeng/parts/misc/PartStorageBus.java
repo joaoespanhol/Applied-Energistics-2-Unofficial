@@ -147,9 +147,12 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                     manager.registerSetting(setting, Enum.valueOf(oldValue.getClass(), value));
                 }
             }
+            String customName = null; // DisplayName is cached because it is stored on the nbt.
+            if (is.hasDisplayName()) customName = is.getDisplayName();
             // if we don't do this, the tag will stick forever to the storage bus, as it's never cleaned up,
             // even when the item is broken with a pickaxe
             this.is.setTagCompound(null);
+            if (customName != null) this.setCustomName(customName);
         }
     }
 
@@ -172,6 +175,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
             final ItemStack copy = this.is.copy();
             copy.setTagCompound(tag);
+            if (this.hasCustomName()) copy.setStackDisplayName(this.getCustomName());
             return copy;
         }
         return super.getItemStack(type);
@@ -269,6 +273,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         this.priority = data.getInteger("priority");
         this.oreFilterString = data.getString("filter");
         final NBTTagCompound filterCacheTag = data.getCompoundTag("filterCache");
+        if (data.hasKey("customName")) this.setCustomName(data.getString("customName"));
         readFilterCache(filterCacheTag);
     }
 
@@ -279,6 +284,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         data.setInteger("priority", this.priority);
         data.setString("filter", this.oreFilterString);
         final NBTTagCompound tagCompound = new NBTTagCompound();
+        if (this.hasCustomName()) data.setString("customName", this.getCustomName());
         writeFilterCache(tagCompound);
         data.setTag("filterCache", tagCompound);
     }
