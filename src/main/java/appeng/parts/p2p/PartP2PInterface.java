@@ -187,7 +187,7 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
         }
     };
 
-    public void updateSharingInventory() {
+    private void updateSharingInventory() {
         if (isOutput()) {
             PartP2PInterface p2p = getInput();
             if (proxy.isActive() && p2p != null) {
