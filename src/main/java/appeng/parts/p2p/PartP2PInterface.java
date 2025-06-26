@@ -215,6 +215,13 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
         needUpdateOnNetworkBooted = true;
     }
 
+    @MENetworkEventSubscribe
+    public void stateChange(final MENetworkPowerStatusChange c) {
+        this.duality.notifyNeighbors();
+        updateSharingInventory();
+        needUpdateOnNetworkBooted = true;
+    }
+
     @Override
     public int getInstalledUpgrades(final Upgrades u) {
         return this.duality.getInstalledUpgrades(u);
