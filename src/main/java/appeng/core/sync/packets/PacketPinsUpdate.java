@@ -16,8 +16,6 @@ import appeng.core.sync.AppEngPacket;
 import appeng.core.sync.network.INetworkInfo;
 import appeng.helpers.IPinsHandler;
 import appeng.util.item.AEItemStack;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -110,11 +108,12 @@ public class PacketPinsUpdate extends AppEngPacket {
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
     public void clientPacketData(final INetworkInfo network, final AppEngPacket packet, final EntityPlayer player) {
         final GuiScreen gs = Minecraft.getMinecraft().currentScreen;
-        if (gs instanceof IPinsHandler iph && list != null) {
-            iph.setAEPins(list);
+        if (gs instanceof IPinsHandler iph) {
+            if (list != null) iph.setAEPins(list);
+
+            if (state != null) iph.setPinsState(state);
         }
     }
 

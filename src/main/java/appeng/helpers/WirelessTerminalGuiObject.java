@@ -45,9 +45,9 @@ import appeng.api.util.AECableType;
 import appeng.api.util.DimensionalCoord;
 import appeng.api.util.IConfigManager;
 import appeng.container.interfaces.IInventorySlotAware;
-import appeng.items.contents.WirelessTerminalPins;
+import appeng.items.contents.PinsHandler;
+import appeng.items.contents.PinsHolder;
 import appeng.items.contents.WirelessTerminalViewCells;
-import appeng.tile.inventory.AppEngInternalAEInventory;
 import appeng.tile.networking.TileWireless;
 
 public class WirelessTerminalGuiObject
@@ -65,7 +65,7 @@ public class WirelessTerminalGuiObject
     private double myRange = Double.MAX_VALUE;
     private final int inventorySlot;
     private final WirelessTerminalViewCells viewCells;
-    private final WirelessTerminalPins pins;
+    private final PinsHolder pinsInv;
 
     public WirelessTerminalGuiObject(final IWirelessTermHandler wh, final ItemStack is, final EntityPlayer ep,
             final World w, final int x, final int y, final int z) {
@@ -75,7 +75,7 @@ public class WirelessTerminalGuiObject
         this.wth = wh;
         this.inventorySlot = x;
         this.viewCells = new WirelessTerminalViewCells(is);
-        pins = new WirelessTerminalPins(is);
+        pinsInv = new PinsHolder(is);
 
         ILocatable obj = null;
 
@@ -333,8 +333,8 @@ public class WirelessTerminalGuiObject
     }
 
     @Override
-    public AppEngInternalAEInventory getPins() {
-        return pins;
+    public PinsHandler getPinsHandler(EntityPlayer player) {
+        return pinsInv.getHandler(myPlayer);
     }
 
     @Override

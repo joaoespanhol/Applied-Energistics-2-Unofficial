@@ -19,7 +19,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.Vec3;
 
 import appeng.api.AEApi;
-import appeng.api.config.PinsState;
 import appeng.api.config.Settings;
 import appeng.api.config.SortDir;
 import appeng.api.config.SortOrder;
@@ -34,8 +33,9 @@ import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.util.IConfigManager;
 import appeng.core.sync.GuiBridge;
+import appeng.items.contents.PinsHandler;
+import appeng.items.contents.PinsHolder;
 import appeng.me.GridAccessException;
-import appeng.tile.inventory.AppEngInternalAEInventory;
 import appeng.tile.inventory.AppEngInternalInventory;
 import appeng.tile.inventory.IAEAppEngInventory;
 import appeng.tile.inventory.InvOperation;
@@ -59,7 +59,7 @@ public abstract class AbstractPartTerminal extends AbstractPartDisplay
 
     private final IConfigManager cm = new ConfigManager(this);
     private final AppEngInternalInventory viewCell = new AppEngInternalInventory(this, 5);
-    private final AppEngInternalAEInventory pins = new AppEngInternalAEInventory(this, PinsState.getPinsCount());
+    private final PinsHolder pinsInv = new PinsHolder(this);
     private final AppEngInternalInventory upgrades = new RefillerInventory(this);
 
     public AbstractPartTerminal(final ItemStack is) {
@@ -69,7 +69,6 @@ public abstract class AbstractPartTerminal extends AbstractPartDisplay
         this.cm.registerSetting(Settings.VIEW_MODE, ViewItems.ALL);
         this.cm.registerSetting(Settings.SORT_DIRECTION, SortDir.ASCENDING);
         this.cm.registerSetting(Settings.TYPE_FILTER, TypeFilter.ALL);
-        this.cm.registerSetting(Settings.PINS_STATE, PinsState.DISABLED);
     }
 
     @Override
@@ -95,7 +94,7 @@ public abstract class AbstractPartTerminal extends AbstractPartDisplay
         super.readFromNBT(data);
         this.cm.readFromNBT(data);
         this.viewCell.readFromNBT(data, "viewCell");
-        pins.readFromNBT(data, "pins");
+        pinsInv.readFromNBT(data, "pins");
         upgrades.readFromNBT(data, "upgrades");
     }
 
@@ -104,7 +103,7 @@ public abstract class AbstractPartTerminal extends AbstractPartDisplay
         super.writeToNBT(data);
         this.cm.writeToNBT(data);
         this.viewCell.writeToNBT(data, "viewCell");
-        pins.writeToNBT(data, "pins");
+        pinsInv.writeToNBT(data, "pins");
         upgrades.writeToNBT(data, "upgrades");
     }
 
@@ -157,8 +156,8 @@ public abstract class AbstractPartTerminal extends AbstractPartDisplay
     }
 
     @Override
-    public AppEngInternalAEInventory getPins() {
-        return pins;
+    public PinsHandler getPinsHandler(EntityPlayer player) {
+        return pinsInv.getHandler(player);
     }
 
     @Override

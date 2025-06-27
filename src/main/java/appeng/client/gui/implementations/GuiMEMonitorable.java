@@ -106,12 +106,12 @@ public class GuiMEMonitorable extends AEBaseMEGui
     private GuiImgButton terminalStyleBox;
     private GuiImgButton searchStringSave;
     private GuiImgButton typeFilter;
-    private GuiImgButton pinsState;
+    private GuiImgButton pinsStateButton;
     private boolean isAutoFocus = false;
     private int currentMouseX = 0;
     private int currentMouseY = 0;
-    private boolean isPinsHost = false;
-    private int pinsRows = 0;
+    private PinsState pinsState;
+    public final boolean hasPinHost;
 
     public GuiMEMonitorable(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         this(inventoryPlayer, te, new ContainerMEMonitorable(inventoryPlayer, te));
@@ -132,6 +132,9 @@ public class GuiMEMonitorable extends AEBaseMEGui
         this.standardSize = this.xSize;
 
         this.configSrc = ((IConfigurableObject) this.inventorySlots).getConfigManager();
+
+        pinsState = (PinsState) configSrc.getSetting(Settings.PINS_STATE);
+
         (this.monitorableContainer = (ContainerMEMonitorable) this.inventorySlots).setGui(this);
 
         this.viewCell = te instanceof IViewCellStorage;
@@ -148,10 +151,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
             this.myName = GuiText.Terminal;
         }
 
-        if (te instanceof ITerminalPins) {
-            isPinsHost = true;
-            pinsRows = configSrc.getSetting(Settings.PINS_STATE).ordinal();
-        }
+        hasPinHost = te instanceof ITerminalPins;
 
         this.searchField = new MEGuiTextField(90, 12, ButtonToolTips.SearchStringTooltip.getLocal()) {
 
@@ -180,7 +180,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
         this.getScrollBar().setTop(18).setLeft(175).setHeight(this.rows * 18 - 2);
         this.getScrollBar().setRange(
                 0,
-                (this.repo.size() + pinsRows * 9 + this.perRow - 1) / this.perRow - this.rows,
+                (this.repo.size() + pinsState.ordinal() * 9 + this.perRow - 1) / this.perRow - this.rows,
                 Math.max(1, this.rows / 6));
     }
 
@@ -203,6 +203,13 @@ public class GuiMEMonitorable extends AEBaseMEGui
                     AEConfig.instance.settings.putSetting(iBtn.getSetting(), next);
                 } else if (btn == this.searchStringSave) {
                     AEConfig.instance.preserveSearchBar = next == YesNo.YES;
+                } else if (btn == this.pinsStateButton) {
+                    try {
+                        final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
+                        NetworkHandler.instance.sendToServer(p);
+                    } catch (final IOException e) {
+                        AELog.debug(e);
+                    }
                 } else {
                     try {
                         NetworkHandler.instance
@@ -237,6 +244,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
 
         this.getMeSlots().clear();
 
+        int pinsRows = pinsState.ordinal();
         for (int y = 0; y < pinsRows; y++) {
             for (int x = 0; x < this.perRow; x++) {
                 this.getMeSlots()
@@ -356,9 +364,9 @@ public class GuiMEMonitorable extends AEBaseMEGui
             }
         }
 
-        if (isPinsHost) {
+        if (hasPinHost) {
             this.buttonList.add(
-                    this.pinsState = new GuiImgButton(
+                    this.pinsStateButton = new GuiImgButton(
                             this.guiLeft + 178,
                             this.guiTop + 18 + (rows * 18) + 25,
                             Settings.PINS_STATE,
@@ -620,20 +628,15 @@ public class GuiMEMonitorable extends AEBaseMEGui
         if (this.ViewBox != null) {
             this.ViewBox.set(this.configSrc.getSetting(Settings.VIEW_MODE));
         }
+
         if (this.typeFilter != null) {
             this.typeFilter.set(this.configSrc.getSetting(Settings.TYPE_FILTER));
         }
-        if (this.pinsState != null) {
-            Enum<?> state = this.configSrc.getSetting(Settings.PINS_STATE);
-            this.pinsState.set(state);
-            pinsRows = state.ordinal();
 
-            try {
-                final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) state);
-                NetworkHandler.instance.sendToServer(p);
-            } catch (final IOException e) {
-                AELog.debug(e);
-            }
+        if (this.pinsStateButton != null) {
+            pinsState = (PinsState) this.configSrc.getSetting(Settings.PINS_STATE);
+            this.pinsStateButton.set(pinsState);
+
             initGui();
         }
 
@@ -740,5 +743,10 @@ public class GuiMEMonitorable extends AEBaseMEGui
     @Override
     public void setAEPins(IAEItemStack[] pins) {
         repo.setAEPins(pins);
+    }
+
+    @Override
+    public void setPinsState(PinsState state) {
+        configSrc.putSetting(Settings.PINS_STATE, state);
     }
 }

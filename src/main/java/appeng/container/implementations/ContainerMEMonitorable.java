@@ -13,7 +13,7 @@ package appeng.container.implementations;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -52,6 +52,7 @@ import appeng.api.networking.crafting.ICraftingGrid;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.energy.IEnergySource;
 import appeng.api.networking.security.BaseActionSource;
+import appeng.api.networking.security.PlayerSource;
 import appeng.api.networking.storage.IBaseMonitor;
 import appeng.api.parts.IPart;
 import appeng.api.storage.IMEMonitor;
@@ -69,13 +70,12 @@ import appeng.container.slot.SlotRestrictedInput.PlacableItemType;
 import appeng.core.AELog;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketMEInventoryUpdate;
-import appeng.core.sync.packets.PacketPinsUpdate;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.IPinsHandler;
 import appeng.helpers.WirelessTerminalGuiObject;
+import appeng.items.contents.PinsHandler;
 import appeng.items.storage.ItemViewCell;
 import appeng.me.helpers.ChannelPowerSrc;
-import appeng.tile.inventory.AppEngInternalAEInventory;
 import appeng.util.ConfigManager;
 import appeng.util.IConfigManagerHost;
 import appeng.util.Platform;
@@ -89,8 +89,8 @@ public class ContainerMEMonitorable extends AEBaseContainer
     private final IItemList<IAEItemStack> items = AEApi.instance().storage().createItemList();
     private final IConfigManager clientCM;
     private final ITerminalHost host;
-    private IAEItemStack[] serverPins = new IAEItemStack[getPinCount()]; //
-    private int lastUpdate = 0;
+
+    private PinsHandler pinsHandler = null;
 
     @GuiSync(99)
     public boolean canAccessViewCells = false;
@@ -121,12 +121,14 @@ public class ContainerMEMonitorable extends AEBaseContainer
         this.clientCM.registerSetting(Settings.VIEW_MODE, ViewItems.ALL);
         this.clientCM.registerSetting(Settings.SORT_DIRECTION, SortDir.ASCENDING);
         this.clientCM.registerSetting(Settings.TYPE_FILTER, TypeFilter.ALL);
-
-        if (monitorable instanceof ITerminalPins) {
-            this.clientCM.registerSetting(Settings.PINS_STATE, PinsState.DISABLED);
-        }
+        this.clientCM.registerSetting(Settings.PINS_STATE, PinsState.DISABLED); // use for GUI
 
         if (Platform.isServer()) {
+
+            if (monitorable instanceof ITerminalPins t) {
+                pinsHandler = t.getPinsHandler(ip.player);
+            }
+
             this.serverCM = monitorable.getConfigManager();
 
             this.monitor = monitorable.getItemInventory();
@@ -197,8 +199,6 @@ public class ContainerMEMonitorable extends AEBaseContainer
                 this.setValidContainer(false);
             }
 
-            boolean updatePins = false;
-
             for (final Settings set : this.serverCM.getSettings()) {
                 final Enum<?> sideLocal = this.serverCM.getSetting(set);
                 final Enum<?> sideRemote = this.clientCM.getSetting(set);
@@ -214,15 +214,17 @@ public class ContainerMEMonitorable extends AEBaseContainer
                             AELog.debug(e);
                         }
                     }
-
-                    if (set == Settings.PINS_STATE) {
-                        updatePins = true;
-                        lastUpdate = 24;
-                    }
                 }
             }
 
-            updatePins(updatePins);
+            if (pinsHandler != null) {
+                if (clientCM.getSetting(Settings.PINS_STATE) != pinsHandler.getPinsState()) {
+                    this.clientCM.putSetting(Settings.PINS_STATE, pinsHandler.getPinsState());
+                    updatePins(true);
+                } else {
+                    updatePins(false);
+                }
+            }
 
             if (!this.items.isEmpty()) {
                 try {
@@ -457,92 +459,51 @@ public class ContainerMEMonitorable extends AEBaseContainer
         }
     }
 
+    private int lastUpdate = 0;
+
     public void updatePins(boolean forceUpdate) {
-        if (!(host instanceof ITerminalPins itp)) return;
+        if (pinsHandler == null || !(host instanceof ITerminalPins itp)) return;
 
-        AppEngInternalAEInventory pinInv = itp.getPins();
-        PinsState pinsState = (PinsState) serverCM.getSetting(Settings.PINS_STATE);
-        boolean isActive = pinsState != PinsState.DISABLED;
-        if (!(forceUpdate || isActive)) return;
-
-        IAEItemStack[] newPins = new IAEItemStack[pinInv.getSizeInventory()];
-
-        if (!isActive) {
-            updatePins(newPins);
-            return;
-        }
-
+        boolean isActive = pinsHandler.getPinsState() != PinsState.DISABLED;
         ++lastUpdate;
-        if (!forceUpdate && lastUpdate <= 20) return; // skip if not forced and last update was less than 20 ticks ago
-
+        if (!forceUpdate && lastUpdate <= 20) return;
         lastUpdate = 0;
-        int j = 0;
-        int jj = 0;
-        final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
-        final ImmutableList<ICraftingCPU> cpuList = cc.getCpus().asList();
+        if (isActive) {
+            final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
+            final ImmutableList<ICraftingCPU> cpuList = cc.getCpus().asList();
 
-        final ArrayList<IAEItemStack> checkCache = new ArrayList<>();
-        for (int i = 0; i < pinInv.getSizeInventory(); i++) {
-            IAEItemStack ais = pinInv.getAEStackInSlot(i);
-            if (ais != null) checkCache.add(ais);
-        }
+            List<IAEItemStack> craftedItems = new ArrayList<>();
 
-        // fetch lines according to the setting
-        for (int i = 0; i < pinsState.ordinal() * 9; i++) {
-            IAEItemStack ais = pinInv.getAEStackInSlot(i);
-            if (ais == null) {
-                // fetch the first available crafting output
-                while (j < cpuList.size()) {
-                    ICraftingCPU cpu = cpuList.get(j);
-                    j++;
-                    if (cpu.getCraftingAllowMode() != CraftingAllow.ONLY_NONPLAYER && cpu.isBusy()
-                            && cpu.getFinalOutput() != null) {
-                        ais = cpu.getFinalOutput().copy();
-                        break;
+            // fetch the first available crafting output
+            for (int i = 0; i < cpuList.size(); i++) {
+                ICraftingCPU cpu = cpuList.get(i);
+                if (cpu.getCraftingAllowMode() != CraftingAllow.ONLY_NONPLAYER && cpu.getFinalOutput() != null
+                        && cpu.getCurrentJobSource() instanceof PlayerSource src
+                        && src.player == pinsHandler.getPlayer()) {
+                    if (craftedItems.contains(cpu.getFinalOutput())) {
+                        continue; // skip if already added
                     }
+                    if (cpu.isBusy()) craftedItems.add(0, cpu.getFinalOutput().copy());
+                    else craftedItems.add(cpu.getFinalOutput().copy());
                 }
-                // if no crafting output was found, fetch the no busy crafting output
-                if (ais == null) {
-                    while (jj < cpuList.size()) {
-                        ICraftingCPU cpu = cpuList.get(jj);
-                        jj++;
-                        if (cpu.getCraftingAllowMode() != CraftingAllow.ONLY_NONPLAYER && !cpu.isBusy()
-                                && cpu.getFinalOutput() != null) {
-                            ais = cpu.getFinalOutput().copy();
-                            break;
-                        }
-                    }
-                }
-
-                if (ais != null && checkCache.contains(ais)) ais = null;
             }
-            if (ais != null) ais.setStackSize(0);
-            newPins[i] = ais;
+
+            pinsHandler.addItemsToPins(craftedItems);
         }
-        updatePins(newPins);
+        pinsHandler.update(forceUpdate);
+        onListUpdate(); // notify the repo that the pins have changed
     }
 
     @Override
     public void setPin(ItemStack is, int idx) {
-        if (!(host instanceof ITerminalPins itp)) return;
-
-        AppEngInternalAEInventory aip = itp.getPins();
-
-        for (int i = 0; i < aip.getSizeInventory(); i++) {
-            if (aip.getAEStackInSlot(i) != null && aip.getAEStackInSlot(i).isSameType(is)) {
-                aip.setInventorySlotContents(i, aip.getStackInSlot(idx)); // swap the pin
-            }
-        }
-
-        aip.setInventorySlotContents(idx, is);
-        aip.markDirty();
+        if (pinsHandler == null || !(host instanceof ITerminalPins itp)) return;
 
         if (is == null) {
             final ICraftingGrid cc = itp.getGrid().getCache(ICraftingGrid.class);
             final ImmutableSet<ICraftingCPU> cpuSet = cc.getCpus();
-            for (ICraftingCPU cpu : cpuSet.asList()) {
+            for (ICraftingCPU cpu : cpuSet) {
                 if (cpu.getCraftingAllowMode() != CraftingAllow.ONLY_NONPLAYER && cpu.getFinalOutput() != null
-                        && cpu.getFinalOutput().isSameType(serverPins[idx])) {
+                        && cpu.getFinalOutput().isSameType(getPin(idx))) {
                     if (!cpu.isBusy()) {
                         cpu.resetFinalOutput();
                     } else {
@@ -551,28 +512,28 @@ public class ContainerMEMonitorable extends AEBaseContainer
                 }
             }
         }
+        pinsHandler.setPin(idx, is);
         updatePins(true);
+    }
+
+    @Override
+    public ItemStack getPin(int idx) {
+        if (pinsHandler == null) return null;
+        return pinsHandler.getPin(idx);
     }
 
     public void setPinsState(PinsState pinsState) {
-        this.serverCM.putSetting(Settings.PINS_STATE, pinsState);
+        if (pinsHandler == null) return;
+        clientCM.putSetting(Settings.PINS_STATE, pinsState);
+        pinsHandler.setPinsState(pinsState);
         updatePins(true);
     }
 
-    private void updatePins(IAEItemStack[] newPins) {
-        if (Arrays.equals(serverPins, newPins)) return;
+    public PinsState getPinsState() {
+        return pinsHandler != null ? pinsHandler.getPinsState() : PinsState.DISABLED;
+    }
 
-        serverPins = newPins;
-        for (final Object player : crafters) {
-            if (player instanceof EntityPlayerMP) {
-                try {
-                    NetworkHandler.instance.sendTo(new PacketPinsUpdate(newPins), (EntityPlayerMP) player);
-                } catch (IOException e) {
-                    AELog.debug(e);
-                }
-            }
-        }
-
-        onListUpdate(); // notify the repo that the pins have changed
+    public PinsHandler getPinsHandler() {
+        return pinsHandler;
     }
 }
