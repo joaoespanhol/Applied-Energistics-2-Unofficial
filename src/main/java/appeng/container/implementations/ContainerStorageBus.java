@@ -134,7 +134,34 @@ public class ContainerStorageBus extends ContainerUpgradeable {
         return 5;
     }
 
-    private int iRow = 0;
+    private int updateFilterTimer = 0;
+
+    /**
+     * @param row      the specific row to send, -1 indicates sending all.
+     * @param upgrades number of installed capacity cards
+     */
+    private void sendRow(int row, int upgrades) {
+        IInventory inv = this.getUpgradeable().getInventoryByName("config");
+        // start at first filter slot or at specific row
+        int from = row <= -1 ? 18 : 9 + (9 * row);
+        // end at last filter slot or at end of specific row
+        int to = row <= -1 ? inv.getSizeInventory() : 18 + (9 * row);
+
+        for (; from < to; from++) {
+            if (upgrades <= (from / 9 - 2)) break;
+
+            ItemStack stack = inv.getStackInSlot(from);
+            if (stack == null) continue;
+
+            for (ICrafting crafter : this.crafters) {
+                if (crafter instanceof EntityPlayerMP playerMP) {
+                    // necessary to ensure that the package is sent correctly
+                    playerMP.isChangingQuantityOnly = false;
+                }
+                crafter.sendSlotContents(this, from, stack);
+            }
+        }
+    }
 
     @Override
     public void detectAndSendChanges() {
@@ -151,41 +178,17 @@ public class ContainerStorageBus extends ContainerUpgradeable {
         final int upgrades = this.getUpgradeable().getInstalledUpgrades(Upgrades.CAPACITY);
 
         if (upgrades > 0) { // sync filter slots
-            boolean needSync = this.storageBus.needSyncGUI;
-            this.storageBus.needSyncGUI = false;
-            if (iRow >= upgrades) {
-                iRow = 0;
-            } else if (needSync) {
-                iRow = upgrades; // to be sure that the last line is sent correctly (do during the next update)
-            } else iRow = iRow + 1;
-
-            IInventory inv = this.getUpgradeable().getInventoryByName("config");
-            int from = needSync ? 18 : 9 + (9 * upgrades); // start at first filter slot or at specific row
-            int to = needSync ? inv.getSizeInventory() : 18 + (9 * upgrades); // end at last filter slot or at end of
-                                                                              // specific row
-            for (; from < to; from++) {
-                if (upgrades <= (from / 9 - 2)) {
-                    break;
-                }
-                ItemStack stack = inv.getStackInSlot(from);
-                if (stack == null) {
-                    continue;
-                }
-                for (ICrafting crafter : this.crafters) {
-                    boolean isChangingQuantityOnly = false;
-                    if (crafter instanceof EntityPlayerMP playerMP && playerMP.isChangingQuantityOnly) {
-                        isChangingQuantityOnly = true;
-                        // necessary to ensure that the package is sent correctly
-                        playerMP.isChangingQuantityOnly = false;
-                    }
-                    crafter.sendSlotContents(this, from, stack);
-                    if (isChangingQuantityOnly && crafter instanceof EntityPlayerMP playerMP) {
-                        playerMP.isChangingQuantityOnly = true;
-                    }
-                }
+            updateFilterTimer++;
+            int updateStep = 4;
+            if (updateFilterTimer % updateStep == 0) {
+                boolean needSync = this.storageBus.needSyncGUI;
+                int row = needSync ? -1 : updateFilterTimer / updateStep;
+                this.storageBus.needSyncGUI = false;
+                if (row >= upgrades) updateFilterTimer = 0;
+                sendRow(row, upgrades);
             }
-
         }
+
         this.standardDetectAndSendChanges();
     }
 
