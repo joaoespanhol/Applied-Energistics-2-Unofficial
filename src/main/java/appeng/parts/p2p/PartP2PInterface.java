@@ -32,6 +32,7 @@ import appeng.api.networking.crafting.ICraftingProviderHelper;
 import appeng.api.networking.events.MENetworkChannelsChanged;
 import appeng.api.networking.events.MENetworkCraftingPatternChange;
 import appeng.api.networking.events.MENetworkEventSubscribe;
+import appeng.api.networking.events.MENetworkPowerStatusChange;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.networking.ticking.IGridTickable;
 import appeng.api.networking.ticking.TickRateModulation;
@@ -187,7 +188,7 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
         }
     };
 
-    public void updateSharingInventory() {
+    private void updateSharingInventory() {
         if (isOutput()) {
             PartP2PInterface p2p = getInput();
             if (proxy.isActive() && p2p != null) {
@@ -210,6 +211,13 @@ public class PartP2PInterface extends PartP2PTunnelStatic<PartP2PInterface>
 
     @MENetworkEventSubscribe
     public void stateChange(final MENetworkChannelsChanged c) {
+        this.duality.notifyNeighbors();
+        updateSharingInventory();
+        needUpdateOnNetworkBooted = true;
+    }
+
+    @MENetworkEventSubscribe
+    public void stateChange(final MENetworkPowerStatusChange c) {
         this.duality.notifyNeighbors();
         updateSharingInventory();
         needUpdateOnNetworkBooted = true;
