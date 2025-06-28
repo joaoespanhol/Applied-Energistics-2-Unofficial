@@ -205,10 +205,10 @@ public class GuiMEMonitorable extends AEBaseMEGui
                     AEConfig.instance.preserveSearchBar = next == YesNo.YES;
                 } else if (btn == this.pinsStateButton) {
                     try {
-                        if (next.ordinal() < rows) {
-                            final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
-                            NetworkHandler.instance.sendToServer(p);
-                        } else return;
+                        if (next.ordinal() >= rows) return; // ignore to avoid hiding terminal inventory
+
+                        final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
+                        NetworkHandler.instance.sendToServer(p);
                     } catch (final IOException e) {
                         AELog.debug(e);
                     }
@@ -232,15 +232,15 @@ public class GuiMEMonitorable extends AEBaseMEGui
     }
 
     private void adjustPinsSize() {
-        final int newOrdinal = rows - 1;
-        if (pinsState.ordinal() > newOrdinal) {
-            try {
-                PinsState newState = PinsState.fromOrdinal(newOrdinal);
-                final PacketPinsUpdate p = new PacketPinsUpdate(newState);
-                NetworkHandler.instance.sendToServer(p);
-            } catch (final IOException e) {
-                AELog.debug(e);
-            }
+        final int pinMaxSize = rows - 1;
+        if (pinsState.ordinal() <= pinMaxSize) return;
+
+        try {
+            PinsState newState = PinsState.fromOrdinal(pinMaxSize);
+            final PacketPinsUpdate p = new PacketPinsUpdate(newState);
+            NetworkHandler.instance.sendToServer(p);
+        } catch (final IOException e) {
+            AELog.debug(e);
         }
     }
 
