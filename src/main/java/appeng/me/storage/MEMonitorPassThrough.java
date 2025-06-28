@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import appeng.api.config.StorageFilter;
 import appeng.api.networking.security.BaseActionSource;
 import appeng.api.networking.storage.IBaseMonitor;
 import appeng.api.storage.IMEInventory;
@@ -25,6 +26,7 @@ import appeng.api.storage.data.IItemList;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.inv.ItemListIgnoreCrafting;
+import appeng.util.item.ItemFilterList;
 
 public class MEMonitorPassThrough<T extends IAEStack<T>> extends MEPassThrough<T>
         implements IMEMonitor<T>, IMEMonitorHandlerReceiver<T> {
@@ -32,6 +34,7 @@ public class MEMonitorPassThrough<T extends IAEStack<T>> extends MEPassThrough<T
     private final HashMap<IMEMonitorHandlerReceiver<T>, Object> listeners = new HashMap<>();
     private BaseActionSource changeSource;
     private IMEMonitor<T> monitor;
+    private StorageFilter mode = StorageFilter.EXTRACTABLE_ONLY;
 
     public MEMonitorPassThrough(final IMEInventory<T> i, final StorageChannel channel) {
         super(i, channel);
@@ -71,6 +74,9 @@ public class MEMonitorPassThrough<T extends IAEStack<T>> extends MEPassThrough<T
 
     @Override
     public IItemList<T> getAvailableItems(final IItemList out, int iterator) {
+        if (out instanceof ItemFilterList) {
+            return super.getAvailableItems(out, iterator);
+        }
         super.getAvailableItems(new ItemListIgnoreCrafting(out), iterator);
         return out;
     }
@@ -134,5 +140,13 @@ public class MEMonitorPassThrough<T extends IAEStack<T>> extends MEPassThrough<T
 
     public void setChangeSource(final BaseActionSource changeSource) {
         this.changeSource = changeSource;
+    }
+
+    public void setMode(final StorageFilter mode) {
+        this.mode = mode;
+    }
+
+    public StorageFilter getMode() {
+        return this.mode;
     }
 }

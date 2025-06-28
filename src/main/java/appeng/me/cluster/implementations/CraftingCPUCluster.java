@@ -113,6 +113,7 @@ import appeng.tile.crafting.TileCraftingMonitorTile;
 import appeng.tile.crafting.TileCraftingTile;
 import appeng.util.IterationCounter;
 import appeng.util.Platform;
+import appeng.util.ScheduledReason;
 import appeng.util.item.AEItemStack;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -196,6 +197,9 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final List<CraftUpdateListener> craftUpdateListeners = new ArrayList<>();
     private final List<CraftCancelListener> craftCancelListeners = new ArrayList<>();
     private final List<String> playersFollowingCurrentCraft = new ArrayList<>();
+    private final HashMap<ICraftingPatternDetails, List<ICraftingMedium>> parallelismProvider = new HashMap<>();
+    private final HashMap<ICraftingPatternDetails, ScheduledReason> reasonProvider = new HashMap<>();
+    private BaseActionSource currentJobSource = null;
 
     public CraftingCPUCluster(final WorldCoord min, final WorldCoord max) {
         this.min = min;
@@ -214,6 +218,12 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             player.worldObj.playSoundAtEntity(player, "random.levelup", 1f, 1f);
             this.unreadNotifications.remove(playerName);
         }
+    }
+
+    @Override
+    public void resetFinalOutput() {
+        finalOutput = null;
+        currentJobSource = null;
     }
 
     @Override
@@ -502,6 +512,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     }
 
     private void completeJob() {
+        if (isBusy()) return; // dont complete if still working
         if (this.myLastLink != null) {
             ((CraftingLink) this.myLastLink).markDone();
             this.myLastLink = null;
@@ -642,6 +653,8 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
         this.waitingFor.resetStatus();
         this.waitingForMissing.resetStatus();
+        parallelismProvider.clear();
+        reasonProvider.clear();
 
         for (final IAEItemStack is : items) {
             this.postCraftingStatusChange(is);
@@ -733,29 +746,54 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             final Entry<ICraftingPatternDetails, TaskProgress> craftingEntry = craftingTaskIterator.next();
 
             if (craftingEntry.getValue().value <= 0) {
-                this.tasks.remove(craftingEntry.getKey());
+                final ICraftingPatternDetails ceKey = craftingEntry.getKey();
+                this.tasks.remove(ceKey);
+                parallelismProvider.remove(ceKey);
+                reasonProvider.remove(ceKey);
                 craftingTaskIterator.remove();
                 continue;
             }
 
             final ICraftingPatternDetails details = craftingEntry.getKey();
+            ScheduledReason sr = null;
             if (!this.canCraft(details, details.getCondensedInputs())) {
                 craftingTaskIterator.remove(); // No need to revisit this task on next executeCrafting this tick
+                reasonProvider.put(details, ScheduledReason.NOT_ENOUGH_INGREDIENTS);
                 continue;
             }
 
             boolean pushedPattern = false;
             boolean didPatternCraft;
+
+            List<ICraftingMedium> mediumsList = cc.getMediums(details);
+            List<ICraftingMedium> mediumListCheck = null;
+
+            if (mediumsList.size() > 1) {
+                mediumListCheck = parallelismProvider.getOrDefault(details, new ArrayList<>(mediumsList));
+            }
+
             doWhileCraftingLoop: do {
                 InventoryCrafting craftingInventory = null;
                 didPatternCraft = false;
-                for (final ICraftingMedium medium : cc.getMediums(craftingEntry.getKey())) {
+
+                if (mediumListCheck != null) {
+                    if (mediumListCheck.isEmpty()) {
+                        mediumListCheck = new ArrayList<>(mediumsList);
+                    } else {
+                        mediumsList = new ArrayList<>(mediumListCheck);
+                    }
+                }
+
+                for (final ICraftingMedium medium : mediumsList) {
+                    if (mediumListCheck != null) mediumListCheck.remove(medium);
+
                     if (craftingEntry.getValue().value <= 0 || knownBusyMediums.contains(medium)) {
                         continue;
                     }
 
                     if (medium.isBusy()) {
                         knownBusyMediums.add(medium);
+                        sr = medium.getScheduledReason();
                         continue;
                     }
 
@@ -883,13 +921,19 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                         }
 
                         if (this.remainingOperations == 0) {
+                            if (mediumListCheck != null) parallelismProvider.put(details, mediumListCheck);
                             return;
                         }
                         // Smart blocking is fine sending the same recipe again.
                         if (medium.getBlockingMode() == BlockingMode.BLOCKING) break;
 
-                        if (!this.canCraft(details, details.getCondensedInputs())) break;
+                        if (!this.canCraft(details, details.getCondensedInputs())) {
+                            sr = ScheduledReason.NOT_ENOUGH_INGREDIENTS;
+                            break;
+                        }
                     }
+
+                    sr = medium.getScheduledReason();
                 }
                 if (craftingInventory != null) {
                     // No suitable craftingInventory was found,
@@ -902,6 +946,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     }
                 }
             } while (didPatternCraft);
+
+            if (mediumListCheck != null) parallelismProvider.put(details, mediumListCheck);
+
+            if (sr != null) reasonProvider.put(details, sr);
 
             if (!pushedPattern) {
                 // If in all mediums no pattern was pushed,
@@ -998,6 +1046,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                     this.isComplete = false;
                     this.usedStorage = job.getByteTotal();
                     this.numsOfOutput = job.getOutput().getStackSize();
+                    this.currentJobSource = src;
                     for (IAEItemStack fte : ci.getExtractFailedList()) {
                         this.waitingForMissing.add(fte);
                     }
@@ -1090,6 +1139,18 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         final IMEInventory<IAEItemStack> storage = sg.getItemInventory();
         final MECraftingInventory ci = new MECraftingInventory(storage, true, false, false);
 
+        final MECraftingInventory backupInventory = new MECraftingInventory(inventory);
+        final IItemList<IAEItemStack> backupWaitingForMissing = AEApi.instance().storage().createItemList();
+        for (IAEItemStack ais : waitingForMissing) {
+            backupWaitingForMissing.add(ais);
+        }
+        final Map<ICraftingPatternDetails, TaskProgress> tasksBackup = new TreeMap<>(priorityComparator);
+        for (Entry<ICraftingPatternDetails, TaskProgress> entry : tasks.entrySet()) {
+            TaskProgress newTaskProgress = new TaskProgress();
+            newTaskProgress.value = entry.getValue().value;
+            tasksBackup.put(entry.getKey(), newTaskProgress);
+        }
+
         try {
             job.startCrafting(ci, this, src);
             if (ci.commit(src)) {
@@ -1097,13 +1158,23 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                 this.usedStorage += job.getByteTotal();
                 this.numsOfOutput += job.getOutput().getStackSize();
                 this.isMissingMode = job.getCraftingMode() == CraftingMode.IGNORE_MISSING;
+                this.currentJobSource = src;
 
                 this.prepareStepCount();
                 this.markDirty();
                 this.updateCPU();
                 return this.myLastLink;
+            } else {
+                inventory = backupInventory;
+                waitingForMissing = backupWaitingForMissing;
+                tasks.clear();
+                tasks.putAll(tasksBackup);
             }
         } catch (final CraftBranchFailure e) {
+            inventory = backupInventory;
+            waitingForMissing = backupWaitingForMissing;
+            tasks.clear();
+            tasks.putAll(tasksBackup);
             handleCraftBranchFailure(e, src);
         }
 
@@ -1587,6 +1658,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         this.remainingItemCount = this.getRemainingItemCount() - is.getStackSize();
     }
 
+    @Override
     public long getElapsedTime() {
         return this.elapsedTime;
     }
@@ -1623,6 +1695,17 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     @SuppressWarnings("unchecked")
     public List<DimensionalCoord> getProviders(IAEItemStack is) {
         return this.providers.getOrDefault(is, Collections.EMPTY_LIST);
+    }
+
+    public ScheduledReason getScheduledReason(IAEItemStack is) {
+        for (final Entry<ICraftingPatternDetails, TaskProgress> t : this.tasks.entrySet()) {
+            for (final IAEItemStack ais : t.getKey().getCondensedOutputs()) {
+                if (Objects.equals(ais, is)) {
+                    return reasonProvider.getOrDefault(t.getKey(), ScheduledReason.UNDEFINED);
+                }
+            }
+        }
+        return ScheduledReason.UNDEFINED;
     }
 
     private TileEntity getTile(ICraftingMedium craftingProvider) {
@@ -1676,6 +1759,10 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
         } else {
             countToTryExtractItems++;
         }
+    }
+
+    public BaseActionSource getCurrentJobSource() {
+        return currentJobSource;
     }
 
     private static class TaskProgress {

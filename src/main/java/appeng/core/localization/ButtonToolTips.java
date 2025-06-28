@@ -65,6 +65,7 @@ public enum ButtonToolTips {
     ItemName,
     NumberOfItems,
     PartitionStorageHint,
+    NextPartitionStorageHint,
 
     ClearSettings,
     StoredItems,
@@ -234,6 +235,11 @@ public enum ButtonToolTips {
     CPUAllowAllDesc,
     CPUOnlyAllowPlayerDesc,
     CPUOnlyAllowNonPlayerDesc,
+
+    PinsSection,
+    PinsSectionActive,
+    PinsSectionDisabled,
+
     ToggleShowOnlySubstitute,
     ToggleShowOnlySubstituteOnDesc,
     ToggleShowOnlySubstituteOffDesc;

@@ -23,6 +23,7 @@ import org.lwjgl.input.Mouse;
 
 import appeng.api.AEApi;
 import appeng.api.config.CraftingStatus;
+import appeng.api.config.PinsState;
 import appeng.api.config.SearchBoxMode;
 import appeng.api.config.Settings;
 import appeng.api.config.TerminalStyle;
@@ -31,6 +32,7 @@ import appeng.api.implementations.guiobjects.IPortableCell;
 import appeng.api.implementations.tiles.IMEChest;
 import appeng.api.implementations.tiles.IViewCellStorage;
 import appeng.api.storage.ITerminalHost;
+import appeng.api.storage.ITerminalPins;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IDisplayRepo;
 import appeng.api.util.IConfigManager;
@@ -45,10 +47,12 @@ import appeng.client.gui.widgets.ISortSource;
 import appeng.client.gui.widgets.MEGuiTextField;
 import appeng.client.me.InternalSlotME;
 import appeng.client.me.ItemRepo;
+import appeng.client.me.PinSlotME;
 import appeng.container.implementations.ContainerMEMonitorable;
 import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.SlotCraftingMatrix;
 import appeng.container.slot.SlotFakeCraftingMatrix;
+import appeng.container.slot.SlotRestrictedInput;
 import appeng.core.AEConfig;
 import appeng.core.AELog;
 import appeng.core.CommonHelper;
@@ -57,18 +61,22 @@ import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
 import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketPinsUpdate;
 import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.core.sync.packets.PacketValueConfig;
+import appeng.helpers.IPinsHandler;
 import appeng.helpers.WirelessTerminalGuiObject;
 import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
 import appeng.integration.modules.NEI;
+import appeng.items.storage.ItemViewCell;
 import appeng.parts.reporting.AbstractPartTerminal;
 import appeng.tile.misc.TileSecurity;
 import appeng.util.IConfigManagerHost;
 import appeng.util.Platform;
 
-public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfigManagerHost, IDropToFillTextField {
+public class GuiMEMonitorable extends AEBaseMEGui
+        implements ISortSource, IConfigManagerHost, IDropToFillTextField, IPinsHandler {
 
     public static int craftingGridOffsetX;
     public static int craftingGridOffsetY;
@@ -98,9 +106,12 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
     private GuiImgButton terminalStyleBox;
     private GuiImgButton searchStringSave;
     private GuiImgButton typeFilter;
+    private GuiImgButton pinsStateButton;
     private boolean isAutoFocus = false;
     private int currentMouseX = 0;
     private int currentMouseY = 0;
+    private PinsState pinsState;
+    public final boolean hasPinHost;
 
     public GuiMEMonitorable(final InventoryPlayer inventoryPlayer, final ITerminalHost te) {
         this(inventoryPlayer, te, new ContainerMEMonitorable(inventoryPlayer, te));
@@ -121,6 +132,9 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         this.standardSize = this.xSize;
 
         this.configSrc = ((IConfigurableObject) this.inventorySlots).getConfigManager();
+
+        pinsState = (PinsState) configSrc.getSetting(Settings.PINS_STATE);
+
         (this.monitorableContainer = (ContainerMEMonitorable) this.inventorySlots).setGui(this);
 
         this.viewCell = te instanceof IViewCellStorage;
@@ -136,6 +150,8 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         } else if (te instanceof AbstractPartTerminal) {
             this.myName = GuiText.Terminal;
         }
+
+        hasPinHost = te instanceof ITerminalPins;
 
         this.searchField = new MEGuiTextField(90, 12, ButtonToolTips.SearchStringTooltip.getLocal()) {
 
@@ -164,7 +180,7 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         this.getScrollBar().setTop(18).setLeft(175).setHeight(this.rows * 18 - 2);
         this.getScrollBar().setRange(
                 0,
-                (this.repo.size() + this.perRow - 1) / this.perRow - this.rows,
+                (this.repo.size() + pinsState.ordinal() * 9 + this.perRow - 1) / this.perRow - this.rows,
                 Math.max(1, this.rows / 6));
     }
 
@@ -187,6 +203,15 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
                     AEConfig.instance.settings.putSetting(iBtn.getSetting(), next);
                 } else if (btn == this.searchStringSave) {
                     AEConfig.instance.preserveSearchBar = next == YesNo.YES;
+                } else if (btn == this.pinsStateButton) {
+                    try {
+                        if (next.ordinal() >= rows) return; // ignore to avoid hiding terminal inventory
+
+                        final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
+                        NetworkHandler.instance.sendToServer(p);
+                    } catch (final IOException e) {
+                        AELog.debug(e);
+                    }
                 } else {
                     try {
                         NetworkHandler.instance
@@ -206,6 +231,19 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         }
     }
 
+    private void adjustPinsSize() {
+        final int pinMaxSize = rows - 1;
+        if (pinsState.ordinal() <= pinMaxSize) return;
+
+        try {
+            PinsState newState = PinsState.fromOrdinal(pinMaxSize);
+            final PacketPinsUpdate p = new PacketPinsUpdate(newState);
+            NetworkHandler.instance.sendToServer(p);
+        } catch (final IOException e) {
+            AELog.debug(e);
+        }
+    }
+
     private void reinitalize() {
         this.buttonList.clear();
         this.initGui();
@@ -220,10 +258,26 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         this.rows = calculateRowsCount();
 
         this.getMeSlots().clear();
-        for (int y = 0; y < this.rows; y++) {
+
+        // make sure we have space at least for one row of normal slots, because pins not adjusted by scroll bar
+        adjustPinsSize();
+
+        int pinsRows = pinsState.ordinal();
+        for (int y = 0; y < pinsRows; y++) {
             for (int x = 0; x < this.perRow; x++) {
                 this.getMeSlots()
-                        .add(new InternalSlotME(this.repo, x + y * this.perRow, this.offsetX + x * 18, 18 + y * 18));
+                        .add(new PinSlotME(this.repo, x + y * this.perRow, this.offsetX + x * 18, y * 18 + 18));
+            }
+        }
+
+        for (int y = 0; y < this.rows - pinsRows; y++) {
+            for (int x = 0; x < this.perRow; x++) {
+                this.getMeSlots().add(
+                        new InternalSlotME(
+                                this.repo,
+                                x + y * this.perRow,
+                                this.offsetX + x * 18,
+                                18 + y * 18 + pinsRows * 18));
             }
         }
 
@@ -328,6 +382,15 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
             }
         }
 
+        if (hasPinHost) {
+            this.buttonList.add(
+                    this.pinsStateButton = new GuiImgButton(
+                            this.guiLeft + 178,
+                            this.guiTop + 18 + (rows * 18) + 25,
+                            Settings.PINS_STATE,
+                            configSrc.getSetting(Settings.PINS_STATE)));
+        }
+
         // Enum setting = AEConfig.INSTANCE.getSetting( "Terminal", SearchBoxMode.class, SearchBoxMode.AUTOSEARCH );
         final Enum searchMode = AEConfig.instance.settings.getSetting(Settings.SEARCH_MODE);
         this.isAutoFocus = SearchBoxMode.AUTOSEARCH == searchMode || SearchBoxMode.NEI_AUTOSEARCH == searchMode;
@@ -401,7 +464,32 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
     @Override
     protected void mouseClicked(final int xCoord, final int yCoord, final int btn) {
         searchField.mouseClicked(xCoord, yCoord, btn);
+        if (handleViewCellClick(xCoord, yCoord, btn)) return;
         super.mouseClicked(xCoord, yCoord, btn);
+    }
+
+    private boolean handleViewCellClick(final int xCoord, final int yCoord, final int btn) {
+        if (this.viewCell && monitorableContainer.canAccessViewCells && btn == 1) {
+            Slot slot = getSlot(xCoord, yCoord);
+            if (slot instanceof SlotRestrictedInput cvs) {
+                // if it has an item
+                if (!cvs.getHasStack()) return false;
+                // if its a view cell
+                if (!(cvs.getStack().getItem() instanceof ItemViewCell)) return false;
+
+                // update the view cell
+                try {
+                    NetworkHandler.instance.sendToServer(
+                            new PacketValueConfig("Terminal.UpdateViewCell", Integer.toString(cvs.getSlotIndex())));
+                } catch (IOException e) {
+                    AELog.debug(e);
+                }
+
+                // eat the right-click input if a view cell was successfully toggled
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -558,8 +646,16 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
         if (this.ViewBox != null) {
             this.ViewBox.set(this.configSrc.getSetting(Settings.VIEW_MODE));
         }
+
         if (this.typeFilter != null) {
             this.typeFilter.set(this.configSrc.getSetting(Settings.TYPE_FILTER));
+        }
+
+        if (this.pinsStateButton != null) {
+            pinsState = (PinsState) this.configSrc.getSetting(Settings.PINS_STATE);
+            this.pinsStateButton.set(pinsState);
+
+            initGui();
         }
 
         this.repo.updateView();
@@ -660,5 +756,15 @@ public class GuiMEMonitorable extends AEBaseMEGui implements ISortSource, IConfi
 
     private boolean hasShiftDown() {
         return Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+    }
+
+    @Override
+    public void setAEPins(IAEItemStack[] pins) {
+        repo.setAEPins(pins);
+    }
+
+    @Override
+    public void setPinsState(PinsState state) {
+        configSrc.putSetting(Settings.PINS_STATE, state);
     }
 }

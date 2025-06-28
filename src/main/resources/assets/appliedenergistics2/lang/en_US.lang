@@ -131,6 +131,8 @@ chat.appliedenergistics2.DriveLockingToggled=Cells in drive were partitioned/unp
 chat.appliedenergistics2.ChestLockingToggled=Cell in chest was partitioned/unpartitioned
 chat.appliedenergistics2.FinishCraftingRemind=Crafting of %s * %s finished in %s.
 chat.appliedenergistics2.CraftingCantExtract=Can't extract required amount of ingredient from storage: %d / %d | %s
+chat.appliedenergistics2.MachineInOtherDim=%d located in dimension: %d and cant be highlighted
+chat.appliedenergistics2.MachineHighlighted=The %d is now highlighted at %d, %d, %d
 
 # Creative Tabs
 itemGroup.appliedenergistics2=Applied Energistics 2
@@ -223,6 +225,7 @@ gui.appliedenergistics2.StorageCells=ME Storage Cells
 gui.appliedenergistics2.IOBuses=ME Import/Export Bus
 gui.appliedenergistics2.Stores=Stores
 gui.appliedenergistics2.BytesUsed=Bytes Used
+gui.appliedenergistics2.TimeUsed=Time Used
 gui.appliedenergistics2.Types=Types
 gui.appliedenergistics2.Blank=Blank
 gui.appliedenergistics2.Unlinked=Unlinked
@@ -266,6 +269,7 @@ gui.appliedenergistics2.Next=Next
 gui.appliedenergistics2.Lumen=Lumen
 gui.appliedenergistics2.Empty=Empty
 gui.appliedenergistics2.Stored=Stored
+gui.appliedenergistics2.AddToBookmark=Bookmark
 gui.appliedenergistics2.Cancel=Cancel
 gui.appliedenergistics2.ETAFormat=HH:mm:ss
 gui.appliedenergistics2.SwitchCraftingSimulationDisplayMode=Switch display mode (List/Tree)
@@ -331,6 +335,7 @@ gui.appliedenergistics2.Nothing=Nothing
 gui.appliedenergistics2.VoidCellTooltip=Deletes §4everything§7 stored on it
 gui.appliedenergistics2.CellView=Cell View
 gui.appliedenergistics2.Deprecated=Deprecated, will be removed soon!
+gui.appliedenergistics2.ViewCellToggleKey=Right-click to toggle
 
 gui.appliedenergistics2.NetworkBytesDetails=Network Bytes Details
 gui.appliedenergistics2.Items=Items
@@ -436,6 +441,7 @@ gui.tooltips.appliedenergistics2.SearchMode_NEIStandard=NEI Synchronized Standar
 gui.tooltips.appliedenergistics2.SearchMode=Search Box Mode
 
 gui.tooltips.appliedenergistics2.PartitionStorageHint=Configures Partition based on currently stored items.
+gui.tooltips.appliedenergistics2.NextPartitionStorageHint=Click to get next item in the storage.
 gui.tooltips.appliedenergistics2.ClearSettings=Clear Config/Settings
 gui.tooltips.appliedenergistics2.Craftable=Craftable
 gui.tooltips.appliedenergistics2.MoveWhenEmpty=Move to output when cell is empty or network was emptied.
@@ -580,6 +586,17 @@ gui.tooltips.appliedenergistics2.CPUAllowMode=Crafting requests limitation
 gui.tooltips.appliedenergistics2.CPUAllowAllDesc=Allow all crafting requests
 gui.tooltips.appliedenergistics2.CPUOnlyAllowPlayerDesc=Only allow crafting requests from player
 gui.tooltips.appliedenergistics2.CPUOnlyAllowNonPlayerDesc=Only allow crafting requests from non-player
+
+gui.tooltips.appliedenergistics2.PinsSection=Pins Section
+gui.tooltips.appliedenergistics2.PinsSectionActive=Pins Section Enabled
+gui.tooltips.appliedenergistics2.PinsSectionDisabled=Pins Section Disabled
+
+gui.tooltips.appliedenergistics2.scheduledreason.SOMETHING_STUCK=Something stuck in interface
+gui.tooltips.appliedenergistics2.scheduledreason.BLOCKING_MODE=Blocking Mode
+gui.tooltips.appliedenergistics2.scheduledreason.LOCK_MODE=Lock Mode
+gui.tooltips.appliedenergistics2.scheduledreason.NO_TARGET=Cant find target to push
+gui.tooltips.appliedenergistics2.scheduledreason.NOT_ENOUGH_INGREDIENTS=Not enough ingredients
+gui.tooltips.appliedenergistics2.scheduledreason.SAME_NETWORK=Target interface in same network
 
 gui.tooltips.appliedenergistics2.ToggleShowOnlySubstitute=Toggles showing interfaces with patterns with substitutions enabled
 gui.tooltips.appliedenergistics2.ToggleShowOnlySubstituteOnDesc=Showing all interfaces
