@@ -177,7 +177,6 @@ public class GuiCraftingList {
             } finally {
                 fb.deleteFramebuffer();
                 GL11.glViewport(0, 0, mc.displayWidth, mc.displayHeight);
-                GL11.glPopAttrib();
             }
             GL11.glPopAttrib();
             GL11.glPopMatrix();
