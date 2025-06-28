@@ -205,8 +205,10 @@ public class GuiMEMonitorable extends AEBaseMEGui
                     AEConfig.instance.preserveSearchBar = next == YesNo.YES;
                 } else if (btn == this.pinsStateButton) {
                     try {
-                        final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
-                        NetworkHandler.instance.sendToServer(p);
+                        if (next.ordinal() < rows) {
+                            final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
+                            NetworkHandler.instance.sendToServer(p);
+                        } else return;
                     } catch (final IOException e) {
                         AELog.debug(e);
                     }
@@ -229,6 +231,19 @@ public class GuiMEMonitorable extends AEBaseMEGui
         }
     }
 
+    private void adjustPinsSize() {
+        final int newOrdinal = rows - 1;
+        if (pinsState.ordinal() > newOrdinal) {
+            try {
+                PinsState newState = PinsState.fromOrdinal(newOrdinal);
+                final PacketPinsUpdate p = new PacketPinsUpdate(newState);
+                NetworkHandler.instance.sendToServer(p);
+            } catch (final IOException e) {
+                AELog.debug(e);
+            }
+        }
+    }
+
     private void reinitalize() {
         this.buttonList.clear();
         this.initGui();
@@ -243,6 +258,9 @@ public class GuiMEMonitorable extends AEBaseMEGui
         this.rows = calculateRowsCount();
 
         this.getMeSlots().clear();
+
+        // make sure we have space at least for one row of normal slots, because pins not adjusted by scroll bar
+        adjustPinsSize();
 
         int pinsRows = pinsState.ordinal();
         for (int y = 0; y < pinsRows; y++) {
