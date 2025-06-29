@@ -872,8 +872,7 @@ public final class Registration {
                         "AE2: Error while whitelisting dimension from string: " + dimension
                                 + " | Error: First Parameter Needs To Be An Integer!");
             }
-            if (dimID == DEFAULTDIM)
-                continue;
+            if (dimID == DEFAULTDIM) continue;
 
             registries.worldgen().enableWorldGenForDimension(WorldGenType.Meteorites, dimID);
             Block[] blockList = new Block[5];

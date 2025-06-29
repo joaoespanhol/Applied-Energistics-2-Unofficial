@@ -53,7 +53,8 @@ public final class MeteoriteWorldGen implements IWorldGenerator {
                 gridCellSize = Integer.parseInt(split[1]); // set overworld value instead default value
             }
         }
-        if (gridCellSize == DEFAULTVALUE) throw new RuntimeException("AE2: MISSING VALUE minMeteoriteDistance FOR OVERWORLD");
+        if (gridCellSize == DEFAULTVALUE)
+            throw new RuntimeException("AE2: MISSING VALUE minMeteoriteDistance FOR OVERWORLD");
 
         final int gridCellMargin = Math.max(1, gridCellSize / 10);
         final int gridX = Math.floorDiv(chunkX << 4, gridCellSize);
@@ -68,11 +69,11 @@ public final class MeteoriteWorldGen implements IWorldGenerator {
                 check = (rng.nextDouble() < Double.parseDouble(split[1]) ? 1 : 0);
             }
             if (split[0].equals("0") && check == DEFAULTVALUE) {
-                check = (rng.nextDouble() < Double.parseDouble(split[1]) ? 1 : 0); // set overworld value instead default value
+                check = (rng.nextDouble() < Double.parseDouble(split[1]) ? 1 : 0); // set overworld value instead
+                                                                                   // default value
             }
         }
-        if (check == DEFAULTVALUE)
-                throw new RuntimeException("AE2: MISSING VALUE meteoriteSpawnChance FOR OVERWORLD");
+        if (check == DEFAULTVALUE) throw new RuntimeException("AE2: MISSING VALUE meteoriteSpawnChance FOR OVERWORLD");
 
         boolean spawnSurfaceMeteor = (check == 1);
 
