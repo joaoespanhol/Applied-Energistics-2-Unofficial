@@ -129,6 +129,31 @@ public final class MeteoritePlacer {
             invalidSpawn.add(Blocks.water);
             invalidSpawn.add(Blocks.log);
             invalidSpawn.add(Blocks.log2);
+
+            for (String block : AEConfig.instance.meteoriteInvalidBlocks) {
+                try {
+                    String[] parts = block.split(":");
+                    if (parts.length != 2) {
+                        AELog.error(
+                                "AE2: Invalid Block ID Format for invalidSpawnBlockWhiteList: " + block
+                                        + " | Error: Too Many Semicolons");
+                    }
+                    Block blk = GameRegistry.findBlock(parts[0], parts[1]);
+                    if (blk != null) {
+                        invalidSpawn.add(blk);
+                    } else {
+                        AELog.error(
+                                "AE2: Could not find block in registry for invalidSpawnBlockWhiteList: " + block
+                                        + " | Error: Block not found");
+                    }
+                } catch (Exception e) {
+                    AELog.error(
+                            e,
+                            "AE2: errored while blacklisting meteorite block spawns: " + e.getLocalizedMessage()
+                                    + " | Error: Unknown | Stacktrace: "
+                                    + Arrays.toString(e.getStackTrace()));
+                }
+            }
         }
     }
 
