@@ -24,7 +24,7 @@ dependencies {
     compileOnly('api:immibis:1')
     compileOnly('curse.maven:computercraft-67504:2269339')
     compileOnly('com.github.GTNewHorizons:Baubles-Expanded:2.1.9-GTNH:dev')
-    compileOnly('com.github.GTNewHorizons:ae2stuff:0.9.5-GTNH:dev') {
+    compileOnly('com.github.GTNewHorizons:ae2stuff:0.9.6-GTNH:dev') {
         exclude module: "Applied-Energistics-2-Unofficial"
     }
 
