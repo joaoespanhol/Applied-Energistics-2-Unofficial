@@ -864,45 +864,41 @@ public final class Registration {
                 AELog.error(
                         "AE2: Error while whitelisting dimension from string: " + dimension
                                 + " | Error: Too Many or Few Parameters!");
-            } else {
-                int dimID = DEFAULTDIM; // -1*Short.MAX_VALUE-50, this value represents failure to find the dimension in
-                // config
-                try {
-                    dimID = Integer.parseInt(entry[0]);
-                    registries.worldgen().enableWorldGenForDimension(WorldGenType.Meteorites, dimID);
-                } catch (Exception e) {
-                    AELog.error(
-                            "AE2: Error while whitelisting dimension from string: " + dimension
-                                    + " | Error: First Parameter Needs To Be An Integer!");
-                }
-                if (dimID != DEFAULTDIM) {
-                    registries.worldgen().enableWorldGenForDimension(WorldGenType.Meteorites, dimID);
-                }
-                Block[] blockList = new Block[5];
-                int[] metaList = new int[5];
-                for (int i = 1; i < entry.length; i++) {
-                    if (!entry[i].equals("DEFAULT")) {
-                        blockList[i - 1] = Registration.getBlockFromString(entry[i]);
-                        try {
-                            String[] split = entry[i].split(":");
-                            metaList[i - 1] = (split.length == 2 ? 0 : Integer.parseInt(split[2]));
-                        } catch (NumberFormatException e) {
-                            AELog.error(
-                                    "AE2: Error getting block from string: " + entry
-                                            + " | Error: Metadata invalid, must be an integer!");
-                            metaList[i - 1] = 0;
-                        }
-                    } else {
-                        blockList[i - 1] = null;
+                continue;
+            }
+            int dimID = DEFAULTDIM; // -1*Short.MAX_VALUE-50, this value represents failure to find the dimension in
+            // config
+            try {
+                dimID = Integer.parseInt(entry[0]);
+            } catch (Exception e) {
+                AELog.error(
+                        "AE2: Error while whitelisting dimension from string: " + dimension
+                                + " | Error: First Parameter Needs To Be An Integer!");
+            }
+            if (dimID == DEFAULTDIM) continue;
+
+            registries.worldgen().enableWorldGenForDimension(WorldGenType.Meteorites, dimID);
+            Block[] blockList = new Block[5];
+            int[] metaList = new int[5];
+            for (int i = 1; i < entry.length; i++) {
+                if (!entry[i].equals("DEFAULT")) {
+                    blockList[i - 1] = Registration.getBlockFromString(entry[i]);
+                    try {
+                        String[] split = entry[i].split(":");
+                        metaList[i - 1] = (split.length == 2 ? 0 : Integer.parseInt(split[2]));
+                    } catch (NumberFormatException e) {
+                        AELog.error(
+                                "AE2: Error getting block from string: " + entry
+                                        + " | Error: Metadata invalid, must be an integer!");
                         metaList[i - 1] = 0;
                     }
+                } else {
+                    blockList[i - 1] = null;
+                    metaList[i - 1] = 0;
+                }
 
-                }
-                if (dimID != DEFAULTDIM) {
-                    Fallout.addDebrisToDimension(dimID, blockList, metaList);
-                }
             }
-
+            Fallout.addDebrisToDimension(dimID, blockList, metaList);
         }
 
         /**
