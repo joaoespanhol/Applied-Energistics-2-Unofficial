@@ -37,7 +37,6 @@ import appeng.core.sync.packets.PacketNEIBookmark;
 import appeng.core.sync.packets.PacketNEIDragClick;
 import appeng.core.sync.packets.PacketNEIRecipe;
 import appeng.core.sync.packets.PacketNetworkStatusSelected;
-import appeng.core.sync.packets.PacketNetworkVisualiserData;
 import appeng.core.sync.packets.PacketNewStorageDimension;
 import appeng.core.sync.packets.PacketOptimizePatterns;
 import appeng.core.sync.packets.PacketPaintedEntity;

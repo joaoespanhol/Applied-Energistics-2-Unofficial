@@ -17,8 +17,6 @@ import java.util.EnumSet;
 
 import javax.annotation.Nonnull;
 
-import appeng.items.tools.ToolNetworkVisualiser.VisualisationModes;
-
 public enum Settings {
 
     LEVEL_EMITTER_MODE(EnumSet.allOf(LevelEmitterMode.class)),

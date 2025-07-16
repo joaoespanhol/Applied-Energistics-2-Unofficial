@@ -456,6 +456,7 @@ public final class Registration {
         target.itemCellCreative = this.converter.of(source.cellCreative());
         target.itemViewCell = this.converter.of(source.viewCell());
         target.itemEncodedPattern = this.converter.of(source.encodedPattern());
+        target.itemEncodedUltimatePattern = converter.of(source.encodedUltimatePattern());
 
         target.itemCell1k = this.converter.of(source.cell1k());
         target.itemCell4k = this.converter.of(source.cell4k());
@@ -771,9 +772,6 @@ public final class Registration {
 
         // Inscriber
         Upgrades.SPEED.registerItem(blocks.inscriber(), 3);
-
-        // Grower
-        Upgrades.SPEED.registerItem(blocks.crystalGrowthChamber(), 3);
 
         // Terminals
         Upgrades.PATTERN_REFILLER.registerItem(parts.patternTerminal(), 1);

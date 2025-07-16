@@ -193,10 +193,4 @@ public interface IBlocks {
     ITileDefinition paint();
 
     ITileDefinition patternsOptimizationMatrix();
-
-    ITileDefinition wirelessConnector();
-
-    ITileDefinition wirelessHub();
-
-    ITileDefinition crystalGrowthChamber();
 }

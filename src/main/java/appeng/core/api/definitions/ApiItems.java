@@ -21,6 +21,7 @@ import appeng.debug.ToolReplicatorCard;
 import appeng.items.materials.MaterialType;
 import appeng.items.misc.ItemCrystalSeed;
 import appeng.items.misc.ItemEncodedPattern;
+import appeng.items.misc.ItemEncodedUltimatePattern;
 import appeng.items.misc.ItemPaintBall;
 import appeng.items.parts.ItemFacade;
 import appeng.items.storage.ItemAdvancedStorageCell;
@@ -34,7 +35,6 @@ import appeng.items.tools.ToolAdvancedNetworkTool;
 import appeng.items.tools.ToolBiometricCard;
 import appeng.items.tools.ToolMemoryCard;
 import appeng.items.tools.ToolNetworkTool;
-import appeng.items.tools.ToolNetworkVisualiser;
 import appeng.items.tools.ToolPriorityCard;
 import appeng.items.tools.powered.ToolChargedStaff;
 import appeng.items.tools.powered.ToolColorApplicator;
@@ -108,6 +108,7 @@ public final class ApiItems implements IItems {
 
     // rv1
     private final IItemDefinition encodedPattern;
+    private final IItemDefinition encodedUltimatePattern;
     private final IItemDefinition colorApplicator;
 
     private final IItemDefinition paintBall;
@@ -119,8 +120,6 @@ public final class ApiItems implements IItems {
     private final IItemDefinition toolMeteoritePlacer;
     private final IItemDefinition toolDebugCard;
     private final IItemDefinition toolReplicatorCard;
-
-    private final IItemDefinition toolNetworkVisualiser;
 
     public ApiItems(final DefinitionConstructor constructor) {
         this.certusQuartzAxe = constructor.registerItemDefinition(new ToolQuartzAxe(AEFeature.CertusQuartzTools));
@@ -186,6 +185,7 @@ public final class ApiItems implements IItems {
 
         // rv1
         this.encodedPattern = constructor.registerItemDefinition(new ItemEncodedPattern());
+        encodedUltimatePattern = constructor.registerItemDefinition(new ItemEncodedUltimatePattern());
         this.colorApplicator = constructor.registerItemDefinition(new ToolColorApplicator());
 
         this.paintBall = constructor.registerItemDefinition(new ItemPaintBall());
@@ -196,7 +196,6 @@ public final class ApiItems implements IItems {
         this.toolMeteoritePlacer = constructor.registerItemDefinition(new ToolMeteoritePlacer());
         this.toolDebugCard = constructor.registerItemDefinition(new ToolDebugCard());
         this.toolReplicatorCard = constructor.registerItemDefinition(new ToolReplicatorCard());
-        this.toolNetworkVisualiser = constructor.registerItemDefinition(new ToolNetworkVisualiser());
     }
 
     @Override
@@ -425,6 +424,11 @@ public final class ApiItems implements IItems {
     }
 
     @Override
+    public IItemDefinition encodedUltimatePattern() {
+        return this.encodedUltimatePattern;
+    }
+
+    @Override
     public IItemDefinition colorApplicator() {
         return this.colorApplicator;
     }
@@ -457,9 +461,5 @@ public final class ApiItems implements IItems {
 
     public IItemDefinition toolReplicatorCard() {
         return this.toolReplicatorCard;
-    }
-
-    public IItemDefinition toolNetworkVisualiser() {
-        return this.toolNetworkVisualiser;
     }
 }
