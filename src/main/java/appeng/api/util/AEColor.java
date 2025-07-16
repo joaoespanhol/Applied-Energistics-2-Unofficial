@@ -18,12 +18,14 @@ import java.util.List;
 
 import net.minecraft.util.StatCollector;
 
+import appeng.core.localization.Localization;
+
 /**
  * List of all colors supported by AE, their names, and various colors for display.
  * <p>
  * Should be the same order as Dyes, excluding Transparent.
  */
-public enum AEColor {
+public enum AEColor implements Localization {
 
     White("gui.appliedenergistics2.White", 0xBEBEBE, 0xDBDBDB, 0xFAFAFA),
 
@@ -109,6 +111,10 @@ public enum AEColor {
      */
     public boolean matches(final AEColor color) {
         return this == Transparent || color == Transparent || this == color;
+    }
+
+    public String getUnlocalized() {
+        return unlocalizedName;
     }
 
     @Override

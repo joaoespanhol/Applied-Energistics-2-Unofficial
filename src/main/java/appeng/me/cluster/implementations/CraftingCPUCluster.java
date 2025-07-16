@@ -1142,6 +1142,11 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
                                     missingCount,
                                     missingName).appendText(" (").appendSibling(missingDisplayName).appendText(")"));
                 }
+                player.addChatMessage(
+                        new ChatComponentTranslation(
+                                PlayerMessages.CraftingItemsWentMissing.getUnlocalized(),
+                                missingCount,
+                                missingName).appendText(" (").appendSibling(missingDisplayName).appendText(")"));
             }
         } catch (Exception ex) {
             AELog.error(ex, "Could not notify player of crafting failure");
@@ -1778,7 +1783,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
             final String elapsedTimeText = DurationFormatUtils.formatDuration(
                     TimeUnit.MILLISECONDS.convert(this.elapsedTime, TimeUnit.NANOSECONDS),
                     GuiText.ETAFormat.getLocal());
-            return PlayerMessages.FinishCraftingRemind.get(
+            return PlayerMessages.FinishCraftingRemind.toChat(
                     new ChatComponentText(EnumChatFormatting.GREEN + String.valueOf(this.outputsCount)),
                     this.finalOutput.getDisplayName(),
                     new ChatComponentText(EnumChatFormatting.GREEN + elapsedTimeText));

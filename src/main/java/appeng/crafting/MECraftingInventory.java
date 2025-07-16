@@ -521,7 +521,6 @@ public class MECraftingInventory implements IMEInventory<IAEStack> {
                                     missingName).appendText(" (").appendSibling(missingDisplayName).appendText(")"));
                 }
 
-            }
         } catch (Exception ex) {
             AELog.error(ex, "Could not notify player of crafting failure");
         }

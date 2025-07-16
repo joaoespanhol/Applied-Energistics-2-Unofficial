@@ -207,6 +207,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
                     try {
                         if (next.ordinal() >= rows) return; // ignore to avoid hiding terminal inventory
 
+                        memoryText = this.searchField.getText();
                         final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
                         NetworkHandler.instance.sendToServer(p);
                     } catch (final IOException e) {
@@ -297,6 +298,8 @@ public class GuiMEMonitorable extends AEBaseMEGui
         this.guiTop = (int) Math.floor(unusedSpace / (unusedSpace < 0 ? 3.8f : 2.0f));
 
         int offset = this.guiTop + 8;
+
+        buttonList.clear();
 
         if (this.customSortOrder) {
             this.buttonList.add(
