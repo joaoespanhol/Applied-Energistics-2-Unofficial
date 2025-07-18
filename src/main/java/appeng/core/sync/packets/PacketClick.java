@@ -68,12 +68,9 @@ public class PacketClick extends AppEngPacket {
     @Override
     public void serverPacketData(final INetworkInfo manager, final AppEngPacket packet, final EntityPlayer player) {
         final ItemStack is = player.inventory.getCurrentItem();
-        final IItems items = AEApi.instance().definitions().items();
-        final Item item = is == null ? null : is.getItem();
-        final IComparableDefinition maybeMemoryCard = items.memoryCard();
-        final IComparableDefinition maybeColorApplicator = items.colorApplicator();
-
         if (is == null) return;
+
+        final Item item = is.getItem();
 
         if (item instanceof HasServerSideToolLogic hsstl) {
             hsstl.serverSideToolLogic(

@@ -5,7 +5,6 @@ import net.minecraft.entity.player.InventoryPlayer;
 import appeng.api.implementations.guiobjects.INetworkTool;
 import appeng.container.slot.SlotRestrictedInput;
 
-/** tes */
 public class ContainerAdvancedNetworkTool extends ContainerNetworkTool {
 
     public ContainerAdvancedNetworkTool(final InventoryPlayer ip, final INetworkTool te) {

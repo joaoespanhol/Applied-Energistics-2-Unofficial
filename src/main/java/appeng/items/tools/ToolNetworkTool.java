@@ -85,7 +85,9 @@ public class ToolNetworkTool extends AEBaseItem
             if (w.getBlock(i, j, k).isAir(w, i, j, k)) {
                 this.onItemUseFirst(it, p, w, 0, 0, 0, -1, 0, 0, 0);
             }
-        } else this.onItemUseFirst(it, p, w, 0, 0, 0, -1, 0, 0, 0);
+        } else {
+            this.onItemUseFirst(it, p, w, 0, 0, 0, -1, 0, 0, 0);
+        }
 
         return it;
     }
@@ -138,7 +140,7 @@ public class ToolNetworkTool extends AEBaseItem
         return true;
     }
 
-    /** use for open tool gui, Override for change gui used */
+    /** Override for change gui used */
     protected void openToolGui(EntityPlayer p) {
         Platform.openGUI(p, null, ForgeDirection.UNKNOWN, GuiBridge.GUI_NETWORK_TOOL);
     }
