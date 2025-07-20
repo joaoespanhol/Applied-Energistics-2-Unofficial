@@ -127,6 +127,10 @@ public class ContainerUpgradeable extends AEBaseContainer implements IOptionalSl
         return this.hasToolbox() ? this.tbInventory.getSize() : 0;
     }
 
+    public int getToolboxSizeInventory() {
+        return this.hasToolbox() ? this.tbInventory.getSizeInventory() : 0;
+    }
+
     protected int getHeight() {
         return 184;
     }
