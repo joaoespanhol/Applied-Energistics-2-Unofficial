@@ -6,11 +6,11 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import appeng.api.config.FuzzyMode;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents a wrapper for {@code IAEItemStack}. This class aggregates one or more instances of
