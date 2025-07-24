@@ -10,7 +10,7 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 
 /**
- * Represents a wrapper for {@code IAEItemStack}. This class aggregates one or more instances of
+ * Represents a wrapper for {@code IItemList<IAEItemStack>}. This class aggregates one or more instances of
  * {@code IItemList<IAEItemStack>} and provides a read-only interface for accessing their contents.
  */
 public final class ItemImmutableList implements IItemList<IAEItemStack> {
@@ -116,8 +116,8 @@ public final class ItemImmutableList implements IItemList<IAEItemStack> {
     public Collection<IAEItemStack> findFuzzy(IAEItemStack input, FuzzyMode fuzzy) {
         Collection<IAEItemStack> found = new ArrayList<>(lists[0].findFuzzy(input, fuzzy));
         for (int i = 1; i < lists.length; i++) {
-            IItemList<IAEItemStack> list = lists[i];
-            skip: for (IAEItemStack item : list.findFuzzy(input, fuzzy)) {
+            IItemList<IAEItemStack> itemsList = lists[i];
+            skip: for (IAEItemStack item : itemsList.findFuzzy(input, fuzzy)) {
                 for (IAEItemStack existing : found) {
                     if (existing.isSameType(item)) {
                         existing.setStackSize(existing.getStackSize() + item.getStackSize());
@@ -132,8 +132,8 @@ public final class ItemImmutableList implements IItemList<IAEItemStack> {
 
     @Override
     public boolean isEmpty() {
-        for (IItemList<IAEItemStack> list : lists) {
-            if (!list.isEmpty()) {
+        for (IItemList<IAEItemStack> itemsList : lists) {
+            if (!itemsList.isEmpty()) {
                 return false;
             }
         }
