@@ -224,7 +224,6 @@ public class GuiMEMonitorable extends AEBaseMEGui
                 iBtn.set(next);
 
                 if (next.getClass() == SearchBoxMode.class || next.getClass() == TerminalStyle.class) {
-                    memoryText = this.searchField.getText();
                     this.reinitalize();
                 }
             }
@@ -245,6 +244,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
     }
 
     private void reinitalize() {
+        memoryText = this.searchField.getText();
         this.buttonList.clear();
         this.initGui();
     }
@@ -657,7 +657,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
             pinsState = (PinsState) this.configSrc.getSetting(Settings.PINS_STATE);
             this.pinsStateButton.set(pinsState);
 
-            initGui();
+            reinitalize();
         }
 
         this.repo.updateView();
@@ -762,7 +762,6 @@ public class GuiMEMonitorable extends AEBaseMEGui
 
     @Override
     public void setAEPins(IAEItemStack[] pins) {
-        memoryText = this.searchField.getText();
         repo.setAEPins(pins);
     }
 
