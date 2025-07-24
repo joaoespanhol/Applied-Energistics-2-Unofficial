@@ -5,9 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import appeng.api.config.FuzzyMode;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
@@ -63,7 +60,7 @@ public final class ItemImmutableList implements IItemList<IAEItemStack> {
     }
 
     @Override
-    public @NotNull Iterator<IAEItemStack> iterator() {
+    public Iterator<IAEItemStack> iterator() {
         return new Iterator<>() {
 
             private int currentListIndex = 0;
@@ -100,7 +97,7 @@ public final class ItemImmutableList implements IItemList<IAEItemStack> {
     }
 
     @Override
-    public @Nullable IAEItemStack findPrecise(IAEItemStack i) {
+    public IAEItemStack findPrecise(IAEItemStack i) {
         IAEItemStack result = null;
         for (IItemList<IAEItemStack> list : lists) {
             IAEItemStack found = list.findPrecise(i);
