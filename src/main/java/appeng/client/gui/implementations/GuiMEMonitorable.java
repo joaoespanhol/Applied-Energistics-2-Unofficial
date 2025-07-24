@@ -763,6 +763,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
 
     @Override
     public void setAEPins(IAEItemStack[] pins) {
+        memoryText = this.searchField.getText();
         repo.setAEPins(pins);
     }
 
