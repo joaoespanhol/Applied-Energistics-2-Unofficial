@@ -21,6 +21,7 @@ public class MachineSet extends HashSet<IGridNode> implements IMachineSet {
     private static final long serialVersionUID = 3224660708327386933L;
 
     private final Class<? extends IGridHost> machine;
+
     public MachineSet(final Class<? extends IGridHost> m) {
         this.machine = m;
     }

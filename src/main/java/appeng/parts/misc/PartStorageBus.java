@@ -24,12 +24,6 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import appeng.api.networking.IGrid;
-import appeng.api.networking.IGridHost;
-import appeng.api.networking.IMachineSet;
-import appeng.api.util.DimensionalCoord;
-import appeng.me.MachineSet;
-import appeng.me.storage.MEPassThrough;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -47,6 +41,8 @@ import appeng.api.config.Settings;
 import appeng.api.config.StorageFilter;
 import appeng.api.config.Upgrades;
 import appeng.api.config.YesNo;
+import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.events.MENetworkCellArrayUpdate;
 import appeng.api.networking.events.MENetworkChannelsChanged;
@@ -83,9 +79,11 @@ import appeng.helpers.IPriorityHost;
 import appeng.helpers.Reflected;
 import appeng.integration.IntegrationType;
 import appeng.me.GridAccessException;
+import appeng.me.MachineSet;
 import appeng.me.storage.MEInventoryHandler;
 import appeng.me.storage.MEMonitorIInventory;
 import appeng.me.storage.MEMonitorPassThrough;
+import appeng.me.storage.MEPassThrough;
 import appeng.me.storage.StorageBusInventoryHandler;
 import appeng.parts.automation.PartUpgradeable;
 import appeng.tile.inventory.AppEngInternalAEInventory;
@@ -537,20 +535,21 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
     /**
      * If the storage bus is connected to an interface, ie. subnet, recursively search that subnet and all subsequent
-     * subnets and return all machines found.
-     * Will return null if not connected to a subnet
-     * @param classes List of machine classes to search (grid.getMachineClasses() to see available on current grid)
+     * subnets and return all machines found. Will return null if not connected to a subnet
+     * 
+     * @param classes      List of machine classes to search (grid.getMachineClasses() to see available on current grid)
      * @param gridTracking Tracker to prevent searching same connected grid twice, can set as null
      * @return Map of machine types and machines, flattening subnets
      */
     @SuppressWarnings("unchecked")
-    public Map<Class<? extends IGridHost>, MachineSet> getDeepConnectedMachines(Class<? extends IGridHost>[] classes, Set<UUID> gridTracking) {
+    public Map<Class<? extends IGridHost>, MachineSet> getDeepConnectedMachines(Class<? extends IGridHost>[] classes,
+            Set<UUID> gridTracking) {
         try {
             IGrid grid = this.getProxy().getGrid();
-            if(gridTracking == null) {
+            if (gridTracking == null) {
                 gridTracking = new HashSet<UUID>();
                 gridTracking.add(grid.getId());
-            } else if(gridTracking.contains(grid.getId())) {
+            } else if (gridTracking.contains(grid.getId())) {
                 return null;
             } else {
                 gridTracking.add(grid.getId());
@@ -562,34 +561,35 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         Map<Class<? extends IGridHost>, MachineSet> machines = new HashMap<>();
         IMEInventory inv = this.getConnectedInventory();
 
-        if(inv instanceof MEPassThrough) {
+        if (inv instanceof MEPassThrough) {
             MEPassThrough passThrough = (MEPassThrough) inv;
             System.out.println();
             IGrid grid = passThrough.getGrid();
             if (gridTracking.contains(grid.getId())) {
-                return null; //Grid loop check
+                return null; // Grid loop check
             }
 
             for (Class<? extends IGridHost> machineType : classes) {
-                 MachineSet subMachines = (MachineSet) grid.getMachines(machineType);
-                 if(machineType == PartStorageBus.class) { //Recursive Check Storage Buses
-                     for(IGridNode sub : subMachines) {
+                MachineSet subMachines = (MachineSet) grid.getMachines(machineType);
+                if (machineType == PartStorageBus.class) { // Recursive Check Storage Buses
+                    for (IGridNode sub : subMachines) {
                         PartStorageBus inner = (PartStorageBus) sub.getMachine();
-                         Map<Class<? extends IGridHost>, MachineSet> recursiveMachines = inner.getDeepConnectedMachines(classes, gridTracking);
-                        //Merge result with parent
-                         if(recursiveMachines != null) {
-                             for(Entry<Class<? extends IGridHost>, MachineSet> m : recursiveMachines.entrySet()) {
-                                 if(machines.containsKey(m.getKey())) {
-                                     machines.get(m.getKey()).addAll(m.getValue());
-                                 } else {
-                                     machines.put(m.getKey(), m.getValue());
-                                 }
-                             }
-                         }
-                     }
-                 } else { //Add All other types
-                     machines.put(machineType, subMachines);
-                 }
+                        Map<Class<? extends IGridHost>, MachineSet> recursiveMachines = inner
+                                .getDeepConnectedMachines(classes, gridTracking);
+                        // Merge result with parent
+                        if (recursiveMachines != null) {
+                            for (Entry<Class<? extends IGridHost>, MachineSet> m : recursiveMachines.entrySet()) {
+                                if (machines.containsKey(m.getKey())) {
+                                    machines.get(m.getKey()).addAll(m.getValue());
+                                } else {
+                                    machines.put(m.getKey(), m.getValue());
+                                }
+                            }
+                        }
+                    }
+                } else { // Add All other types
+                    machines.put(machineType, subMachines);
+                }
             }
 
         } else {
@@ -738,11 +738,9 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         return this.handler;
     }
 
-//    public List<ICellProvider> getAllAvailableStorage(StorageChannel channel, int interation) {
-//
-//    }
-
-
+    // public List<ICellProvider> getAllAvailableStorage(StorageChannel channel, int interation) {
+    //
+    // }
 
     private void checkInterfaceVsStorageBus(final TileEntity target, final ForgeDirection side) {
         IInterfaceHost achievement = null;

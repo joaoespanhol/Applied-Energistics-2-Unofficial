@@ -22,24 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import appeng.api.networking.IGridHost;
-import appeng.api.networking.IMachineSet;
-import appeng.api.storage.IMEInventory;
-import appeng.api.storage.IMEMonitor;
-import appeng.api.storage.data.IAEStack;
-import appeng.api.util.DimensionalCoord;
-import appeng.api.util.ItemSearchDTO;
-import appeng.container.implementations.ContainerWireless;
-import appeng.container.implementations.ContainerWirelessTerm;
-import appeng.core.sync.packets.PacketHighlightBlock;
-import appeng.me.MachineSet;
-import appeng.me.cache.NetworkMonitor;
-import appeng.me.storage.MEInventoryHandler;
-import appeng.parts.misc.PartStorageBus;
-import appeng.tile.storage.TileChest;
-import appeng.tile.storage.TileDrive;
-import appeng.util.IterationCounter;
-import com.ibm.icu.text.MessagePattern.Part;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -60,6 +42,7 @@ import appeng.api.config.Actionable;
 import appeng.api.config.SecurityPermissions;
 import appeng.api.implementations.guiobjects.IGuiItemObject;
 import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.energy.IEnergyGrid;
 import appeng.api.networking.energy.IEnergySource;
@@ -69,13 +52,17 @@ import appeng.api.networking.security.ISecurityGrid;
 import appeng.api.networking.security.PlayerSource;
 import appeng.api.parts.IPart;
 import appeng.api.storage.IMEInventoryHandler;
+import appeng.api.storage.IMEMonitor;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.api.storage.data.IAEStack;
+import appeng.api.util.ItemSearchDTO;
 import appeng.client.me.InternalSlotME;
 import appeng.client.me.SlotME;
 import appeng.container.guisync.GuiSync;
 import appeng.container.guisync.SyncData;
 import appeng.container.implementations.ContainerCellWorkbench;
 import appeng.container.implementations.ContainerUpgradeable;
+import appeng.container.implementations.ContainerWirelessTerm;
 import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.SlotCraftingMatrix;
 import appeng.container.slot.SlotCraftingTerm;
@@ -87,6 +74,7 @@ import appeng.container.slot.SlotPlayerHotBar;
 import appeng.container.slot.SlotPlayerInv;
 import appeng.core.AELog;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketHighlightBlock;
 import appeng.core.sync.packets.PacketInventoryAction;
 import appeng.core.sync.packets.PacketPartialItem;
 import appeng.core.sync.packets.PacketValueConfig;
@@ -94,8 +82,15 @@ import appeng.helpers.ICustomNameObject;
 import appeng.helpers.IPinsHandler;
 import appeng.helpers.InventoryAction;
 import appeng.items.materials.ItemMultiMaterial;
+import appeng.me.MachineSet;
+import appeng.me.cache.NetworkMonitor;
+import appeng.me.storage.MEInventoryHandler;
 import appeng.parts.automation.UpgradeInventory;
+import appeng.parts.misc.PartStorageBus;
+import appeng.tile.storage.TileChest;
+import appeng.tile.storage.TileDrive;
 import appeng.util.InventoryAdaptor;
+import appeng.util.IterationCounter;
 import appeng.util.Platform;
 import appeng.util.inv.AdaptorPlayerHand;
 import appeng.util.item.AEItemStack;
@@ -962,17 +957,14 @@ public abstract class AEBaseContainer extends Container {
                 }
             }
             case FIND_ITEMS -> {
-                final Class<? extends IGridHost>[] checkedMachineClasses = new Class[] {
-                        TileDrive.class,
-                        TileChest.class,
-                        PartStorageBus.class,
-                };
-                if(slotItem != null) {
+                final Class<? extends IGridHost>[] checkedMachineClasses = new Class[] { TileDrive.class,
+                        TileChest.class, PartStorageBus.class, };
+                if (slotItem != null) {
                     IGrid g = null;
-                    if(this instanceof ContainerWirelessTerm) {
+                    if (this instanceof ContainerWirelessTerm) {
                         ContainerWirelessTerm wireless = (ContainerWirelessTerm) this;
                         IMEMonitor monitor = wireless.getMonitor();
-                        if(monitor instanceof NetworkMonitor) {
+                        if (monitor instanceof NetworkMonitor) {
                             g = ((NetworkMonitor) monitor).getGrid();
                         }
                     } else {
@@ -988,19 +980,21 @@ public abstract class AEBaseContainer extends Container {
                         MachineSet masterList = null;
                         List<ItemSearchDTO> coords = new ArrayList<>();
 
-                        //Find all machines on net & subnets
-                        for(Class<? extends IGridHost> classType : checkedMachineClasses) {
-                            if(masterList == null) {
+                        // Find all machines on net & subnets
+                        for (Class<? extends IGridHost> classType : checkedMachineClasses) {
+                            if (masterList == null) {
                                 masterList = (MachineSet) g.getMachines(classType);
-                            } else if(classType == PartStorageBus.class) {
+                            } else if (classType == PartStorageBus.class) {
                                 MachineSet storageBuses = (MachineSet) g.getMachines(PartStorageBus.class);
-                                for(IGridNode machine : storageBuses) {
+                                for (IGridNode machine : storageBuses) {
                                     PartStorageBus bus = (PartStorageBus) machine.getMachine();
-                                    Map<Class<? extends IGridHost>, MachineSet> subnetMachines = bus.getDeepConnectedMachines(checkedMachineClasses, null);
-                                    if(subnetMachines == null) {
+                                    Map<Class<? extends IGridHost>, MachineSet> subnetMachines = bus
+                                            .getDeepConnectedMachines(checkedMachineClasses, null);
+                                    if (subnetMachines == null) {
                                         masterList.add(machine);
                                     }
-                                    for(Entry<Class<? extends IGridHost>, MachineSet> entry : subnetMachines.entrySet()) {
+                                    for (Entry<Class<? extends IGridHost>, MachineSet> entry : subnetMachines
+                                            .entrySet()) {
                                         masterList.addAll(entry.getValue());
                                     }
                                 }
@@ -1009,50 +1003,59 @@ public abstract class AEBaseContainer extends Container {
                             }
                         }
 
-                        for(IGridNode gridNode : masterList) {
+                        for (IGridNode gridNode : masterList) {
                             IGridHost machine = gridNode.getMachine();
-                            if(machine instanceof TileDrive) {
+                            if (machine instanceof TileDrive) {
                                 TileDrive innerMachine = (TileDrive) machine;
-                                for(int i = 0; i<innerMachine.getSizeInventory(); i++) {
+                                for (int i = 0; i < innerMachine.getSizeInventory(); i++) {
                                     IMEInventoryHandler cell = innerMachine.getCellInvBySlot(i);
-                                    if(cell == null || cell.getChannel() != slotItem.getChannel())
-                                        continue;
+                                    if (cell == null || cell.getChannel() != slotItem.getChannel()) continue;
 
                                     IAEStack result = cell.getAvailableItem(slotItem, IterationCounter.fetchNewId());
-                                    if (result == null)
-                                        continue;
+                                    if (result == null) continue;
 
-                                    coords.add(new ItemSearchDTO(innerMachine.getLocation(), result,
-                                            innerMachine.getCustomName(), i,
-                                            innerMachine.getForward(), innerMachine.getUp()));
+                                    coords.add(
+                                            new ItemSearchDTO(
+                                                    innerMachine.getLocation(),
+                                                    result,
+                                                    innerMachine.getCustomName(),
+                                                    i,
+                                                    innerMachine.getForward(),
+                                                    innerMachine.getUp()));
                                 }
-//                                    List<IMEInventoryHandler> cells = innerMachine.getCellArray(slotItem.getChannel());
-//                                    for (IMEInventoryHandler cell : cells) {
-//                                        IAEStack result = cell.getAvailableItem(slotItem, IterationCounter.fetchNewId());
-//                                        if (result == null)
-//                                            continue;
-//
-//                                        coords.add(new ItemSearchDTO(innerMachine.getLocation(), result,
-//                                                innerMachine.getCustomName(), cell.getSlot(),
-//                                                innerMachine.getForward()));
-//                                    }
+                                // List<IMEInventoryHandler> cells = innerMachine.getCellArray(slotItem.getChannel());
+                                // for (IMEInventoryHandler cell : cells) {
+                                // IAEStack result = cell.getAvailableItem(slotItem, IterationCounter.fetchNewId());
+                                // if (result == null)
+                                // continue;
+                                //
+                                // coords.add(new ItemSearchDTO(innerMachine.getLocation(), result,
+                                // innerMachine.getCustomName(), cell.getSlot(),
+                                // innerMachine.getForward()));
+                                // }
                             }
-                            if(machine instanceof PartStorageBus) {
+                            if (machine instanceof PartStorageBus) {
                                 PartStorageBus innerMachine = (PartStorageBus) machine;
                                 MEInventoryHandler handler = innerMachine.getInternalHandler();
                                 IAEStack result = handler.getAvailableItem(slotItem, IterationCounter.fetchNewId());
-                                if (result == null)
-                                    continue;
-                                coords.add(new ItemSearchDTO(innerMachine.getLocation(), result, innerMachine.getCustomName()));
+                                if (result == null) continue;
+                                coords.add(
+                                        new ItemSearchDTO(
+                                                innerMachine.getLocation(),
+                                                result,
+                                                innerMachine.getCustomName()));
                             }
-                            if(machine instanceof TileChest) {
+                            if (machine instanceof TileChest) {
                                 TileChest innerMachine = (TileChest) machine;
                                 try {
                                     IMEInventoryHandler handler = innerMachine.getHandler(slotItem.getChannel());
                                     IAEStack result = handler.getAvailableItem(slotItem, IterationCounter.fetchNewId());
-                                    if(result == null)
-                                        continue;
-                                    coords.add(new ItemSearchDTO(innerMachine.getLocation(), result, innerMachine.getCustomName()));
+                                    if (result == null) continue;
+                                    coords.add(
+                                            new ItemSearchDTO(
+                                                    innerMachine.getLocation(),
+                                                    result,
+                                                    innerMachine.getCustomName()));
                                 } catch (Exception e) {
 
                                 }
@@ -1086,16 +1089,12 @@ public abstract class AEBaseContainer extends Container {
     protected void highLightBlocks(final EntityPlayerMP p, List<ItemSearchDTO> coords) {
         if (Platform.isServer()) {
             try {
-                NetworkHandler.instance.sendTo(
-                        new PacketHighlightBlock(
-                                coords),
-                        p);
+                NetworkHandler.instance.sendTo(new PacketHighlightBlock(coords), p);
             } catch (final IOException e) {
                 AELog.debug(e);
             }
         }
     }
-
 
     private ItemStack shiftStoreItem(final ItemStack input) {
         if (this.getPowerSource() == null || this.getCellInventory() == null) {

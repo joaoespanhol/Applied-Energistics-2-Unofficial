@@ -126,7 +126,6 @@ public class AppEngPacketHandlerBase {
         PACKET_PINS_UPDATE(PacketPinsUpdate.class),
         PACKET_HIGHLIGHT_BLOCKS(PacketHighlightBlock.class);
 
-
         private final Class<? extends AppEngPacket> packetClass;
         private final Constructor<? extends AppEngPacket> packetConstructor;
 

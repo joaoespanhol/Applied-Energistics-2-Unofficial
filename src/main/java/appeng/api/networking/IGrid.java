@@ -13,10 +13,10 @@
 
 package appeng.api.networking;
 
+import java.util.UUID;
+
 import appeng.api.networking.events.MENetworkEvent;
 import appeng.api.util.IReadOnlyCollection;
-
-import java.util.UUID;
 
 /**
  * Gives you access to Grid based information.

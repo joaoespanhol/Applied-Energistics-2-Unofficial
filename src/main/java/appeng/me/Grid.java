@@ -289,7 +289,7 @@ public class Grid implements IGrid {
 
     @Override
     public boolean equals(Object o) {
-        if(o instanceof Grid) {
+        if (o instanceof Grid) {
             return this.id.equals(((Grid) o).id);
         }
         return false;

@@ -1,11 +1,12 @@
 package appeng.api.util;
 
-import appeng.api.storage.data.IAEStack;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.ArrayList;
-import java.util.List;
+import appeng.api.storage.data.IAEStack;
 
 public class ItemSearchDTO {
 
@@ -16,7 +17,8 @@ public class ItemSearchDTO {
     public ForgeDirection up;
     public String name;
 
-    public ItemSearchDTO(DimensionalCoord coord, IAEStack items, String name, int cellSlot, ForgeDirection forward, ForgeDirection up) {
+    public ItemSearchDTO(DimensionalCoord coord, IAEStack items, String name, int cellSlot, ForgeDirection forward,
+            ForgeDirection up) {
         this.coord = coord;
         this.cellSlot = cellSlot;
         this.itemCount = items.getStackSize();
@@ -26,7 +28,7 @@ public class ItemSearchDTO {
     }
 
     public ItemSearchDTO(DimensionalCoord coord, IAEStack items, String name) {
-        this(coord, items, name,-1, ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);
+        this(coord, items, name, -1, ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);
     }
 
     public ItemSearchDTO(final NBTTagCompound data) {
@@ -78,7 +80,5 @@ public class ItemSearchDTO {
         this.forward = ForgeDirection.valueOf(data.getString("f"));
         this.up = ForgeDirection.valueOf(data.getString("u"));
     }
-
-
 
 }

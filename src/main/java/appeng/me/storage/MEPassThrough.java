@@ -21,7 +21,6 @@ import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.storage.data.IItemList;
-import appeng.api.util.DimensionalCoord;
 import appeng.me.cache.NetworkMonitor;
 
 public class MEPassThrough<T extends IAEStack<T>> implements IMEInventoryHandler<T> {
@@ -40,10 +39,11 @@ public class MEPassThrough<T extends IAEStack<T>> implements IMEInventoryHandler
 
     /**
      * Get Connected grid if applicable
+     * 
      * @return Connected grid
      */
     public IGrid getGrid() {
-        if(this.internal instanceof NetworkMonitor) {
+        if (this.internal instanceof NetworkMonitor) {
             NetworkMonitor nm = (NetworkMonitor) this.internal;
             return nm.getGrid();
         }
