@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -576,8 +577,15 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
                         PartStorageBus inner = (PartStorageBus) sub.getMachine();
                          Map<Class<? extends IGridHost>, MachineSet> recursiveMachines = inner.getDeepConnectedMachines(classes, gridTracking);
                         //Merge result with parent
-                         if(recursiveMachines != null)
-                            machines.putAll(recursiveMachines);
+                         if(recursiveMachines != null) {
+                             for(Entry<Class<? extends IGridHost>, MachineSet> m : recursiveMachines.entrySet()) {
+                                 if(machines.containsKey(m.getKey())) {
+                                     machines.get(m.getKey()).addAll(m.getValue());
+                                 } else {
+                                     machines.put(m.getKey(), m.getValue());
+                                 }
+                             }
+                         }
                      }
                  } else { //Add All other types
                      machines.put(machineType, subMachines);

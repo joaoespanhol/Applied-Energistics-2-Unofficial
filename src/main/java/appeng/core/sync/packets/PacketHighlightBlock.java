@@ -11,6 +11,7 @@
 package appeng.core.sync.packets;
 
 import appeng.api.util.DimensionalCoord;
+import appeng.api.util.ItemSearchDTO;
 import appeng.client.ClientHelper;
 import appeng.client.render.BlockPosHighlighter;
 import appeng.client.render.effects.LightningFX;
@@ -34,10 +35,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PacketHighlightBlock extends AppEngPacket {
 
-    List<DimensionalCoord> coords;
+    List<ItemSearchDTO> coords;
 
     // automatic.
     public PacketHighlightBlock(final ByteBuf stream) throws IOException {
@@ -46,17 +48,17 @@ public class PacketHighlightBlock extends AppEngPacket {
         stream.readBytes(tagBytes);
         final ByteArrayInputStream byteArray = new ByteArrayInputStream(tagBytes);
         NBTTagCompound nbt = CompressedStreamTools.read(new DataInputStream(byteArray));
-        coords = DimensionalCoord.readAsListFromNBT(nbt);
+        coords = ItemSearchDTO.readAsListFromNBT(nbt);
     }
 
     // api
-    public PacketHighlightBlock(List<DimensionalCoord> coords) throws IOException {
+    public PacketHighlightBlock(List<ItemSearchDTO> coords) throws IOException {
         this.coords = coords;
 
         final ByteBuf buffer = Unpooled.buffer();
         buffer.writeInt(this.getPacketID());
         NBTTagCompound tag = new NBTTagCompound();
-        DimensionalCoord.writeListToNBT(tag, coords);
+        ItemSearchDTO.writeListToNBT(tag, coords);
 
         final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         final DataOutputStream data = new DataOutputStream(bytes);
@@ -76,12 +78,11 @@ public class PacketHighlightBlock extends AppEngPacket {
     public void clientPacketData(final INetworkInfo network, final AppEngPacket packet, final EntityPlayer player) {
         try {
             if (Platform.isClient()) {
-                BlockPosHighlighter.highlightBlocks(
+                BlockPosHighlighter.highlightStorage(
                         player,
                         coords,
-                        "",
-                        PlayerMessages.MachineHighlighted.getUnlocalized(),
-                        PlayerMessages.MachineInOtherDim.getUnlocalized());
+                        PlayerMessages.StorageHighlighted.getUnlocalized(),
+                        PlayerMessages.StorageInOtherDim.getUnlocalized());
             }
         } catch (final Exception ignored) {}
     }
