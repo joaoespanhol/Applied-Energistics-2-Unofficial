@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 import appeng.api.AEApi;
 import appeng.api.networking.IGrid;
@@ -34,6 +35,8 @@ import appeng.util.ReadOnlyCollection;
 
 public class Grid implements IGrid {
 
+    private final UUID id;
+
     private final NetworkEventBus eventBus = new NetworkEventBus();
     private final Map<Class<? extends IGridHost>, MachineSet> machines = new HashMap<>();
     private final Map<Class<? extends IGridCache>, IGridCache> caches = new HashMap<>();
@@ -47,6 +50,7 @@ public class Grid implements IGrid {
 
     public Grid(final GridNode center) {
         this.pivot = center;
+        this.id = UUID.randomUUID();
 
         final Map<Class<? extends IGridCache>, IGridCache> myCaches = AEApi.instance().registries().gridCache()
                 .createCacheInstance(this);
@@ -222,6 +226,11 @@ public class Grid implements IGrid {
     }
 
     @Override
+    public UUID getId() {
+        return this.id;
+    }
+
+    @Override
     public IGridNode getPivot() {
         return this.pivot;
     }
@@ -276,5 +285,13 @@ public class Grid implements IGrid {
     public void setImportantFlag(final int i, final boolean publicHasPower) {
         final int flag = 1 << i;
         this.priority = (this.priority & ~flag) | (publicHasPower ? flag : 0);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof Grid) {
+            return this.id.equals(((Grid) o).id);
+        }
+        return false;
     }
 }

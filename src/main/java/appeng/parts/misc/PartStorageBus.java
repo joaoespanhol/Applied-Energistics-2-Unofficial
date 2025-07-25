@@ -13,11 +13,22 @@ package appeng.parts.misc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridHost;
+import appeng.api.networking.IMachineSet;
+import appeng.api.util.DimensionalCoord;
+import appeng.me.MachineSet;
+import appeng.me.storage.MEPassThrough;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -523,6 +534,84 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         Platform.postListChanges(before, after, this, this.mySrc);
     }
 
+    /**
+     * If the storage bus is connected to an interface, ie. subnet, recursively search that subnet and all subsequent
+     * subnets and return all machines found.
+     * Will return null if not connected to a subnet
+     * @param classes List of machine classes to search (grid.getMachineClasses() to see available on current grid)
+     * @param gridTracking Tracker to prevent searching same connected grid twice, can set as null
+     * @return Map of machine types and machines, flattening subnets
+     */
+    @SuppressWarnings("unchecked")
+    public Map<Class<? extends IGridHost>, MachineSet> getDeepConnectedMachines(Class<? extends IGridHost>[] classes, Set<UUID> gridTracking) {
+        try {
+            IGrid grid = this.getProxy().getGrid();
+            if(gridTracking == null) {
+                gridTracking = new HashSet<UUID>();
+                gridTracking.add(grid.getId());
+            } else if(gridTracking.contains(grid.getId())) {
+                return null;
+            } else {
+                gridTracking.add(grid.getId());
+            }
+        } catch (GridAccessException e) {
+            return null;
+        }
+
+        Map<Class<? extends IGridHost>, MachineSet> machines = new HashMap<>();
+        IMEInventory inv = this.getConnectedInventory();
+
+        if(inv instanceof MEPassThrough) {
+            MEPassThrough passThrough = (MEPassThrough) inv;
+            System.out.println();
+            IGrid grid = passThrough.getGrid();
+            if (gridTracking.contains(grid.getId())) {
+                return null; //Grid loop check
+            }
+
+            for (Class<? extends IGridHost> machineType : classes) {
+                 MachineSet subMachines = (MachineSet) grid.getMachines(machineType);
+                 if(machineType == PartStorageBus.class) { //Recursive Check Storage Buses
+                     for(IGridNode sub : subMachines) {
+                        PartStorageBus inner = (PartStorageBus) sub.getMachine();
+                         Map<Class<? extends IGridHost>, MachineSet> recursiveMachines = inner.getDeepConnectedMachines(classes, gridTracking);
+                        //Merge result with parent
+                         if(recursiveMachines != null)
+                            machines.putAll(recursiveMachines);
+                     }
+                 } else { //Add All other types
+                     machines.put(machineType, subMachines);
+                 }
+            }
+
+        } else {
+            MachineSet nodes = machines.get(PartStorageBus.class);
+            if (nodes == null) {
+                nodes = new MachineSet(PartStorageBus.class);
+                machines.put(PartStorageBus.class, nodes);
+            }
+            nodes.add(this.getGridNode());
+        }
+        return machines;
+    }
+
+    private IMEInventory getConnectedInventory() {
+        final TileEntity self = this.getHost().getTile();
+        final TileEntity target = self.getWorldObj().getTileEntity(
+                self.xCoord + this.getSide().offsetX,
+                self.yCoord + this.getSide().offsetY,
+                self.zCoord + this.getSide().offsetZ);
+
+        if (target != null) {
+            final IExternalStorageHandler esh = AEApi.instance().registries().externalStorage()
+                    .getHandler(target, this.getSide().getOpposite(), StorageChannel.ITEMS, this.mySrc);
+            if (esh != null) {
+                return esh.getInventory(target, this.getSide().getOpposite(), StorageChannel.ITEMS, this.mySrc);
+            }
+        }
+        return null;
+    }
+
     public MEInventoryHandler<IAEItemStack> getInternalHandler() {
         if (this.cached) {
             return this.handler;
@@ -640,6 +729,12 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
 
         return this.handler;
     }
+
+//    public List<ICellProvider> getAllAvailableStorage(StorageChannel channel, int interation) {
+//
+//    }
+
+
 
     private void checkInterfaceVsStorageBus(final TileEntity target, final ForgeDirection side) {
         IInterfaceHost achievement = null;

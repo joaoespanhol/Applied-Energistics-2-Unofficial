@@ -19,7 +19,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import appeng.api.networking.IGridHost;
+import appeng.api.networking.IMachineSet;
+import appeng.api.storage.IMEInventory;
+import appeng.api.storage.data.IAEStack;
+import appeng.api.util.DimensionalCoord;
+import appeng.core.sync.packets.PacketHighlightBlock;
+import appeng.me.MachineSet;
+import appeng.me.cache.NetworkMonitor;
+import appeng.me.storage.MEInventoryHandler;
+import appeng.parts.misc.PartStorageBus;
+import appeng.tile.storage.TileDrive;
+import appeng.util.IterationCounter;
+import com.ibm.icu.text.MessagePattern.Part;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -941,6 +956,69 @@ public abstract class AEBaseContainer extends Container {
                     }
                 }
             }
+            case FIND_ITEMS -> {
+                final Class<? extends IGridHost>[] checkedMachineClasses = new Class[] {
+                        TileDrive.class,
+                        PartStorageBus.class
+                };
+                if(slotItem != null) {
+                    final IActionHost host = this.getActionHost();
+
+                    if (host != null) {
+                        final IGridNode gn = host.getActionableNode();
+                        if (gn != null) {
+                            final IGrid g = gn.getGrid();
+                            MachineSet masterList = null;
+                            List<DimensionalCoord> coords = new ArrayList<>();
+
+                            //Find all machines on net & subnets
+                            for(Class<? extends IGridHost> classType : checkedMachineClasses) {
+                                if(masterList == null) {
+                                    masterList = (MachineSet) g.getMachines(classType);
+                                } else if(classType == PartStorageBus.class) {
+                                    MachineSet storageBuses = (MachineSet) g.getMachines(PartStorageBus.class);
+                                    for(IGridNode machine : storageBuses) {
+                                        PartStorageBus bus = (PartStorageBus) machine.getMachine();
+                                        Map<Class<? extends IGridHost>, MachineSet> subnetMachines = bus.getDeepConnectedMachines(checkedMachineClasses, null);
+                                        if(subnetMachines == null) {
+                                            masterList.add(machine);
+                                        }
+                                        for(Entry<Class<? extends IGridHost>, MachineSet> entry : subnetMachines.entrySet()) {
+                                            masterList.addAll(entry.getValue());
+                                        }
+                                    }
+                                } else {
+                                    masterList.addAll((MachineSet) g.getMachines(classType));
+                                }
+                            }
+
+                            for(IGridNode gridNode : masterList) {
+                                IGridHost machine = gridNode.getMachine();
+                                if(machine instanceof TileDrive) {
+                                    TileDrive innerMachine = (TileDrive) machine;
+                                    List<IMEInventoryHandler> cells = innerMachine.getCellArray(slotItem.getChannel());
+                                    for (IMEInventoryHandler cell : cells) {
+                                        IAEStack result = cell.getAvailableItem(slotItem, IterationCounter.fetchNewId());
+                                        if (result == null)
+                                            continue;
+                                        coords.add(innerMachine.getLocation());
+                                    }
+                                }
+                                if(machine instanceof PartStorageBus) {
+                                    PartStorageBus innerMachine = (PartStorageBus) machine;
+                                    MEInventoryHandler handler = innerMachine.getInternalHandler();
+                                    IAEStack result = handler.getAvailableItem(slotItem, IterationCounter.fetchNewId());
+                                    if (result == null)
+                                        continue;
+                                    coords.add(innerMachine.getLocation());
+                                }
+                            }
+
+                            this.highLightBlocks(player, coords);
+                        }
+                    }
+                }
+            }
             default -> {}
         }
     }
@@ -959,6 +1037,20 @@ public abstract class AEBaseContainer extends Container {
             }
         }
     }
+
+    protected void highLightBlocks(final EntityPlayerMP p, List<DimensionalCoord> coords) {
+        if (Platform.isServer()) {
+            try {
+                NetworkHandler.instance.sendTo(
+                        new PacketHighlightBlock(
+                                coords),
+                        p);
+            } catch (final IOException e) {
+                AELog.debug(e);
+            }
+        }
+    }
+
 
     private ItemStack shiftStoreItem(final ItemStack input) {
         if (this.getPowerSource() == null || this.getCellInventory() == null) {

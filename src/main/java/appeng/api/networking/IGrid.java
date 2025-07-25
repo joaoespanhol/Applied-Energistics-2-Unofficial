@@ -16,6 +16,8 @@ package appeng.api.networking;
 import appeng.api.networking.events.MENetworkEvent;
 import appeng.api.util.IReadOnlyCollection;
 
+import java.util.UUID;
+
 /**
  * Gives you access to Grid based information.
  * <p>
@@ -72,6 +74,11 @@ public interface IGrid {
      * @return true if the last node has been removed from the grid.
      */
     boolean isEmpty();
+
+    /**
+     * @return unique id generated on initialization of the grid
+     */
+    UUID getId();
 
     /**
      * @return the node considered the pivot point of the grid.
