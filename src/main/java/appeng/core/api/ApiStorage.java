@@ -12,6 +12,7 @@ package appeng.core.api;
 
 import java.io.IOException;
 
+import appeng.util.item.ItemImmutableList;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidStack;
@@ -60,6 +61,12 @@ public class ApiStorage implements IStorageHelper {
     @Override
     public IItemList<IAEItemStack> createItemFilterList() {
         return new ItemFilterList();
+    }
+
+    @SafeVarargs
+    @Override
+    public final IItemList<IAEItemStack> createItemImmutableList(IItemList<IAEItemStack>... itemLists) {
+        return new ItemImmutableList(itemLists);
     }
 
     @Override
