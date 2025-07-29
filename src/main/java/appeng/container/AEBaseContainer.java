@@ -19,8 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -36,6 +34,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.Level;
 
 import appeng.api.AEApi;
 import appeng.api.config.Actionable;
@@ -53,6 +52,7 @@ import appeng.api.networking.security.PlayerSource;
 import appeng.api.parts.IPart;
 import appeng.api.storage.IMEInventoryHandler;
 import appeng.api.storage.IMEMonitor;
+import appeng.api.storage.StorageChannel;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IAEStack;
 import appeng.api.util.ItemSearchDTO;
@@ -82,7 +82,9 @@ import appeng.helpers.ICustomNameObject;
 import appeng.helpers.IPinsHandler;
 import appeng.helpers.InventoryAction;
 import appeng.items.materials.ItemMultiMaterial;
+import appeng.me.Grid;
 import appeng.me.MachineSet;
+import appeng.me.NetworkList;
 import appeng.me.cache.NetworkMonitor;
 import appeng.me.storage.MEInventoryHandler;
 import appeng.parts.automation.UpgradeInventory;
@@ -961,6 +963,7 @@ public abstract class AEBaseContainer extends Container {
                         TileChest.class, PartStorageBus.class, };
                 if (slotItem != null) {
                     IGrid g = null;
+                    // Pull grid
                     if (this instanceof ContainerWirelessTerm) {
                         ContainerWirelessTerm wireless = (ContainerWirelessTerm) this;
                         IMEMonitor monitor = wireless.getMonitor();
@@ -980,33 +983,35 @@ public abstract class AEBaseContainer extends Container {
                         MachineSet masterList = null;
                         List<ItemSearchDTO> coords = new ArrayList<>();
 
-                        // Find all machines on net & subnets
-                        for (Class<? extends IGridHost> classType : checkedMachineClasses) {
-                            if (masterList == null) {
-                                masterList = (MachineSet) g.getMachines(classType);
-                            } else if (classType == PartStorageBus.class) {
-                                MachineSet storageBuses = (MachineSet) g.getMachines(PartStorageBus.class);
-                                for (IGridNode machine : storageBuses) {
-                                    PartStorageBus bus = (PartStorageBus) machine.getMachine();
-                                    Map<Class<? extends IGridHost>, MachineSet> subnetMachines = bus
-                                            .getDeepConnectedMachines(checkedMachineClasses, null);
-                                    if (subnetMachines == null) {
-                                        masterList.add(machine);
-                                    }
-                                    for (Entry<Class<? extends IGridHost>, MachineSet> entry : subnetMachines
-                                            .entrySet()) {
-                                        masterList.addAll(entry.getValue());
+                        List<IGridNode> machineList = new ArrayList<>();
+                        Class<? extends IGridHost> classType = null;
+                        if (slotItem.getChannel() == StorageChannel.ITEMS) {
+                            classType = PartStorageBus.class;
+                        } else if (slotItem.getChannel() == StorageChannel.FLUIDS) {
+                            // TODO Support Fluids for item searching
+                        }
+                        // Retrieve list of all grids
+                        NetworkList grids = g.getAllRecursiveGridConnections(classType);
+                        AELog.log(Level.ERROR, "Found " + grids.size() + " grids");
+                        if (grids != null) {
+                            for (Grid subnet : grids) {
+                                for (Class<? extends IGridHost> type : checkedMachineClasses) {
+                                    MachineSet subMachines = (MachineSet) subnet.getMachines(type);
+                                    AELog.log(
+                                            Level.ERROR,
+                                            "Grid: " + subnet.getId() + " - " + subMachines.size() + " machines");
+                                    if (subMachines != null && !subMachines.isEmpty()) {
+                                        machineList.addAll(subMachines);
                                     }
                                 }
-                            } else {
-                                masterList.addAll((MachineSet) g.getMachines(classType));
                             }
                         }
 
-                        for (IGridNode gridNode : masterList) {
+                        for (IGridNode gridNode : machineList) {
                             IGridHost machine = gridNode.getMachine();
-                            if (machine instanceof TileDrive) {
-                                TileDrive innerMachine = (TileDrive) machine;
+                            AELog.log(Level.ERROR, "Machine: " + machine.getClass().getName());
+
+                            if (machine instanceof TileDrive innerMachine) {
                                 for (int i = 0; i < innerMachine.getSizeInventory(); i++) {
                                     IMEInventoryHandler cell = innerMachine.getCellInvBySlot(i);
                                     if (cell == null || cell.getChannel() != slotItem.getChannel()) continue;
@@ -1023,20 +1028,13 @@ public abstract class AEBaseContainer extends Container {
                                                     innerMachine.getForward(),
                                                     innerMachine.getUp()));
                                 }
-                                // List<IMEInventoryHandler> cells = innerMachine.getCellArray(slotItem.getChannel());
-                                // for (IMEInventoryHandler cell : cells) {
-                                // IAEStack result = cell.getAvailableItem(slotItem, IterationCounter.fetchNewId());
-                                // if (result == null)
-                                // continue;
-                                //
-                                // coords.add(new ItemSearchDTO(innerMachine.getLocation(), result,
-                                // innerMachine.getCustomName(), cell.getSlot(),
-                                // innerMachine.getForward()));
-                                // }
                             }
-                            if (machine instanceof PartStorageBus) {
-                                PartStorageBus innerMachine = (PartStorageBus) machine;
+                            if (machine instanceof PartStorageBus innerMachine) {
+                                if (innerMachine.getConnectedGrid() != null) { // Check if storageBus is subnet
+                                    continue;
+                                }
                                 MEInventoryHandler handler = innerMachine.getInternalHandler();
+                                if (handler == null) continue;
                                 IAEStack result = handler.getAvailableItem(slotItem, IterationCounter.fetchNewId());
                                 if (result == null) continue;
                                 coords.add(

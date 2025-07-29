@@ -616,6 +616,9 @@ public abstract class AEBaseGui extends GuiContainer {
                 NetworkHandler.instance.sendToServer(p);
             }
 
+            if (action.equals(InventoryAction.FIND_ITEMS)) {
+                this.mc.thePlayer.closeScreen();
+            }
             return;
         }
 

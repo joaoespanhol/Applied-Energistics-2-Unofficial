@@ -15,20 +15,23 @@ public class ItemSearchDTO {
     public long itemCount;
     public ForgeDirection forward;
     public ForgeDirection up;
-    public String name;
+    public String blockName;
+    public String itemName;
 
-    public ItemSearchDTO(DimensionalCoord coord, IAEStack items, String name, int cellSlot, ForgeDirection forward,
+    public ItemSearchDTO(DimensionalCoord coord, IAEStack items, String blockName, int cellSlot, ForgeDirection forward,
             ForgeDirection up) {
         this.coord = coord;
         this.cellSlot = cellSlot;
         this.itemCount = items.getStackSize();
-        this.name = name;
+        this.itemName = items.getName();
+        if (this.itemName == null) this.itemName = " ";
+        this.blockName = blockName;
         this.forward = forward;
         this.up = up;
     }
 
-    public ItemSearchDTO(DimensionalCoord coord, IAEStack items, String name) {
-        this(coord, items, name, -1, ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);
+    public ItemSearchDTO(DimensionalCoord coord, IAEStack items, String blockName) {
+        this(coord, items, blockName, -1, ForgeDirection.UNKNOWN, ForgeDirection.UNKNOWN);
     }
 
     public ItemSearchDTO(final NBTTagCompound data) {
@@ -42,7 +45,8 @@ public class ItemSearchDTO {
         data.setInteger("z", coord.z);
         data.setInteger("s", cellSlot);
         data.setLong("c", itemCount);
-        data.setString("n", name);
+        data.setString("n", blockName);
+        data.setString("in", itemName);
         data.setString("f", this.forward.name());
         data.setString("u", this.up.name());
     }
@@ -73,7 +77,8 @@ public class ItemSearchDTO {
         int x = data.getInteger("x");
         int y = data.getInteger("y");
         int z = data.getInteger("z");
-        this.name = data.getString("n");
+        this.blockName = data.getString("n");
+        this.itemName = data.getString("in");
         this.itemCount = data.getLong("c");
         this.cellSlot = data.getInteger("s");
         this.coord = new DimensionalCoord(x, y, z, dim);

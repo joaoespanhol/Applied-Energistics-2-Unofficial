@@ -89,8 +89,9 @@ public class BlockPosHighlighter {
                 player.addChatMessage(
                         new ChatComponentTranslation(
                                 foundMsg,
-                                storage.name,
+                                storage.blockName,
                                 storage.itemCount,
+                                storage.itemName,
                                 storage.coord.x,
                                 storage.coord.y,
                                 storage.coord.z));
@@ -98,8 +99,9 @@ public class BlockPosHighlighter {
                 player.addChatMessage(
                         new ChatComponentTranslation(
                                 wrongDimMsg,
-                                storage.name,
+                                storage.blockName,
                                 storage.itemCount,
+                                storage.itemName,
                                 storage.coord.getDimension()));
             }
         }
