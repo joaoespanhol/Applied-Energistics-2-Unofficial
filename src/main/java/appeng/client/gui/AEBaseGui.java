@@ -538,7 +538,9 @@ public abstract class AEBaseGui extends GuiContainer {
                 }
                 case 1 -> action = ctrlDown == 1 ? InventoryAction.PICKUP_SINGLE : InventoryAction.SHIFT_CLICK;
                 case 3 -> { // creative dupe:
-                    if (player.capabilities.isCreativeMode) {
+                    if (isCtrlKeyDown()) {
+                        action = InventoryAction.FIND_ITEMS;
+                    } else if (player.capabilities.isCreativeMode) {
                         action = InventoryAction.CREATIVE_DUPLICATE;
                     }
                 } // drop item:
@@ -594,7 +596,9 @@ public abstract class AEBaseGui extends GuiContainer {
                 }
                 case 3 -> { // creative dupe:
                     stack = ((SlotME) slot).getAEStack();
-                    if (stack != null && stack.isCraftable()) {
+                    if (isCtrlKeyDown()) {
+                        action = InventoryAction.FIND_ITEMS;
+                    } else if (stack != null && stack.isCraftable()) {
                         action = InventoryAction.AUTO_CRAFT;
                     } else if (player.capabilities.isCreativeMode) {
                         final IAEItemStack slotItem = ((SlotME) slot).getAEStack();
@@ -612,6 +616,9 @@ public abstract class AEBaseGui extends GuiContainer {
                 NetworkHandler.instance.sendToServer(p);
             }
 
+            if (action.equals(InventoryAction.FIND_ITEMS)) {
+                this.mc.thePlayer.closeScreen();
+            }
             return;
         }
 

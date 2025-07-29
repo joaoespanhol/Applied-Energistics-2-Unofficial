@@ -12,10 +12,12 @@ package appeng.me;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 import appeng.api.AEApi;
 import appeng.api.networking.IGrid;
@@ -30,9 +32,12 @@ import appeng.api.util.IReadOnlyCollection;
 import appeng.core.worlddata.WorldData;
 import appeng.hooks.TickHandler;
 import appeng.me.cache.CraftingGridCache;
+import appeng.parts.misc.PartStorageBus;
 import appeng.util.ReadOnlyCollection;
 
 public class Grid implements IGrid {
+
+    private final UUID id;
 
     private final NetworkEventBus eventBus = new NetworkEventBus();
     private final Map<Class<? extends IGridHost>, MachineSet> machines = new HashMap<>();
@@ -47,6 +52,7 @@ public class Grid implements IGrid {
 
     public Grid(final GridNode center) {
         this.pivot = center;
+        this.id = UUID.randomUUID();
 
         final Map<Class<? extends IGridCache>, IGridCache> myCaches = AEApi.instance().registries().gridCache()
                 .createCacheInstance(this);
@@ -222,6 +228,11 @@ public class Grid implements IGrid {
     }
 
     @Override
+    public UUID getId() {
+        return this.id;
+    }
+
+    @Override
     public IGridNode getPivot() {
         return this.pivot;
     }
@@ -276,5 +287,69 @@ public class Grid implements IGrid {
     public void setImportantFlag(final int i, final boolean publicHasPower) {
         final int flag = 1 << i;
         this.priority = (this.priority & ~flag) | (publicHasPower ? flag : 0);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Grid) {
+            return this.id.equals(((Grid) o).id);
+        }
+        return false;
+    }
+
+    @Override
+    public NetworkList getGridConnections(Class<? extends IGridHost> accessType) {
+        NetworkList result = new NetworkList();
+        result.add(this);
+        HashMap<IGridHost, IGrid> gridConnections = this.getSubnetGridMap(accessType);
+        if (gridConnections == null) return result;
+        for (Entry<IGridHost, IGrid> entry : gridConnections.entrySet()) {
+            if (accessType.isInstance(entry.getKey())) {
+                if (!result.contains((Grid) entry.getValue())) result.add((Grid) entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public NetworkList getAllRecursiveGridConnections(Class<? extends IGridHost> accessType) {
+        if (accessType == null) return null;
+        return getAllRecursiveGridConnections(accessType, new HashSet<UUID>());
+    }
+
+    private HashMap<IGridHost, IGrid> getSubnetGridMap(Class<? extends IGridHost> accessType) {
+        IMachineSet storageBuses = this.getMachines(PartStorageBus.class);
+        HashMap<IGridHost, IGrid> gridConnections = new HashMap<>();
+        for (IGridNode bus : storageBuses) {
+            IGridHost machine = bus.getMachine();
+            if (machine instanceof PartStorageBus sb) { // TODO Support partFluidStorageBus
+                IGrid connectedGrid = sb.getConnectedGrid();
+                if (connectedGrid != null) gridConnections.put(sb, sb.getConnectedGrid());
+            }
+        }
+        return gridConnections;
+    }
+
+    private NetworkList getAllRecursiveGridConnections(Class<? extends IGridHost> accessType, Set<UUID> visited) {
+        NetworkList result = this.getGridConnections(accessType);
+        HashMap<IGridHost, IGrid> gridConnections = this.getSubnetGridMap(accessType);
+        for (Entry<IGridHost, IGrid> entry : gridConnections.entrySet()) {
+            if (accessType.isInstance(entry.getKey())) {
+                Grid innerGrid = (Grid) entry.getValue();
+
+                if (innerGrid == null || visited.contains(innerGrid.getId())) {
+                    continue; // skip to avoid infinite loop
+                }
+
+                visited.add(innerGrid.getId());
+                if (!result.contains(innerGrid)) result.add(innerGrid);
+
+                NetworkList subResult = innerGrid.getAllRecursiveGridConnections(accessType, visited);
+                result.mergeDistinct(subResult);
+            }
+        }
+
+        return result;
     }
 }
