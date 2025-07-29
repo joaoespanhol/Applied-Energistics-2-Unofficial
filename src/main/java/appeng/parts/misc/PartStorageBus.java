@@ -13,13 +13,7 @@ package appeng.parts.misc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -42,7 +36,6 @@ import appeng.api.config.StorageFilter;
 import appeng.api.config.Upgrades;
 import appeng.api.config.YesNo;
 import appeng.api.networking.IGrid;
-import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.events.MENetworkCellArrayUpdate;
 import appeng.api.networking.events.MENetworkChannelsChanged;
@@ -79,7 +72,6 @@ import appeng.helpers.IPriorityHost;
 import appeng.helpers.Reflected;
 import appeng.integration.IntegrationType;
 import appeng.me.GridAccessException;
-import appeng.me.MachineSet;
 import appeng.me.storage.MEInventoryHandler;
 import appeng.me.storage.MEMonitorIInventory;
 import appeng.me.storage.MEMonitorPassThrough;
@@ -533,7 +525,6 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         Platform.postListChanges(before, after, this, this.mySrc);
     }
 
-
     /**
      *
      * @return Subnet grid if found, null if not connected to a grid different from self
@@ -553,7 +544,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         return null;
     }
 
-    //Looks for interfaces for subnet
+    // Looks for interfaces for subnet
     private IMEInventory getConnectedInventory() {
         final TileEntity self = this.getHost().getTile();
         final TileEntity target = self.getWorldObj().getTileEntity(
