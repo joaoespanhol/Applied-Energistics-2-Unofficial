@@ -29,6 +29,7 @@ import appeng.api.networking.IMachineSet;
 import appeng.api.networking.events.MENetworkEvent;
 import appeng.api.networking.events.MENetworkPostCacheConstruction;
 import appeng.api.util.IReadOnlyCollection;
+import appeng.core.AEConfig;
 import appeng.core.worlddata.WorldData;
 import appeng.hooks.TickHandler;
 import appeng.me.cache.CraftingGridCache;
@@ -315,7 +316,7 @@ public class Grid implements IGrid {
     @Override
     public NetworkList getAllRecursiveGridConnections(Class<? extends IGridHost> accessType) {
         if (accessType == null) return null;
-        return getAllRecursiveGridConnections(accessType, new HashSet<UUID>());
+        return getAllRecursiveGridConnections(accessType, new HashSet<UUID>(), 0);
     }
 
     private HashMap<IGridHost, IGrid> getSubnetGridMap(Class<? extends IGridHost> accessType) {
@@ -331,8 +332,12 @@ public class Grid implements IGrid {
         return gridConnections;
     }
 
-    private NetworkList getAllRecursiveGridConnections(Class<? extends IGridHost> accessType, Set<UUID> visited) {
+    private NetworkList getAllRecursiveGridConnections(Class<? extends IGridHost> accessType, Set<UUID> visited,
+            int depth) {
         NetworkList result = this.getGridConnections(accessType);
+        if (depth > AEConfig.instance.maxRecursiveDepth) {
+            return result;
+        }
         HashMap<IGridHost, IGrid> gridConnections = this.getSubnetGridMap(accessType);
         for (Entry<IGridHost, IGrid> entry : gridConnections.entrySet()) {
             if (accessType.isInstance(entry.getKey())) {
@@ -345,7 +350,7 @@ public class Grid implements IGrid {
                 visited.add(innerGrid.getId());
                 if (!result.contains(innerGrid)) result.add(innerGrid);
 
-                NetworkList subResult = innerGrid.getAllRecursiveGridConnections(accessType, visited);
+                NetworkList subResult = innerGrid.getAllRecursiveGridConnections(accessType, visited, ++depth);
                 result.mergeDistinct(subResult);
             }
         }
