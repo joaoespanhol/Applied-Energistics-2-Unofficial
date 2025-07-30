@@ -911,3 +911,4 @@ stat.ae2.TurnedCranks=Turned Cranks
 # Keys
 key.appliedenergistics2.category=Applied Energistics 2
 key.toggle_focus.desc=Toggle search box focus
+key.search_connected_inventories.desc=Search network inventories for item

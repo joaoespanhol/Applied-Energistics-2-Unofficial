@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import appeng.client.ActionKey;
+import appeng.core.CommonHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -183,7 +185,7 @@ public abstract class AEBaseGui extends GuiContainer {
     }
 
     @SuppressWarnings("unchecked")
-    private List<Slot> getInventorySlots() {
+    protected List<Slot> getInventorySlots() {
         return this.inventorySlots.inventorySlots;
     }
 
@@ -538,9 +540,7 @@ public abstract class AEBaseGui extends GuiContainer {
                 }
                 case 1 -> action = ctrlDown == 1 ? InventoryAction.PICKUP_SINGLE : InventoryAction.SHIFT_CLICK;
                 case 3 -> { // creative dupe:
-                    if (isCtrlKeyDown()) {
-                        action = InventoryAction.FIND_ITEMS;
-                    } else if (player.capabilities.isCreativeMode) {
+                    if (player.capabilities.isCreativeMode) {
                         action = InventoryAction.CREATIVE_DUPLICATE;
                     }
                 } // drop item:
@@ -596,9 +596,7 @@ public abstract class AEBaseGui extends GuiContainer {
                 }
                 case 3 -> { // creative dupe:
                     stack = ((SlotME) slot).getAEStack();
-                    if (isCtrlKeyDown()) {
-                        action = InventoryAction.FIND_ITEMS;
-                    } else if (stack != null && stack.isCraftable()) {
+                    if (stack != null && stack.isCraftable()) {
                         action = InventoryAction.AUTO_CRAFT;
                     } else if (player.capabilities.isCreativeMode) {
                         final IAEItemStack slotItem = ((SlotME) slot).getAEStack();
@@ -616,9 +614,6 @@ public abstract class AEBaseGui extends GuiContainer {
                 NetworkHandler.instance.sendToServer(p);
             }
 
-            if (action.equals(InventoryAction.FIND_ITEMS)) {
-                this.mc.thePlayer.closeScreen();
-            }
             return;
         }
 

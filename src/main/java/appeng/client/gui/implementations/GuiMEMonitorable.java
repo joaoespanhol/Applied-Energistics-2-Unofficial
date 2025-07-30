@@ -13,6 +13,10 @@ package appeng.client.gui.implementations;
 import java.io.IOException;
 import java.util.List;
 
+import appeng.api.storage.data.IAEStack;
+import appeng.client.me.SlotME;
+import appeng.core.sync.packets.PacketInventoryAction;
+import appeng.helpers.InventoryAction;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Slot;
@@ -576,6 +580,24 @@ public class GuiMEMonitorable extends AEBaseMEGui
                 searchField.setFocused(!focused);
                 NEI.searchField.setFocus(focused);
                 return;
+            }
+            if(CommonHelper.proxy.isActionKey(ActionKey.SEARCH_CONNECTED_INVENTORIES, key)
+                    && !(NEI.searchField.focused() || searchField.isFocused())) {
+                final boolean mouseInGui = this
+                        .isPointInRegion(0, 0, this.xSize, this.ySize, this.currentMouseX, this.currentMouseY);
+                if(mouseInGui) {
+                    Slot slot = getSlot(this.currentMouseX, this.currentMouseY);
+                    if (slot instanceof SlotME sme) {
+                        IAEItemStack stack = sme.getAEStack();
+                        this.monitorableContainer.setTargetStack(stack);
+                        if(stack != null) {
+                            final PacketInventoryAction p = new PacketInventoryAction(InventoryAction.FIND_ITEMS, this.getInventorySlots().size(), 0);
+                            NetworkHandler.instance.sendToServer(p);
+                            this.mc.thePlayer.closeScreen();
+                            return;
+                        }
+                    }
+                }
             }
 
             if (NEI.searchField.focused()) {

@@ -1019,11 +1019,17 @@ public abstract class AEBaseContainer extends Container {
                                     IAEStack result = cell.getAvailableItem(slotItem, IterationCounter.fetchNewId());
                                     if (result == null) continue;
 
+                                    String blockName = "";
+                                    if(innerMachine.hasCustomName())
+                                        blockName = innerMachine.getCustomName();
+                                    else
+                                        blockName = innerMachine.getBlockType().getLocalizedName();
+
                                     coords.add(
                                             new ItemSearchDTO(
                                                     innerMachine.getLocation(),
                                                     result,
-                                                    innerMachine.getCustomName(),
+                                                    blockName,
                                                     i,
                                                     innerMachine.getForward(),
                                                     innerMachine.getUp()));
