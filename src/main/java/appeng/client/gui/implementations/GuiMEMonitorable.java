@@ -580,24 +580,22 @@ public class GuiMEMonitorable extends AEBaseMEGui
                 NEI.searchField.setFocus(focused);
                 return;
             }
+
             if (CommonHelper.proxy.isActionKey(ActionKey.SEARCH_CONNECTED_INVENTORIES, key)
                     && !(NEI.searchField.focused() || searchField.isFocused())) {
                 final boolean mouseInGui = this
                         .isPointInRegion(0, 0, this.xSize, this.ySize, this.currentMouseX, this.currentMouseY);
-                if (mouseInGui) {
-                    Slot slot = getSlot(this.currentMouseX, this.currentMouseY);
-                    if (slot instanceof SlotME sme) {
-                        IAEItemStack stack = sme.getAEStack();
-                        this.monitorableContainer.setTargetStack(stack);
-                        if (stack != null) {
-                            final PacketInventoryAction p = new PacketInventoryAction(
-                                    InventoryAction.FIND_ITEMS,
-                                    this.getInventorySlots().size(),
-                                    0);
-                            NetworkHandler.instance.sendToServer(p);
-                            this.mc.thePlayer.closeScreen();
-                            return;
-                        }
+                if (mouseInGui && getSlot(this.currentMouseX, this.currentMouseY) instanceof SlotME sme) {
+                    IAEItemStack stack = sme.getAEStack();
+                    this.monitorableContainer.setTargetStack(stack);
+                    if (stack != null) {
+                        final PacketInventoryAction p = new PacketInventoryAction(
+                                InventoryAction.FIND_ITEMS,
+                                this.getInventorySlots().size(),
+                                0);
+                        NetworkHandler.instance.sendToServer(p);
+                        this.mc.thePlayer.closeScreen();
+                        return;
                     }
                 }
             }

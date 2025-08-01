@@ -292,8 +292,8 @@ public class Grid implements IGrid {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Grid) {
-            return this.id.equals(((Grid) o).id);
+        if (o instanceof Grid grid) {
+            return this.id.equals(grid.id);
         }
         return false;
     }
@@ -303,28 +303,25 @@ public class Grid implements IGrid {
         NetworkList result = new NetworkList();
         result.add(this);
         HashMap<IGridHost, IGrid> gridConnections = this.getSubnetGridMap(accessType);
-        if (gridConnections == null) return result;
         for (Entry<IGridHost, IGrid> entry : gridConnections.entrySet()) {
             if (accessType.isInstance(entry.getKey())) {
                 if (!result.contains((Grid) entry.getValue())) result.add((Grid) entry.getValue());
             }
         }
-
         return result;
     }
 
     @Override
     public NetworkList getAllRecursiveGridConnections(Class<? extends IGridHost> accessType) {
         if (accessType == null) return null;
-        return getAllRecursiveGridConnections(accessType, new HashSet<UUID>(), 0);
+        return getAllRecursiveGridConnections(accessType, new HashSet<>(), 0);
     }
 
     private HashMap<IGridHost, IGrid> getSubnetGridMap(Class<? extends IGridHost> accessType) {
         IMachineSet storageBuses = this.getMachines(PartStorageBus.class);
         HashMap<IGridHost, IGrid> gridConnections = new HashMap<>();
         for (IGridNode bus : storageBuses) {
-            IGridHost machine = bus.getMachine();
-            if (machine instanceof PartStorageBus sb) { // TODO Support partFluidStorageBus
+            if (bus.getMachine() instanceof PartStorageBus sb) { // TODO Support partFluidStorageBus
                 IGrid connectedGrid = sb.getConnectedGrid();
                 if (connectedGrid != null) gridConnections.put(sb, sb.getConnectedGrid());
             }
@@ -335,9 +332,8 @@ public class Grid implements IGrid {
     private NetworkList getAllRecursiveGridConnections(Class<? extends IGridHost> accessType, Set<UUID> visited,
             int depth) {
         NetworkList result = this.getGridConnections(accessType);
-        if (depth > AEConfig.instance.maxRecursiveDepth) {
-            return result;
-        }
+        if (depth > AEConfig.instance.maxRecursiveDepth) return result;
+
         HashMap<IGridHost, IGrid> gridConnections = this.getSubnetGridMap(accessType);
         for (Entry<IGridHost, IGrid> entry : gridConnections.entrySet()) {
             if (accessType.isInstance(entry.getKey())) {

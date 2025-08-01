@@ -32,12 +32,12 @@ import cpw.mods.fml.relauncher.SideOnly;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-public class PacketHighlightBlock extends AppEngPacket {
+public class PacketHighlightBlockStorage extends AppEngPacket {
 
     List<ItemSearchDTO> coords;
 
     // automatic.
-    public PacketHighlightBlock(final ByteBuf stream) throws IOException {
+    public PacketHighlightBlockStorage(final ByteBuf stream) throws IOException {
         final int size = stream.readInt();
         final byte[] tagBytes = new byte[size];
         stream.readBytes(tagBytes);
@@ -47,7 +47,7 @@ public class PacketHighlightBlock extends AppEngPacket {
     }
 
     // api
-    public PacketHighlightBlock(List<ItemSearchDTO> coords) throws IOException {
+    public PacketHighlightBlockStorage(List<ItemSearchDTO> coords) throws IOException {
         this.coords = coords;
 
         final ByteBuf buffer = Unpooled.buffer();

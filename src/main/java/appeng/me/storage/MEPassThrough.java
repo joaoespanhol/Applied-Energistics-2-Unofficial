@@ -43,9 +43,8 @@ public class MEPassThrough<T extends IAEStack<T>> implements IMEInventoryHandler
      * @return Connected grid
      */
     public IGrid getGrid() {
-        if (this.internal instanceof NetworkMonitor) {
-            NetworkMonitor nm = (NetworkMonitor) this.internal;
-            return nm.getGrid();
+        if (this.internal instanceof NetworkMonitor networkMonitor) {
+            return networkMonitor.getGrid();
         }
         return null;
     }

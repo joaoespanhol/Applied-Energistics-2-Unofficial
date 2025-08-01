@@ -43,12 +43,12 @@ public class ItemSearchDTO {
         data.setInteger("x", coord.x);
         data.setInteger("y", coord.y);
         data.setInteger("z", coord.z);
-        data.setInteger("s", cellSlot);
-        data.setLong("c", itemCount);
-        data.setString("n", blockName);
-        data.setString("in", itemName);
-        data.setString("f", this.forward.name());
-        data.setString("u", this.up.name());
+        data.setInteger("cellSlot", cellSlot);
+        data.setLong("itemCount", itemCount);
+        data.setString("blockName", blockName);
+        data.setString("itemName", itemName);
+        data.setString("forward", this.forward.name());
+        data.setString("up", this.up.name());
     }
 
     public static void writeListToNBT(final NBTTagCompound tag, List<ItemSearchDTO> list) {
@@ -77,13 +77,13 @@ public class ItemSearchDTO {
         int x = data.getInteger("x");
         int y = data.getInteger("y");
         int z = data.getInteger("z");
-        this.blockName = data.getString("n");
-        this.itemName = data.getString("in");
-        this.itemCount = data.getLong("c");
-        this.cellSlot = data.getInteger("s");
+        this.blockName = data.getString("blockName");
+        this.itemName = data.getString("itemName");
+        this.itemCount = data.getLong("itemCount");
+        this.cellSlot = data.getInteger("cellSlot");
         this.coord = new DimensionalCoord(x, y, z, dim);
-        this.forward = ForgeDirection.valueOf(data.getString("f"));
-        this.up = ForgeDirection.valueOf(data.getString("u"));
+        this.forward = ForgeDirection.valueOf(data.getString("forward"));
+        this.up = ForgeDirection.valueOf(data.getString("up"));
     }
 
 }

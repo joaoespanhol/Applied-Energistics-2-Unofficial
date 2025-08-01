@@ -532,9 +532,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     public IGrid getConnectedGrid() {
         try {
             IGrid currentGrid = this.getProxy().getGrid();
-            IMEInventory inv = this.getConnectedInventory();
-            if (inv instanceof MEPassThrough) {
-                MEPassThrough passThrough = (MEPassThrough) inv;
+            if (this.getConnectedInventory() instanceof MEPassThrough passThrough) {
                 IGrid passThroughGrid = passThrough.getGrid();
                 if (!currentGrid.equals(passThroughGrid)) return passThroughGrid;
             }
