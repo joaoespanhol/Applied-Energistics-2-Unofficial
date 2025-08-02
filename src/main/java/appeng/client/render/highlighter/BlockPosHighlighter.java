@@ -19,7 +19,7 @@ import appeng.api.util.WorldCoord;
 // taken from McJty's McJtyLib
 public class BlockPosHighlighter implements IHighlighter {
 
-    private static final BlockPosHighlighter INSTANCE = new BlockPosHighlighter();
+    static final BlockPosHighlighter INSTANCE = new BlockPosHighlighter();
 
     protected static final List<DimensionalCoord> highlightedBlocks = new ArrayList<>();
     protected static long expireHighlightTime;

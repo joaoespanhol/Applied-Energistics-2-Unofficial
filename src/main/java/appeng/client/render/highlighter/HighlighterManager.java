@@ -14,11 +14,11 @@ public class HighlighterManager {
     static long time = System.currentTimeMillis();
 
     static {
-        registerHighlighter(new StoragePosHighlighter());
-        registerHighlighter(new BlockPosHighlighter());
+        registerHighlighter(StoragePosHighlighter.INSTANCE);
+        registerHighlighter(BlockPosHighlighter.INSTANCE);
     }
 
-    private static void registerHighlighter(IHighlighter h) {
+    static void registerHighlighter(IHighlighter h) {
         HIGHLIGHTERS.add(h);
     }
 

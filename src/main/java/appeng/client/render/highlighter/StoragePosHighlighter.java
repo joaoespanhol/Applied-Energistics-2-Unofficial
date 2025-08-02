@@ -20,7 +20,7 @@ import appeng.util.Platform;
 
 public class StoragePosHighlighter extends BlockPosHighlighter {
 
-    private static final StoragePosHighlighter INSTANCE = new StoragePosHighlighter();
+    static final StoragePosHighlighter INSTANCE = new StoragePosHighlighter();
 
     private static final List<ItemSearchDTO> highlightedCells = new ArrayList<>();
 
