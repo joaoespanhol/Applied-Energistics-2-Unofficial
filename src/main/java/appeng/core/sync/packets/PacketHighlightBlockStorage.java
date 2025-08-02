@@ -22,7 +22,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 
 import appeng.api.util.ItemSearchDTO;
-import appeng.client.render.BlockPosHighlighter;
+import appeng.client.render.highlighter.StoragePosHighlighter;
 import appeng.core.localization.PlayerMessages;
 import appeng.core.sync.AppEngPacket;
 import appeng.core.sync.network.INetworkInfo;
@@ -73,7 +73,7 @@ public class PacketHighlightBlockStorage extends AppEngPacket {
     public void clientPacketData(final INetworkInfo network, final AppEngPacket packet, final EntityPlayer player) {
         try {
             if (Platform.isClient()) {
-                BlockPosHighlighter.highlightStorage(
+                StoragePosHighlighter.highlightStorage(
                         player,
                         coords,
                         PlayerMessages.StorageHighlighted.getUnlocalized(),
