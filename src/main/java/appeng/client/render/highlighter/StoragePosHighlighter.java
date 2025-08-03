@@ -22,23 +22,25 @@ public class StoragePosHighlighter extends BlockPosHighlighter {
 
     static final StoragePosHighlighter INSTANCE = new StoragePosHighlighter();
 
-    private static final List<ItemSearchDTO> highlightedCells = new ArrayList<>();
+    private final List<ItemSearchDTO> highlightedCells = new ArrayList<>();
+
+    StoragePosHighlighter() {}
 
     public static void highlightStorage(EntityPlayer player, List<ItemSearchDTO> interfaces, String foundMsg,
             String wrongDimMsg) {
         INSTANCE.clear();
-        int highlightDuration = MIN_TIME;
+        int highlightDuration = INSTANCE.MIN_TIME;
         for (ItemSearchDTO storage : interfaces) {
 
             if (storage.cellSlot >= 0) {
-                highlightedCells.add(storage);
+                INSTANCE.highlightedCells.add(storage);
             }
-            highlightedBlocks.add(storage.coord);
+            INSTANCE.highlightedBlocks.add(storage.coord);
 
             highlightDuration = Math.max(
                     highlightDuration,
                     MathHelper
-                            .clamp_int(500 * WorldCoord.getTaxicabDistance(storage.coord, player), MIN_TIME, MAX_TIME));
+                            .clamp_int(500 * WorldCoord.getTaxicabDistance(storage.coord, player), INSTANCE.MIN_TIME, INSTANCE.MAX_TIME));
 
             if (player.worldObj.provider.dimensionId == storage.coord.getDimension()) {
                 if (foundMsg == null) {
@@ -63,7 +65,7 @@ public class StoragePosHighlighter extends BlockPosHighlighter {
                                 storage.coord.getDimension()));
             }
         }
-        expireHighlightTime = System.currentTimeMillis() + highlightDuration;
+        INSTANCE.expireHighlightTime = System.currentTimeMillis() + highlightDuration;
     }
 
     public void clear() {

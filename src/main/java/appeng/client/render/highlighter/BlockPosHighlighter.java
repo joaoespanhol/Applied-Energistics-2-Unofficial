@@ -21,26 +21,28 @@ public class BlockPosHighlighter implements IHighlighter {
 
     static final BlockPosHighlighter INSTANCE = new BlockPosHighlighter();
 
-    protected static final List<DimensionalCoord> highlightedBlocks = new ArrayList<>();
-    protected static long expireHighlightTime;
-    protected static final int MIN_TIME = 3000;
-    protected static final int MAX_TIME = MIN_TIME * 10;
+    protected final List<DimensionalCoord> highlightedBlocks = new ArrayList<>();
+    protected long expireHighlightTime;
+    protected final int MIN_TIME = 3000;
+    protected final int MAX_TIME = MIN_TIME * 10;
 
     protected int dimension;
     protected double doubleX;
     protected double doubleY;
     protected double doubleZ;
 
+    BlockPosHighlighter() {}
+
     public static void highlightBlocks(EntityPlayer player, List<DimensionalCoord> interfaces, String deviceName,
             String foundMsg, String wrongDimMsg) {
         INSTANCE.clear();
-        int highlightDuration = MIN_TIME;
+        int highlightDuration = INSTANCE.MIN_TIME;
         for (DimensionalCoord coord : interfaces) {
 
-            highlightedBlocks.add(coord);
+            INSTANCE.highlightedBlocks.add(coord);
             highlightDuration = Math.max(
                     highlightDuration,
-                    MathHelper.clamp_int(500 * WorldCoord.getTaxicabDistance(coord, player), MIN_TIME, MAX_TIME));
+                    MathHelper.clamp_int(500 * WorldCoord.getTaxicabDistance(coord, player), INSTANCE.MIN_TIME, INSTANCE.MAX_TIME));
 
             if (player.worldObj.provider.dimensionId == coord.getDimension()) {
                 if (foundMsg == null) continue;
@@ -59,7 +61,7 @@ public class BlockPosHighlighter implements IHighlighter {
                 }
             }
         }
-        expireHighlightTime = System.currentTimeMillis() + highlightDuration;
+        INSTANCE.expireHighlightTime = System.currentTimeMillis() + highlightDuration;
     }
 
     public static void highlightBlocks(EntityPlayer player, List<DimensionalCoord> interfaces, String foundMsg,
