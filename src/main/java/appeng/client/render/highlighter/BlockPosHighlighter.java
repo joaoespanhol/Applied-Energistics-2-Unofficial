@@ -42,7 +42,10 @@ public class BlockPosHighlighter implements IHighlighter {
             INSTANCE.highlightedBlocks.add(coord);
             highlightDuration = Math.max(
                     highlightDuration,
-                    MathHelper.clamp_int(500 * WorldCoord.getTaxicabDistance(coord, player), INSTANCE.MIN_TIME, INSTANCE.MAX_TIME));
+                    MathHelper.clamp_int(
+                            500 * WorldCoord.getTaxicabDistance(coord, player),
+                            INSTANCE.MIN_TIME,
+                            INSTANCE.MAX_TIME));
 
             if (player.worldObj.provider.dimensionId == coord.getDimension()) {
                 if (foundMsg == null) continue;

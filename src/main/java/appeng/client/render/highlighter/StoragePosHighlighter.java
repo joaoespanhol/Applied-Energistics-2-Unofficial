@@ -39,8 +39,10 @@ public class StoragePosHighlighter extends BlockPosHighlighter {
 
             highlightDuration = Math.max(
                     highlightDuration,
-                    MathHelper
-                            .clamp_int(500 * WorldCoord.getTaxicabDistance(storage.coord, player), INSTANCE.MIN_TIME, INSTANCE.MAX_TIME));
+                    MathHelper.clamp_int(
+                            500 * WorldCoord.getTaxicabDistance(storage.coord, player),
+                            INSTANCE.MIN_TIME,
+                            INSTANCE.MAX_TIME));
 
             if (player.worldObj.provider.dimensionId == storage.coord.getDimension()) {
                 if (foundMsg == null) {
