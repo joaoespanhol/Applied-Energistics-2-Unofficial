@@ -23,7 +23,7 @@ public class ItemSearchDTO {
         this.coord = coord;
         this.cellSlot = cellSlot;
         this.itemCount = items.getStackSize();
-        this.itemName = items.getName();
+        this.itemName = items.getLocalizedName();
         if (this.itemName == null) this.itemName = " ";
         this.blockName = blockName;
         this.forward = forward;

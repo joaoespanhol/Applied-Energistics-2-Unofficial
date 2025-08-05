@@ -226,5 +226,5 @@ public interface IAEStack<StackType extends IAEStack> {
     /**
      * @return Display name of item
      */
-    String getName();
+    String getLocalizedName();
 }

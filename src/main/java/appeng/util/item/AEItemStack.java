@@ -368,7 +368,7 @@ public final class AEItemStack extends AEStack<IAEItemStack> implements IAEItemS
     }
 
     @Override
-    public String getName() {
+    public String getLocalizedName() {
         String name = this.getDefinition().getDisplayName();
         if (name == null) {
             name = StatCollector.translateToLocal(this.getItem().getUnlocalizedName() + ".name");
