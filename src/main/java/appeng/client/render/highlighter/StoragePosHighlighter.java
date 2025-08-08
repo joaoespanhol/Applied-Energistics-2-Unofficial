@@ -92,14 +92,14 @@ public class StoragePosHighlighter extends BlockPosHighlighter {
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
 
-            renderHighLightedCellSlotOverlay(c.x, c.y, c.z, storage.cellSlot, storage.forward, storage.up);
+            renderHighlightedCellSlotOverlay(c.x, c.y, c.z, storage.cellSlot, storage.forward, storage.up);
 
             GL11.glPopAttrib();
             GL11.glPopMatrix();
         }
     }
 
-    private void renderHighLightedCellSlotOverlay(double x, double y, double z, int index, ForgeDirection forward,
+    private void renderHighlightedCellSlotOverlay(double x, double y, double z, int index, ForgeDirection forward,
             ForgeDirection up) {
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
@@ -174,15 +174,15 @@ public class StoragePosHighlighter extends BlockPosHighlighter {
         RenderBlocks renderer = new RenderBlocks();
         selectFace(renderer, west, up, forward, 2 + origCol * 7, 7 + origCol * 7, 1 + origRow * 3, 3 + origRow * 3);
 
-        double u1 = interpU((spin % 4 < 2) ? 1 : 6);
-        double u2 = interpU(((spin + 1) % 4 < 2) ? 1 : 6);
-        double u3 = interpU(((spin + 2) % 4 < 2) ? 1 : 6);
-        double u4 = interpU(((spin + 3) % 4 < 2) ? 1 : 6);
+        double u1 = getInterpolatedU((spin % 4 < 2) ? 1 : 6);
+        double u2 = getInterpolatedU(((spin + 1) % 4 < 2) ? 1 : 6);
+        double u3 = getInterpolatedU(((spin + 2) % 4 < 2) ? 1 : 6);
+        double u4 = getInterpolatedU(((spin + 3) % 4 < 2) ? 1 : 6);
 
-        double v1 = interpU(((spin + 1) % 4 < 2) ? 1 : 3);
-        double v2 = interpU(((spin + 2) % 4 < 2) ? 1 : 3);
-        double v3 = interpU(((spin + 3) % 4 < 2) ? 1 : 3);
-        double v4 = interpU(((spin) % 4 < 2) ? 1 : 3);
+        double v1 = getInterpolatedU(((spin + 1) % 4 < 2) ? 1 : 3);
+        double v2 = getInterpolatedU(((spin + 2) % 4 < 2) ? 1 : 3);
+        double v3 = getInterpolatedU(((spin + 3) % 4 < 2) ? 1 : 3);
+        double v4 = getInterpolatedU(((spin) % 4 < 2) ? 1 : 3);
 
         switch (forward.offsetX + forward.offsetY * 2 + forward.offsetZ * 3) {
             case 1 -> {
@@ -260,7 +260,7 @@ public class StoragePosHighlighter extends BlockPosHighlighter {
         return (16.0 - uv) / 16.0;
     }
 
-    private float interpU(int texCoord) {
+    private float getInterpolatedU(int texCoord) {
         return texCoord / 16f;
     }
 }

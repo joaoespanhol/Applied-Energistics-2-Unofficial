@@ -678,10 +678,6 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         return this.handler;
     }
 
-    // public List<ICellProvider> getAllAvailableStorage(StorageChannel channel, int interation) {
-    //
-    // }
-
     private void checkInterfaceVsStorageBus(final TileEntity target, final ForgeDirection side) {
         IInterfaceHost achievement = null;
 

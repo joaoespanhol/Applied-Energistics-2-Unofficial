@@ -1061,7 +1061,7 @@ public abstract class AEBaseContainer extends Container {
                     }
                 }
 
-                this.highLightBlocks(player, coords);
+                this.highlightBlocks(player, coords);
             }
             default -> {}
         }
@@ -1082,7 +1082,7 @@ public abstract class AEBaseContainer extends Container {
         }
     }
 
-    protected void highLightBlocks(final EntityPlayerMP p, List<ItemSearchDTO> coords) {
+    protected void highlightBlocks(final EntityPlayerMP p, List<ItemSearchDTO> coords) {
         if (Platform.isServer()) {
             try {
                 NetworkHandler.instance.sendTo(new PacketHighlightBlockStorage(coords), p);
