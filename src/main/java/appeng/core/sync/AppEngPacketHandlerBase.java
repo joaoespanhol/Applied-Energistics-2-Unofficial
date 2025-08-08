@@ -126,8 +126,7 @@ public class AppEngPacketHandlerBase {
         PACKET_PATTERN_ITEM_RENAMER(PacketPatternItemRenamer.class),
         PACKET_NETWORK_VISUALISER_DATA(PacketNetworkVisualiserData.class),
         PACKET_PINS_UPDATE(PacketPinsUpdate.class),
- 	PACKET_HIGHLIGHT_BLOCKS(PacketHighlightBlockStorage.class);
-
+        PACKET_HIGHLIGHT_BLOCKS(PacketHighlightBlockStorage.class);
 
         private final Class<? extends AppEngPacket> packetClass;
         private final Constructor<? extends AppEngPacket> packetConstructor;

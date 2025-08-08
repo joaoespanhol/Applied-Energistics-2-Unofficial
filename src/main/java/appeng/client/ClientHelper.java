@@ -107,8 +107,7 @@ public class ClientHelper extends ServerHelper {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new BlockPosHighlighter());
         MinecraftForge.EVENT_BUS.register(new NetworkVisualiserRender());
-   	MinecraftForge.EVENT_BUS.register(new HighlighterManager());
-
+        MinecraftForge.EVENT_BUS.register(new HighlighterManager());
 
         for (ActionKey key : ActionKey.values()) {
             final KeyBinding binding = new KeyBinding(key.getTranslationKey(), key.getDefaultKey(), KEY_CATEGORY);
