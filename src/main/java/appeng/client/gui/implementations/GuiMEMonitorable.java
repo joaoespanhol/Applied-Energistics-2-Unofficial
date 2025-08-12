@@ -35,6 +35,7 @@ import appeng.api.storage.ITerminalHost;
 import appeng.api.storage.ITerminalPins;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IDisplayRepo;
+import appeng.api.storage.data.IItemList;
 import appeng.api.util.IConfigManager;
 import appeng.api.util.IConfigurableObject;
 import appeng.client.ActionKey;
@@ -48,6 +49,7 @@ import appeng.client.gui.widgets.MEGuiTextField;
 import appeng.client.me.InternalSlotME;
 import appeng.client.me.ItemRepo;
 import appeng.client.me.PinSlotME;
+import appeng.client.me.SlotME;
 import appeng.container.implementations.ContainerMEMonitorable;
 import appeng.container.slot.AppEngSlot;
 import appeng.container.slot.SlotCraftingMatrix;
@@ -61,10 +63,12 @@ import appeng.core.localization.GuiColors;
 import appeng.core.localization.GuiText;
 import appeng.core.sync.GuiBridge;
 import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketInventoryAction;
 import appeng.core.sync.packets.PacketPinsUpdate;
 import appeng.core.sync.packets.PacketSwitchGuis;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.IPinsHandler;
+import appeng.helpers.InventoryAction;
 import appeng.helpers.WirelessTerminalGuiObject;
 import appeng.integration.IntegrationRegistry;
 import appeng.integration.IntegrationType;
@@ -191,44 +195,39 @@ public class GuiMEMonitorable extends AEBaseMEGui
             NetworkHandler.instance.sendToServer(new PacketSwitchGuis(GuiBridge.GUI_CRAFTING_STATUS));
         }
 
-        if (btn instanceof GuiImgButton iBtn) {
-            if (iBtn.getSetting() != Settings.ACTIONS) {
-                final Enum cv = iBtn.getCurrentValue();
-                final boolean backwards = Mouse.isButtonDown(1);
-                final Enum next = Platform.rotateEnum(cv, backwards, iBtn.getSetting().getPossibleValues());
+        if (!(btn instanceof GuiImgButton iBtn) || iBtn.getSetting() == Settings.ACTIONS) return;
 
-                if (btn == this.terminalStyleBox) {
-                    AEConfig.instance.settings.putSetting(iBtn.getSetting(), next);
-                } else if (btn == this.searchBoxSettings) {
-                    AEConfig.instance.settings.putSetting(iBtn.getSetting(), next);
-                } else if (btn == this.searchStringSave) {
-                    AEConfig.instance.preserveSearchBar = next == YesNo.YES;
-                } else if (btn == this.pinsStateButton) {
-                    try {
-                        if (next.ordinal() >= rows) return; // ignore to avoid hiding terminal inventory
+        final Enum cv = iBtn.getCurrentValue();
+        final boolean backwards = Mouse.isButtonDown(1);
+        final Enum next = Platform.rotateEnum(cv, backwards, iBtn.getSetting().getPossibleValues());
 
-                        memoryText = this.searchField.getText();
-                        final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
-                        NetworkHandler.instance.sendToServer(p);
-                    } catch (final IOException e) {
-                        AELog.debug(e);
-                    }
-                } else {
-                    try {
-                        NetworkHandler.instance
-                                .sendToServer(new PacketValueConfig(iBtn.getSetting().name(), next.name()));
-                    } catch (final IOException e) {
-                        AELog.debug(e);
-                    }
-                }
+        if (btn == this.terminalStyleBox) {
+            AEConfig.instance.settings.putSetting(iBtn.getSetting(), next);
+        } else if (btn == this.searchBoxSettings) {
+            AEConfig.instance.settings.putSetting(iBtn.getSetting(), next);
+        } else if (btn == this.searchStringSave) {
+            AEConfig.instance.preserveSearchBar = next == YesNo.YES;
+        } else if (btn == this.pinsStateButton) {
+            try {
+                if (next.ordinal() >= rows) return; // ignore to avoid hiding terminal inventory
 
-                iBtn.set(next);
-
-                if (next.getClass() == SearchBoxMode.class || next.getClass() == TerminalStyle.class) {
-                    memoryText = this.searchField.getText();
-                    this.reinitalize();
-                }
+                final PacketPinsUpdate p = new PacketPinsUpdate((PinsState) next);
+                NetworkHandler.instance.sendToServer(p);
+            } catch (final IOException e) {
+                AELog.debug(e);
             }
+        } else {
+            try {
+                NetworkHandler.instance.sendToServer(new PacketValueConfig(iBtn.getSetting().name(), next.name()));
+            } catch (final IOException e) {
+                AELog.debug(e);
+            }
+        }
+
+        iBtn.set(next);
+
+        if (next.getClass() == SearchBoxMode.class || next.getClass() == TerminalStyle.class) {
+            this.reinitalize();
         }
     }
 
@@ -246,6 +245,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
     }
 
     private void reinitalize() {
+        memoryText = this.searchField.getText();
         this.buttonList.clear();
         this.initGui();
     }
@@ -582,6 +582,25 @@ public class GuiMEMonitorable extends AEBaseMEGui
                 return;
             }
 
+            if (CommonHelper.proxy.isActionKey(ActionKey.SEARCH_CONNECTED_INVENTORIES, key)
+                    && !(NEI.searchField.focused() || searchField.isFocused())) {
+                final boolean mouseInGui = this
+                        .isPointInRegion(0, 0, this.xSize, this.ySize, this.currentMouseX, this.currentMouseY);
+                if (mouseInGui && getSlot(this.currentMouseX, this.currentMouseY) instanceof SlotME sme) {
+                    IAEItemStack stack = sme.getAEStack();
+                    this.monitorableContainer.setTargetStack(stack);
+                    if (stack != null) {
+                        final PacketInventoryAction p = new PacketInventoryAction(
+                                InventoryAction.FIND_ITEMS,
+                                this.getInventorySlots().size(),
+                                0);
+                        NetworkHandler.instance.sendToServer(p);
+                        this.mc.thePlayer.closeScreen();
+                        return;
+                    }
+                }
+            }
+
             if (NEI.searchField.focused()) {
                 return;
             }
@@ -658,7 +677,7 @@ public class GuiMEMonitorable extends AEBaseMEGui
             pinsState = (PinsState) this.configSrc.getSetting(Settings.PINS_STATE);
             this.pinsStateButton.set(pinsState);
 
-            initGui();
+            reinitalize();
         }
 
         this.repo.updateView();
@@ -769,5 +788,11 @@ public class GuiMEMonitorable extends AEBaseMEGui
     @Override
     public void setPinsState(PinsState state) {
         configSrc.putSetting(Settings.PINS_STATE, state);
+    }
+
+    /// returns all items visible from the terminal
+    /// @return the returned list is **read-only**
+    public IItemList<IAEItemStack> getAvaibleItems() {
+        return repo.getAvailableItems();
     }
 }

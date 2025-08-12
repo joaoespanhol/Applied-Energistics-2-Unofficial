@@ -79,21 +79,21 @@ tile.appliedenergistics2.SkyStoneSmallBrickStairBlock.name=Sky Stone Small Brick
 tile.appliedenergistics2.SkyStoneStairBlock.name=Sky Stone Stairs
 
 # Slabs
-tile.appliedenergistics2.ChiseledQuartzSlabBlock.name=Chiseled Certus Quartz Slabs
+tile.appliedenergistics2.ChiseledQuartzSlabBlock.name=Chiseled Certus Quartz Slab
 tile.appliedenergistics2.ChiseledQuartzSlabBlock.double.name=Chiseled Certus Quartz Slabs
-tile.appliedenergistics2.FluixSlabBlock.name=Fluix Slabs
+tile.appliedenergistics2.FluixSlabBlock.name=Fluix Slab
 tile.appliedenergistics2.FluixSlabBlock.double.name=Fluix Slabs
-tile.appliedenergistics2.QuartzPillarSlabBlock.name=Certus Quartz Pillar Slabs
+tile.appliedenergistics2.QuartzPillarSlabBlock.name=Certus Quartz Pillar Slab
 tile.appliedenergistics2.QuartzPillarSlabBlock.double.name=Certus Quartz Pillar Slabs
-tile.appliedenergistics2.QuartzSlabBlock.name=Certus Quartz Slabs
+tile.appliedenergistics2.QuartzSlabBlock.name=Certus Quartz Slab
 tile.appliedenergistics2.QuartzSlabBlock.double.name=Certus Quartz Slabs
-tile.appliedenergistics2.SkyStoneBlockSlabBlock.name=Sky Stone Block Slabs
+tile.appliedenergistics2.SkyStoneBlockSlabBlock.name=Sky Stone Block Slab
 tile.appliedenergistics2.SkyStoneBlockSlabBlock.double.name=Sky Stone Block Slabs
-tile.appliedenergistics2.SkyStoneBrickSlabBlock.name=Sky Stone Brick Slabs
+tile.appliedenergistics2.SkyStoneBrickSlabBlock.name=Sky Stone Brick Slab
 tile.appliedenergistics2.SkyStoneBrickSlabBlock.double.name=Sky Stone Brick Slabs
-tile.appliedenergistics2.SkyStoneSmallBrickSlabBlock.name=Sky Stone Small Brick Slabs
+tile.appliedenergistics2.SkyStoneSmallBrickSlabBlock.name=Sky Stone Small Brick Slab
 tile.appliedenergistics2.SkyStoneSmallBrickSlabBlock.double.name=Sky Stone Small Brick Slabs
-tile.appliedenergistics2.SkyStoneSlabBlock.name=Sky Stone Slabs
+tile.appliedenergistics2.SkyStoneSlabBlock.name=Sky Stone Slab
 tile.appliedenergistics2.SkyStoneSlabBlock.double.name=Sky Stone Slabs
 
 # Chat Messages
@@ -133,6 +133,8 @@ chat.appliedenergistics2.FinishCraftingRemind=Crafting of %s * %s finished in %s
 chat.appliedenergistics2.CraftingCantExtract=Can't extract required amount of ingredient from storage: %d / %d | %s
 chat.appliedenergistics2.MachineInOtherDim=%d located in dimension: %d and cant be highlighted
 chat.appliedenergistics2.MachineHighlighted=The %d is now highlighted at %d, %d, %d
+chat.appliedenergistics2.StorageHighlighted=The %d containing %d %d is now highlighted at %d, %d, %d
+chat.appliedenergistics2.StorageInOtherDim=%d containing %d %d is located in dimension: %d and cant be highlighted
 
 # Creative Tabs
 itemGroup.appliedenergistics2=Applied Energistics 2
@@ -909,3 +911,4 @@ stat.ae2.TurnedCranks=Turned Cranks
 # Keys
 key.appliedenergistics2.category=Applied Energistics 2
 key.toggle_focus.desc=Toggle search box focus
+key.search_connected_inventories.desc=Search network inventories for item
