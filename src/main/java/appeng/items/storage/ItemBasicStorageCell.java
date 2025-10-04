@@ -242,7 +242,7 @@ public class ItemBasicStorageCell extends AEBaseItem implements IStorageCell, II
 
     @Override
     public int getTotalTypes(final ItemStack cellItem) {
-        return 63;
+        return 99999999;
     }
 
     @Override
