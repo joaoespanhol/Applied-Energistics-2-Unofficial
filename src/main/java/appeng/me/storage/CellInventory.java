@@ -54,7 +54,7 @@ public class CellInventory implements ICellInventory {
     private static String[] itemSlotCount;
     private final NBTTagCompound tagCompound;
     private final ISaveProvider container;
-    private int maxItemTypes = 63;
+    private int maxItemTypes = 99999;
     private short storedItemTypes = 0;
     private long storedItemCount = 0;
     private IItemList<IAEItemStack> cellItems;
@@ -98,8 +98,8 @@ public class CellInventory implements ICellInventory {
             throw new AppEngException("ItemStack was used as a cell, but was not a cell!");
         }
 
-        if (this.maxItemTypes > 63) {
-            this.maxItemTypes = 63;
+        if (this.maxItemTypes > 99999) {
+            this.maxItemTypes = 99999;
         }
         if (this.maxItemTypes < 1) {
             this.maxItemTypes = 1;
